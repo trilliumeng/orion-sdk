@@ -1,0 +1,372 @@
+<?xml version="1.0"?>
+
+<Protocol name="OrionPublic" api="1" version="0.0.0.a" endian="big" supportInt64="false" comment="The packet protocol for the public packets of the orion gimbal. This is the automatically generated part of the protocol. This protocol mixes with the hand written protocol as documented in OrionPacket.h.">
+
+    <Include name="Constants.h" comment="included for array indices"/>
+
+    <Enum name="OrionPktType_t" comment="enumerated identifers for Orion public packets">
+        <Value name="ORION_PKT_INITIALIZE" value="0x00"/>
+        <Value name="ORION_PKT_CMD"/>
+        <Value name="ORION_PKT_PRIVATE_02"/>
+        <Value name="ORION_PKT_LASER_CMD"/>
+        <Value name="ORION_PKT_RESET"/>
+        <Value name="ORION_PKT_PRIVATE_20" value="0x20"/>
+        <Value name="ORION_PKT_PRIVATE_21"/>
+        <Value name="ORION_PKT_PRIVATE_22"/>
+        <Value name="ORION_PKT_PRIVATE_23"/>
+        <Value name="ORION_PKT_PRIVATE_24"/>
+        <Value name="ORION_PKT_CLEVIS_VERSION"/>
+        <Value name="ORION_PKT_RESET_SOURCE"/>
+        <Value name="ORION_PKT_BOARD"/>
+        <Value name="ORION_PKT_CROWN_VERSION"/>
+        <Value name="ORION_PKT_PAYLOAD_VERSION"/>
+        <Value name="ORION_PKT_PRIVATE_2A"/>
+        <Value name="ORION_PKT_PRIVATE_2B"/>
+        <Value name="ORION_PKT_PRIVATE_40" value="0x40"/>
+        <Value name="ORION_PKT_DIAGNOSTICS"/>
+        <Value name="ORION_PKT_FAULTS"/>
+        <Value name="ORION_PKT_PERFORMANCE"/>
+        <Value name="ORION_PKT_SOFTWARE_DIAGNOSTICS"/>
+        <Value name="ORION_PKT_CAMERA_SWITCH" value="0x60"/>
+        <Value name="ORION_PKT_CAMERA_STATE"/>
+        <Value name="ORION_PKT_NETWORK_VIDEO"/>
+        <Value name="ORION_PKT_PRIVATE_63"/>
+        <Value name="ORION_PKT_FRAME_SHIFT"/>
+        <Value name="ORION_PKT_PRIVATE_65"/>
+        <Value name="ORION_PKT_PRIVATE_66"/>
+        <Value name="ORION_PKT_RETRACT_CMD" value="0xA0"/>
+        <Value name="ORION_PKT_RETRACT_STATUS"/>
+        <Value name="ORION_PKT_PRIVATE_B0" value="0xB0"/>
+        <Value name="ORION_PKT_DEBUG_STRING"/>
+        <Value name="ORION_PKT_PRIVATE_C0" value="0xC0"/>
+        <Value name="ORION_PKT_PRIVATE_C1"/>
+        <Value name="ORION_PKT_PRIVATE_C2"/>
+        <Value name="ORION_PKT_PRIVATE_CE" value="0xCE"/>
+        <Value name="ORION_PKT_PRIVATE_CF"/>
+        <Value name="ORION_PKT_PRIVATE_D0"/>
+        <Value name="ORION_PKT_GPS_DATA"/>
+        <Value name="ORION_PKT_EXT_HEADING_DATA"/>
+        <Value name="ORION_PKT_INS_QUALITY"/>
+        <Value name="ORION_PKT_GEOLOCATE_TELEMETRY"/>
+        <Value name="ORION_PKT_GEOPOINT_CMD"/>
+        <Value name="ORION_PKT_PRIVATE_E0" value="0xE0"/>
+        <Value name="ORION_PKT_PRIVATE_E1"/>
+        <Value name="ORION_PKT_PRIVATE_E2"/>
+        <Value name="ORION_PKT_PRIVATE_E3"/>
+        <Value name="ORION_PKT_NETWORK_SETTINGS"/>
+        <Value name="ORION_PKT_PRIVATE_F0" value="0xF0"/>
+        <Value name="ORION_PKT_PRIVATE_F1"/>
+        <Value name="ORION_PKT_PRIVATE_F2"/>
+        <Value name="ORION_PKT_PRIVATE_F3"/>
+        <Value name="ORION_PKT_PRIVATE_F4"/>
+        <Value name="ORION_PKT_PRIVATE_F5"/>
+        <Value name="ORION_PKT_PRIVATE_F6"/>
+
+    </Enum>
+
+    <Enum name="OrionBoardEnumeration_t" comment="Enumeration identifying different boards in the Orion Gimbal">
+        <Value name="BOARD_NONE"     comment="Unknown board"/>
+        <Value name="BOARD_CLEVIS"   comment="The clevis board (motor control)"/>
+        <Value name="BOARD_CROWN"    comment="The crown board (ins and communications)"/>
+        <Value name="BOARD_PAYLOAD"  comment="The paylaod board (camera)"/>
+        <Value name="BOARD_LENSCTRL" comment="The lens control board"/>
+    </Enum>
+
+    <Structure name="Date" file="OrionPublicPacket" comment="Compresssed date format">
+        <Data name="year" inMemoryType="bitfield7" comment="Years after 2000"/>
+        <Data name="month" inMemoryType="bitfield4" comment="Month of the year, from 1 to 12"/>
+        <Data name="day" inMemoryType="bitfield5" comment="Day of the month, from 1 to 31"/>
+    </Structure>
+
+    <Packet name="OrionCmd" file="OrionPublicPacket" ID="ORION_PKT_CMD" comment="Basic commands for control of gimbal pan and tilt.">
+	    <Enum name="OrionMode_t" comment="The source of a debug packet.">
+	        <Value name="ORION_MODE_DISABLED" value="0" comment="disable motor output"/>
+	        <Value name="ORION_MODE_RATE" value="0x10" comment="Commands give the line of sight rate of the camera"/>
+	        <Value name="ORION_MODE_FFC" value="0x20" comment="Commands the gimbal to perform a flat field correction, pan and tilt will drive the IR camera to look at the black body"/>
+            <Value name="ORION_MODE_SCENE" value="0x30" comment="Commands give the angular rate of the image produced by the camera"/>
+            <Value name="ORION_MODE_CALIBRATION" value="0x40" comment="Drives the pan and tilt axes to calibrate the stabilizer gyros"/>
+            <Value name="ORION_MODE_POSITION" value="0x50" comment="Commands give the position of the pan and tilt axes with respect to the gimbal mount"/>
+	    </Enum>
+
+        <Data name="Target" inMemoryType="float32" array="NUM_GIMBAL_AXES" encodedType="signed16" scaler="1000.0" comment="pan and tilt commands in radians or radians per second. Interpretation depends on Mode"/>
+        <Data name="Mode" enum="OrionMode_t" encodedType="unsigned8" comment="operational mode of the gimbal."/>
+        <Data name="Stabilized" inMemoryType="unsigned8" comment="non-zero to enable inertial stabilization. If zero then commands are with respect to gimbal mount, otherwise Target is with respect to inertial or image space."/>
+        <Data name="ImpulseTime" inMemoryType="float32" encodedType="unsigned8" scaler="10.0" comment="amount of time in seconds for changing the gimbal position"/>
+
+    </Packet>
+
+    <Packet name="OrionLaserCommand" file="OrionPublicPacket" ID="ORION_PKT_LASER_CMD" parameterInterface="true" comment="Command to fire the laser (if installed).">
+	    <Data name="DutyCycle" inMemoryType="float32" encodedType="unsigned16" scaler="100.0" comment="The laser duty cycle from 0.0 (off) to 1.0 (full power)"/>
+    </Packet>
+
+    <Packet name="OrionClevisVersion" file="OrionPublicPacket" ID="ORION_PKT_CLEVIS_VERSION" parameterInterface="true" comment="Software version for the clevis board in the Orion gimbal">
+        <Data name="Version" inMemoryType="unsigned8" array="16" encodedType="fixedstring" comment="Version of the clevis board software"/>
+        <Data name="PartNumber" inMemoryType="unsigned8" array="16" encodedType="fixedstring" comment="Hardware details of the clevis board"/>
+    </Packet>
+
+    <Packet name="OrionCrownVersion" file="OrionPublicPacket" ID="ORION_PKT_CROWN_VERSION" parameterInterface="true" comment="Software version for the crown board in the Orion Gimbal">
+        <Data name="Version" inMemoryType="unsigned8" array="16" encodedType="fixedstring" comment="Version of the crown board software"/>
+        <Data name="PartNumber" inMemoryType="unsigned8" array="16" encodedType="fixedstring" comment="Hardware details of the crown board"/>
+    </Packet>
+
+    <Packet name="OrionPayloadVersion" file="OrionPublicPacket" ID="ORION_PKT_PAYLOAD_VERSION" parameterInterface="true" comment="Software version for the payload board in the Orion Gimbal">
+        <Data name="Version" inMemoryType="unsigned8" array="24" encodedType="fixedstring" comment="Version of the payload board software"/>
+        <Data name="PartNumber" inMemoryType="unsigned8" array="16" encodedType="fixedstring" comment="Hardware details of the payload board"/>
+    </Packet>
+
+    <Packet name="OrionResetSource" file="OrionPublicPacket" ID="ORION_PKT_RESET_SOURCE" parameterInterface="true" comment="Reset information for a board in the Orion Gimbal">
+        <Data name="Vector" inMemoryType="unsigned32" comment="Interrupt vector for the last reset"/>
+        <Data name="Address" inMemoryType="unsigned32" comment="Program counter prior to the reset (not yet used)"/>
+        <Data name="sourceBoard" enum="OrionBoardEnumeration_t" default="BOARD_CLEVIS" encodedType="unsigned8" comment="Enumeration defining which board in the gimbal generated this message"/>
+    </Packet>
+
+    <Packet name="OrionBoard" file="OrionPublicPacket" ID="ORION_PKT_BOARD" comment="Board information set by the manufacturer">
+        <Data name="boardSN" inMemoryType="unsigned32" comment="Serial number of this board"/>
+        <Data name="assemblySN" inMemoryType="unsigned32" comment="Serial number of the whole assembly"/>
+        <Data name="config" inMemoryType="unsigned32" comment="Configuration bits"/>
+        <Data name="reserved0" inMemoryType="unsigned8" comment="Reserved bits for future things"/>
+        <Data name="reserved1" inMemoryType="unsigned8" comment="Reserved bits for future things"/>
+        <Data name="reserved2" inMemoryType="unsigned8" comment="Reserved bits for future things"/>
+        <Data name="boardEnum" enum="OrionBoardEnumeration_t" encodedType="unsigned8" comment="Enumeration defining which board in the gimbal this data applies to"/>
+        <Data name="manufactureDate" struct="Date" comment="Date the board was manufactured"/>
+        <Data name="calibrationDate" struct="Date" comment="Date the board was calibrated"/>
+    </Packet>
+
+    <Packet name="OrionDiagnostics" file="OrionPublicPacket" ID="ORION_PKT_DIAGNOSTICS" comment="Electrical diagnostic data for the Orion Gimbal">
+        <Data name="Voltage24" inMemoryType="float32" encodedType="unsigned16" scaler="1000" comment="Voltage of the 24-volt rail"/>
+        <Data name="Voltage12" inMemoryType="float32" encodedType="unsigned16" scaler="1000" comment="Voltage of the 12-volt rail"/>
+        <Data name="Voltage3v3" inMemoryType="float32" encodedType="unsigned16" scaler="1000" comment="Voltage of the 3.3-volt rail"/>
+        <Data name="Current24" inMemoryType="float32" encodedType="unsigned16" scaler="1000" comment="Current in Amps of the 24-volt rail"/>
+        <Data name="Current12" inMemoryType="float32" encodedType="unsigned16" scaler="1000" comment="Current in Amps of the 12-volt rail"/>
+        <Data name="Current3v3" inMemoryType="float32" encodedType="unsigned16" scaler="1000" comment="Current in Amps of the 3.3-volt rail"/>
+        <Data name="CrownTemp" inMemoryType="float32" encodedType="signed8" comment="Temperature of the crown board in degrees Celsius"/>
+        <Data name="SlaTemp" inMemoryType="float32" encodedType="signed8" comment="Temperature of the SLA-1500 board (if applicable) in degrees Celsius"/>
+        <Data name="reserved" inMemoryType="null" array="2" encodedType="unsigned8" comment="Reserved space for future expansion"/>
+        <Data name="Voltage24Var" inMemoryType="float32" encodedType="unsigned16" scaler="100000" comment="Voltage variance of the 24-volt rail"/>
+        <Data name="Voltage12Var" inMemoryType="float32" encodedType="unsigned16" scaler="100000" comment="Voltage variance of the 12-volt rail"/>
+        <Data name="Voltage3v3Var" inMemoryType="float32" encodedType="unsigned16" scaler="100000" comment="Voltage variance of the 3.3-volt rail"/>
+        <Data name="Current24Var" inMemoryType="float32" encodedType="unsigned16" scaler="100000" comment="Current variance in Amps of the 24-volt rail"/>
+        <Data name="Current12Var" inMemoryType="float32" encodedType="unsigned16" scaler="100000" comment="Current variance in Amps of the 12-volt rail"/>
+        <Data name="Current3v3Var" inMemoryType="float32" encodedType="unsigned16" scaler="100000" comment="Current variance in Amps of the 3.3-volt rail"/>
+    </Packet>
+
+    <Packet name="OrionPerformance" file="OrionPublicPacket" ID="ORION_PKT_PERFORMANCE" parameterInterface="true" comment="Measurements related to stabilization performance">
+        <Data name="Quad"inMemoryType="float32" array="NUM_GIMBAL_AXES" encodedType="signed16" scaler="1000000" comment="Quad rms errors"/>
+        <Data name="Dir" inMemoryType="float32" array="NUM_GIMBAL_AXES" encodedType="signed16" scaler="1000000" comment="Dir rms errors"/>
+        <Data name="Vel" inMemoryType="float32" array="NUM_GIMBAL_AXES" encodedType="signed16" scaler="1000" comment="Vel rms errors"/>
+        <Data name="Pos" inMemoryType="float32" array="NUM_GIMBAL_AXES" encodedType="signed16" scaler="1000000" comment="Pos rms errors"/>
+        <Data name="Iout" inMemoryType="float32" array="NUM_GIMBAL_AXES" encodedType="signed16" scaler="1000" comment="Output current"/>
+    </Packet>
+
+    <Packet name="OrionSoftwareDiagnostics" file="OrionPublicPacket" ID="ORION_PKT_SOFTWARE_DIAGNOSTICS" comment="Diagnostic information related to software performance for a specific board in the Orion Gimbal">
+        <Data name="sourceBoard" enum="OrionBoardEnumeration_t" encodedType="unsigned8" comment="Enumeration defining which board in the gimbal generated this message"/>
+        <Data name="numCores" inMemoryType="unsigned8" comment="Number of CPU cores that this packet reports for"/>
+        <Data name="reserved" inMemoryType="null" encodedType="unsigned16" comment="Reserved space for future expansion"/>
+        <Structure name="CoreLoading" array="2" variableArray="numCores" comment="Per-Core CPU load information">
+            <Data name="cpuLoad" inMemoryType="float32" encodedType="unsigned8" max="100" comment="CPU utilization as a percentage"/>
+            <Data name="heapLoad" inMemoryType="float32" encodedType="unsigned8" max="100" comment="Heap memory utilization as a percentage, 0 if no heap is present"/>
+            <Data name="stackLoad" inMemoryType="float32" encodedType="unsigned8" max="100" comment="System stack memory utilization as a percentage, 0 if no system stack is present"/>
+            <Data name="reserved" inMemoryType="null" encodedType="unsigned8" comment="Reserved space for future expansion"/>
+            <Data name="numThreads" inMemoryType="unsigned8" comment="Number of threads in the system, must be at least 1"/>
+            <Structure name="ThreadLoading" array="10" variableArray="numThreads" comment="Per-thread information, in order of priority (highest to lowest)">
+                <Data name="cpuLoad" inMemoryType="float32" encodedType="unsigned8" max="100" comment="CPU utilization of this thread as a percentage"/>
+                <Data name="heapLoad" inMemoryType="float32" encodedType="unsigned8" max="100" comment="Heap memory utilization of this thread as a percentage, 0 if no heap is present"/>
+                <Data name="stackLoad" inMemoryType="float32" encodedType="unsigned8" max="100" comment="Stack memory utilization of this thread as a percentage, 100 if stack overflow occurs"/>
+                <Data name="watchdogLeft" inMemoryType="float32" encodedType="unsigned8" max="100" comment="Worst case amount of watchdog time remaining in this reporting period for this thread, 0 if watchdog has timed out"/>
+                <Data name="reserved" inMemoryType="null" encodedType="unsigned16" comment="Reserved space for future expansion"/>
+            </Structure>
+        </Structure>
+    </Packet>
+
+    <Packet name="OrionCameraSwitch" file="OrionPublicPacket" ID="ORION_PKT_CAMERA_SWITCH" parameterInterface="true" comment="Command the gimbal to swtich cameras">
+        <Data name="Index" inMemoryType="unsigned8" comment="The index of the camera to switch to"/>
+    </Packet>
+
+    <Packet name="OrionCameraState" file="OrionPublicPacket" ID="ORION_PKT_CAMERA_STATE" parameterInterface="true" comment="Command a camera in the gimbal. Note this packet will eventually be deprecated">
+        <Data name="Zoom" inMemoryType="float32" encodedType="signed16" comment="Digital zoom ratio"/>
+        <Data name="Focus" inMemoryType="float32" encodedType="signed16" default="-1" comment="Focus command/position"/>
+        <Data name="Index" inMemoryType="unsigned8" default="0" comment="The index of the camera to command"/>
+    </Packet>
+
+    <Packet name="OrionNetworkVideo" file="OrionPublicPacket" ID="ORION_PKT_NETWORK_VIDEO" parameterInterface="true" comment="Command the IP settings for video delivery.">
+        <Data name="DestIp" inMemoryType="unsigned32" comment="destination IPv4 address"/>
+        <Data name="Port" inMemoryType="unsigned16" comment="desitnation port"/>
+        <Data name="Bitrate" inMemoryType="unsigned32" default="0" comment="Video encoding target bitrate, in bits per second"/>
+    </Packet>
+
+    <Packet name="OrionFrameShift" file="OrionPublicPacket" ID="ORION_PKT_FRAME_SHIFT" parameterInterface="true" comment="The amount of shift measured in the image over time.">
+        <Data name="Shifts" inMemoryType="float32" array="NUM_GIMBAL_AXES" encodedType="signed32" scaler="1000000" comment="X and Y image shifts in radians"/>
+        <Data name="DeltaTime" inMemoryType="float32" encodedType="unsigned16" scaler="1000" comment="The amount of time in seconds over which these shifts apply"/>
+        <Data name="Confidence" inMemoryType="float32" encodedType="unsigned8" scaler="255" default="1" comment="Registration solution confidence"/>
+    </Packet>
+
+    <Enum name="OrionRetractCmd_t" comment="The retraction mechanism command">
+        <Value name="RETRACT_CMD_DISABLE" comment="Disable the retract motor"/>
+        <Value name="RETRACT_CMD_DEPLOY" comment="Move the gimbal to a deployed position"/>
+        <Value name="RETRACT_CMD_RETRACT" comment="Move the gimbal to a retracted position"/>
+    </Enum>
+
+    <Packet name="OrionRetractCmd" file="OrionPublicPacket" ID="ORION_PKT_RETRACT_CMD" comment="Retract or deploy command for a gimbal retraction mechanism">
+        <Data name="Cmd" enum="OrionRetractCmd_t" encodedType="unsigned8" comment="The retraction mechanism command"/>
+    </Packet>
+
+    <Packet name="OrionRetractStatus" file="OrionPublicPacket" ID="ORION_PKT_RETRACT_STATUS" parameterInterface="true" comment="Current gimbal retraction mechanism status (if applicable)">
+        <Enum name="OrionRetractState_t" comment="The retraction mechanism state">
+            <Value name="RETRACT_STATE_DISABLED" comment="Retract is disabled"/>
+            <Value name="RETRACT_STATE_RETRACTED" comment="Retract is fully retracted"/>
+            <Value name="RETRACT_STATE_RETRACTING" comment="Retract is moving to the retracted position"/>
+            <Value name="RETRACT_STATE_DEPLOYING" comment="Retract is moving to the deployed position"/>
+            <Value name="RETRACT_STATE_DEPLOYED" comment="Retract is fully deployed"/>
+            <Value name="RETRACT_STATE_FAULT" comment="Retract is experiencing a fault condition"/>
+        </Enum>
+
+        <Data name="Cmd" enum="OrionRetractCmd_t" encodedType="unsigned8" comment="The current command being tracked by the retract mechanism"/>
+        <Data name="State" enum="OrionRetractState_t" encodedType="unsigned8" comment="The retraction mechanism state"/>
+        <Data name="Pos" inMemoryType="float32" encodedType="signed16" scaler="1000" comment="Current retract position in radians"/>
+        <Data name="Flags" inMemoryType="unsigned16" comment="GPIO status information flags"/>
+    </Packet>
+
+    <Packet name="DebugString" file="OrionPublicPacket" ID="ORION_PKT_DEBUG_STRING" comment="This packet sends a human readable text string which is typically used for debugging purposes">
+
+	    <Enum name="debugSource" comment="The source of a debug packet.">
+	        <Value name="sourceCrown" comment="The debug packet came from the crown board software"/>
+	        <Value name="sourceClevis" comment="The debug packet came from the clevis board software"/>
+	        <Value name="sourcePayload" comment="The debug packet came from the payload board software"/>
+	    </Enum>
+
+        <Data name="source" enum="debugSource" encodedType="unsigned8" comment="Identifier to determine which board sent the debug packet"/>
+        <Data name="priority" inMemoryType="unsigned8" comment="The importance of the debug message (to be defined)"/>
+        <Data name="reserved1" inMemoryType="unsigned8"/>
+        <Data name="reserved2" inMemoryType="unsigned8"/>
+        <Data name="description" inMemoryType="signed8" array = "128" encodedType = "string" comment="human readable description of the debug problem"/>
+
+    </Packet>
+
+    <Packet name="OrionExtHeadingData" file="OrionPublicPacket" ID="ORION_PKT_EXT_HEADING_DATA" parameterInterface="true" comment="Externally supplied heading information. Send this packet to supply a correction to the heading of the inertial navigation system of the gimbal.">
+        <Data name="extHeading" inMemoryType="float32" encodedType="signed16" max="3.14159265" comment="External true heading observation in radians from -pi to pi"/>
+        <Data name="noise" inMemoryType="float32" encodedType="unsigned16" max="6.28318531" default="3" comment="Sensor noise of the heading observation in radians. Send 0 to cause the INS to simply shift its heading. Otherwise the extHeading will be fed into the INS kalman filter with this sensor noise."/>
+    </Packet>
+
+    <Packet name="OrionGpsData" file="OrionPublicPacket" ID="ORION_PKT_GPS_DATA"
+            comment="Raw GPS data for analysis. This packet arrives with each report, or once per second,
+                     whichever is faster. Unless the gimbal is in INS debug mode, in which case this packet
+                     is sent for every GPS report. Note that not all data in the structure are inclued in
+                     the packet. Everything after GeoidUndulation is not sent in the packet, but can
+                     instead be constructed from the preceding data">
+
+        <Enum name="gpsSource_t" comment="Enumeration for source of GPS data">
+            <Value name="externalSource" comment="External GPS, user supplied data"/>
+            <Value name="ubloxSource" comment="uBlox internal GPS"/>
+            <Value name="mavlinkSource" comment="Mavlink supplied data"/>
+            <Value name="nmeaSource" comment="External GPS, supplied by NMEA input"/>
+            <Value name="numGpsSources" comment="Number of possible GPS sources"/>
+        </Enum>
+
+        <Data name="FixType" inMemoryType="unsigned8" comment="uBlox fix type"/>
+        <Data name="FixState" inMemoryType="unsigned8" comment="uBlox fix state"/>
+        <Data name="TrackedSats" inMemoryType="unsigned8" comment="The number of satellites used in the GPS solution"/>
+        <Data name="PDOP" inMemoryType="float32" encodedType="unsigned8" scaler="10" comment="Position dilution of precision"/>
+        <Data name="Latitude" inMemoryType="float64" encodedType="signed32" scaler="572957795.1308232" comment="Geodetic latitude in radians, positive North"/>
+        <Data name="Longitude" inMemoryType="float64" encodedType="signed32" scaler="572957795.1308232" comment="Longitude in radians, positive East"/>
+        <Data name="Altitude" inMemoryType="float64" encodedType="signed32" scaler="10000" comment="Altitude in meters above the WGS-84 ellipsoid"/>
+        <Data name="VelNED" inMemoryType="float32" array="3" encodedType="signed32" scaler="1000" comment="Velocity in North, East, Down meters per second"/>
+        <Data name="Hacc" inMemoryType="float32" encodedType="signed32" scaler="1000" comment="Horizontal accuracy in meters"/>
+        <Data name="Vacc" inMemoryType="float32" encodedType="signed32" scaler="1000" comment="Vertical accuracy in meters"/>
+        <Data name="SpeedAcc" inMemoryType="float32" encodedType="signed32" scaler="1000" comment="Speed accuracy in meters per second"/>
+        <Data name="HeadingAcc" inMemoryType="float32" encodedType="signed32" scaler="5729578" comment="Course accuracy in radians"/>
+        <Data name="ITOW" inMemoryType="unsigned32" comment="GPS time of week in milliseconds"/>
+        <Data name="Week" inMemoryType="unsigned16" comment="GPS week number since Jan 6 1980"/>
+        <Data name="GeoidUndulation" inMemoryType="float32" encodedType="signed16" scaler="100" comment="Height of the mean seal level geoid with respect to the WGS-84 ellipsoid, in meters"/>
+        <Data name="source" enum="gpsSource_t" default="1" encodedType="unsigned8" comment="The source of the GPS data"/>
+        <Data name="verticalVelocityValid" default="1" inMemoryType="unsigned8" comment="0 if vertical velocity data are not valid"/>
+        <Data name="Year" inMemoryType="unsigned16" encodedType="null" comment="Year of the date"/>
+        <Data name="Month" inMemoryType="unsigned8" encodedType="null" comment="Month of the year from 1 to 12"/>
+        <Data name="Day" inMemoryType="unsigned8" encodedType="null" comment="Day of the month from 1 to 31"/>
+        <Data name="Hour" inMemoryType="unsigned8" encodedType="null" comment="Hour of the day from 0 to 23"/>
+        <Data name="Minute" inMemoryType="unsigned8" encodedType="null" comment="Minute of the hour from 0 to 59"/>
+        <Data name="Second" inMemoryType="unsigned8" encodedType="null" comment="Second of the minute from 0 to 59"/>
+        <Data name="TimeValue" inMemoryType="unsigned8" encodedType="null" comment="Nonzero if time information is valid"/>
+        <Data name="GroundSpeed" inMemoryType="float32" encodedType="null" comment="Ground speed in meters per second"/>
+        <Data name="GroundHeading" inMemoryType="float32" encodedType="null" comment="Course over ground in radians"/>
+        <Data name="valid3DFix" inMemoryType="unsigned8" encodedType="null" comment="Nonzero if position solution is valid and 3D"/>
+    </Packet>
+
+    <Packet name="InsQuality" file="OrionPublicPacket" ID="ORION_PKT_INS_QUALITY"
+            comment="This packet is transmitted regularly by the gimbal to communicate the quality of the inertial navigation system (INS) data.
+                     The INS is responsible for fusing the crown board IMU and GPS to determine the position, velocity, attitude, and IMU errors.
+                     The quality of the INS data directly impacts the quality of the data in the GEOLOCATE_TELEMETRY packet. This data are sent
+                     separately from that packet as the quality data changes much more slowly.">
+
+        <Enum name="insMode_t" comment="Enumeration for the inertial navigation operational mode">
+            <Value name="insModeInit1" comment="Awaiting first IMU measurement"/>
+            <Value name="insModeInit2" comment="Awaiting IMU stabilization"/>
+            <Value name="insModeAHRS" comment="Running without GPS inputs"/>
+            <Value name="insModeRunHard" comment="Running with forced GPS inputs"/>
+            <Value name="insModeRun" comment="Normal mode of operation"/>
+        </Enum>
+
+        <Data name="systemTime" inMemoryType="unsigned32" comment="Milliseconds since system bootup"/>
+        <Data name="gpsSource" enum="gpsSource_t" comment="The source of GPS data"/>
+        <Data name="reserved" inMemoryType="null" encodedType="unsigned8" comment="Reserved packet space"/>
+        <Data name="insMode" enum="insMode_t" comment="The operational mode of the INS"/>
+        <Data name="hasGyroBias" inMemoryType="bitfield1" comment="1 if the INS is computing and reporting gyro bias states"/>
+        <Data name="hasGravityBias" inMemoryType="bitfield1" comment="1 if the INS is computing and reporting a gravity bias state"/>
+        <Data name="hasAccelBias" inMemoryType="bitfield1" comment="1 if the INS is computing and reporting accelerometer bias states"/>
+        <Data name="reservedbits" inMemoryType="bitfield2" comment="Reserved bits in the bitfield"/>
+        <Data name="posRejected" inMemoryType="bitfield1" comment="1 if the INS rejected the last position update because the chi-square value was too large."/>
+        <Data name="velRejected" inMemoryType="bitfield1" comment="1 if the INS rejected the last velocity update because the chi-square value was too large."/>
+        <Data name="hdgRejected" inMemoryType="bitfield1" comment="1 if the INS rejected the last heading update because the chi-square value was too large."/>
+        <Data name="gpsPeriod" inMemoryType="float32" encodedType="unsigned8" scaler="0.01" comment="Time in seconds between GPS measurements, 0 if no measurement"/>
+        <Data name="hdgPeriod" inMemoryType="float32" encodedType="unsigned8" scaler="0.01" comment="Time in seconds between heading measurements, 0 if no measurement"/>
+        <Data name="posChiSquare" inMemoryType="float32" encodedType="float16" comment="Chi-square statistic of the last position observation"/>
+        <Data name="velChiSquare" inMemoryType="float32" encodedType="float16" comment="Chi-square statistic of the last velocity observation"/>
+        <Data name="hdgChiSquare" inMemoryType="float32" encodedType="float16" comment="Chi-square statistic of the last heading observation"/>
+        <Data name="attConfidence" inMemoryType="float32" array="3" encodedType="unsigned16" scaler="10000" comment="Attitude confidence in radians as a body Roll, Pitch, Yaw vector"/>
+        <Data name="velConfidence" inMemoryType="float32" array="3" encodedType="unsigned16" scaler="100" comment="Velocity confidence in meters per second as a North, East, Down vector"/>
+        <Data name="posConfidence" inMemoryType="float32" array="3" encodedType="unsigned16" scaler="100" comment="Position confidence in meters as a North, East, Down vector"/>
+        <Data name="gyroConfidence" dependsOn="hasGyroBias" inMemoryType="float32" array="3" encodedType="unsigned16" scaler="100000" comment="Rate gyro bias confidence in radians per second as a body Roll, Pitch, Yaw vector"/>
+        <Data name="accelConfidence" dependsOn="hasAccelBias" inMemoryType="float32" array="3" encodedType="unsigned16" scaler="30000" comment="Accelerometer bias confidence in m/s/s as a body X, Y, Z vector"/>
+        <Data name="gravityConfidence" dependsOn="hasGravityBias" inMemoryType="float32" encodedType="unsigned16" scaler="30000" comment="Gravity bias confidence in m/s/s"/>
+        <Data name="gyroBias" dependsOn="hasGyroBias" inMemoryType="float32" array="3" encodedType="signed16" scaler="100000" comment="Rate gyro bias estimate in radians per second as a body Roll, Pitch, Yaw vector"/>
+        <Data name="accelBias" dependsOn="hasAccelBias" inMemoryType="float32" array="3" encodedType="unsigned16" scaler="30000" comment="Accelerometer bias estimate in m/s/s as a body X, Y, Z vector"/>
+        <Data name="gravityBias" dependsOn="hasGravityBias" inMemoryType="float32" encodedType="unsigned16" scaler="30000" comment="Gravity bias estimate in m/s/s"/>
+
+    </Packet>
+
+    <Packet name="GeolocateTelemetry" file="OrionPublicPacket" ID="ORION_PKT_GEOLOCATE_TELEMETRY"
+            comment="This packet is transmitted regularly by the gimbal to communicate the information needed to locate the gimbal and its imagery. This includes gimbal position, velocity, attitude, camera angles and fields of view.">
+        <Data name="systemTime" inMemoryType="unsigned32" comment="Milliseconds since system bootup"/>
+        <Data name="gpsITOW" inMemoryType="unsigned32" comment="GPS time of week in milliseconds"/>
+        <Data name="gpsWeek" inMemoryType="unsigned16" comment="GPS week number since Jan 6 1980"/>
+        <Data name="GeoidUndulation" inMemoryType="float64" encodedType="signed16" max="120" comment="Height of the geoid with respect to the WGS84 ellipsoid, in meters"/>
+        <Data name="posLat" inMemoryType="float64" encodedType="signed32" scaler="572957795.1308232" comment="Geodetic latitude of the gimbal in radians, positive North"/>
+        <Data name="posLon" inMemoryType="float64" encodedType="signed32" scaler="572957795.1308232" comment="Longitude of the gimbal in radians, positive East"/>
+        <Data name="posAlt" inMemoryType="float64" encodedType="signed32" scaler="10000" comment="Altitude of the gimbal in meters above the WGS-84 ellipsoid"/>
+        <Data name="velNED" inMemoryType="float32" array="3" encodedType="signed16" scaler="100" comment="Velocity of the gimbal in North, East, Down meters per second"/>
+        <Data name="gimbalQuat" inMemoryType="float32" array="4" encodedType="signed16" max="1" comment="Gimbal quaternion describing the rotation from the gimbal mount frame to the North, East, Down navigation frame"/>
+        <Data name="pan" inMemoryType="float32" encodedType="signed16" max="3.14159265" comment="Gimbal pan angle in radians from -pi to pi"/>
+        <Data name="tilt" inMemoryType="float32" encodedType="signed16" max="3.14159265" comment="Gimbal tilt angle in radians from -pi to pi"/>
+        <Data name="hfov" inMemoryType="float32" encodedType="unsigned16" max="6.28318531" comment="Horizontal field of view of the camera in radians from 0 to 2pi"/>
+        <Data name="vfov" inMemoryType="float32" encodedType="unsigned16" max="6.28318531" comment="Vertical field of view of the camera in radians from 0 to 2pi"/>
+        <Data name="losECEF" inMemoryType="float32" encodedType="signed16" scaler="1" array="3" default="0" comment="Vector from the gimbal to the image location in ECEF meters. The image location is only computed if ranging data are provided to the gimbal. Otherwise the image location data are 0,0,0"/>
+        <Data name="pixelWidth" inMemoryType="unsigned16" default="0" comment="Active focal plane width in pixels"/>
+        <Data name="pixelHeight" inMemoryType="unsigned16" default="0" comment="Active focal plane height in pixels"/>
+    </Packet>
+
+    <Packet name="GeopointCmd" file="OrionPublicPacket" ID="ORION_PKT_GEOPOINT_CMD" parameterInterface="true"
+            comment="Send this packet to command the gimbal to go to Geopoint mode. In this mode the looks at a target as given by a
+                     latitude, longitude, altitude position. The geopoint command can include a target velocity, which the gimbal will
+                     cause the gimbal to smoothly move its stare point as it propagates the target position.">
+        <Data name="targetLat" inMemoryType="float64" encodedType="signed32" scaler="572957795.1308232" comment="Geodetic latitude of the target in radians, positive North"/>
+        <Data name="targetLon" inMemoryType="float64" encodedType="signed32" scaler="572957795.1308232" comment="Longitude of the target in radians, positive East"/>
+        <Data name="targetAlt" inMemoryType="float64" encodedType="signed32" scaler="10000" comment="Altitude of the target in meters above the WGS-84 ellipsoid"/>
+        <Data name="targetVelNED" inMemoryType="float32" array="3" encodedType="signed16" scaler="100" comment="Velocity of the target in North, East, Down meters per second"/>
+    </Packet>
+
+    <Packet name="OrionNetworkSettings" file="OrionPublicPacket" ID="ORION_PKT_NETWORK_SETTINGS" parameterInterface="true" comment="Change the IP network settings in the gimbal.">
+        <Data name="Ip" inMemoryType="unsigned32" comment="IPv4 address"/>
+        <Data name="Mask" inMemoryType="unsigned32" comment="IPv4 network mask"/>
+        <Data name="Gateway" inMemoryType="unsigned32" comment="IPv4 gateway address"/>
+    </Packet>
+
+</Protocol>
