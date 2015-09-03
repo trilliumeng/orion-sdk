@@ -5,7 +5,12 @@
  */
 
 #include "OrionPublicProtocol.h"
-#include "OrionPacketStub.h"
+#include "OrionPublicPacketShim.h"
+#include "linearalgebra.h"
+#include "earthposition.h"
+#include "GeolocateTelemetry.h"
+#include <math.h>
+
 
 //! \return the packet data pointer from the packet
 uint8_t* getOrionPublicPacketData(void* pkt)
@@ -105,12 +110,12 @@ BOOL DecodeOrionDiagnostics(const OrionPkt_t *pPkt, OrionDiagnostics_t *pData)
 
 void FormOrionPerformance(OrionPkt_t *pPkt, const OrionPerformance_t *pPerf)
 {
-    encodeOrionPerformancePacket(pPkt, pPerf->Quad, pPerf->Dir, pPerf->Vel, pPerf->Pos, pPerf->Iout);
+    encodeOrionPerformancePacket(pPkt, pPerf->RmsQuad, pPerf->RmsDir, pPerf->RmsVel, pPerf->RmsPos, pPerf->RmsIout);
 }
 
 BOOL DecodeOrionPerformance(const OrionPkt_t *pPkt, OrionPerformance_t *pPerf)
 {
-    return decodeOrionPerformancePacket(pPkt, pPerf->Quad, pPerf->Dir, pPerf->Vel, pPerf->Pos, pPerf->Iout);
+    return decodeOrionPerformancePacket(pPkt, pPerf->RmsQuad, pPerf->RmsDir, pPerf->RmsVel, pPerf->RmsPos, pPerf->RmsIout);
 }
 
 void FormOrionCameraSwitch(OrionPkt_t *pPkt, UInt8 Index)
@@ -187,15 +192,40 @@ BOOL DecodeOrionExtHeadingData(const OrionPkt_t *pPkt, float* extHeading, float*
 
 }// DecodeOrionExtHeadingData
 
-void FormOrionGpsData(OrionPkt_t *pPkt, const OrionGpsData_t *pGps)
+void FormOrionGpsData(OrionPkt_t *pPkt, const GpsData_t *pGps)
 {
-    encodeOrionGpsDataPacketStructure(pPkt, pGps);
+    encodeGpsDataPacketStructure(pPkt, pGps);
 
 }// FormOrionGpsData
 
-BOOL DecodeOrionGpsData(const OrionPkt_t *pPkt, OrionGpsData_t *pGps)
+BOOL DecodeOrionGpsData(const OrionPkt_t *pPkt, GpsData_t *pGps)
 {
-    return decodeOrionGpsDataPacketStructure(pPkt, pGps);
+    if(decodeGpsDataPacketStructure(pPkt, pGps))
+    {
+        // Construct the data that is not transmitted
+
+        // Compute ground speed data from NED data.
+        pGps->GroundSpeed = vector3Lengthf(pGps->VelNED);
+        pGps->GroundHeading = atan2f(pGps->VelNED[EAST], pGps->VelNED[NORTH]);
+
+        // Use GPS time information to compute the Gregorian calendar date.
+        computeDateFromWeekAndItow(pGps->Week, pGps->ITOW, &pGps->Year, &pGps->Month, &pGps->Day);
+
+        if(pGps->Week != 0)
+            pGps->TimeValid = 1;
+        else
+            pGps->TimeValid = 0;
+
+        // Determine if this is a valid, not deadreckoned, 3D fix
+        if((pGps->FixType == 3) && (pGps->FixState & 0x01) && (pGps->TrackedSats >= 4))
+            pGps->valid3DFix = TRUE;
+        else
+            pGps->valid3DFix = FALSE;
+
+        return TRUE;
+    }
+    else
+        return FALSE;
 
 }// DecodeOrionGpsData
 
@@ -259,4 +289,29 @@ BOOL DecodeGeopointCommand(const OrionPkt_t *pPkt, double posLLA[3], float velNE
     return decodeGeopointCmdPacket(pPkt, &posLLA[0], &posLLA[1], &posLLA[2], velNED);
 
 }// DecodeGeopointCommand
+
+
+/*!
+ * Decode a board data packet
+ * \param pPkt is the packet to decode
+ * \param board receives the board identifying information.
+ * \return TRUE if this is a correctly formatted sensor matrix packet.
+ */
+BOOL DecodeBoardData(const OrionPkt_t *pPkt, OrionBoard_t* board)
+{
+    return decodeOrionBoardPacketStructure(pPkt, board);
+
+}// DecodeBoardData
+
+
+/*!
+ * Encode a board data packet
+ * \param pPkt receives the formatted packet
+ * \param board is the board identifying information.
+ */
+void EncodeBoardData(OrionPkt_t *pPkt, const OrionBoard_t* board)
+{
+    encodeOrionBoardPacketStructure(pPkt, board);
+
+}// EncodeBoardData
 

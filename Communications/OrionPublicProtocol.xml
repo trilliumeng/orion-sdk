@@ -49,6 +49,8 @@
         <Value name="ORION_PKT_INS_QUALITY"/>
         <Value name="ORION_PKT_GEOLOCATE_TELEMETRY"/>
         <Value name="ORION_PKT_GEOPOINT_CMD"/>
+        <Value name="ORION_PKT_PRIVATE_D6"/>
+        <Value name="ORION_PKT_PATH"/>
         <Value name="ORION_PKT_PRIVATE_E0" value="0xE0"/>
         <Value name="ORION_PKT_PRIVATE_E1"/>
         <Value name="ORION_PKT_PRIVATE_E2"/>
@@ -84,6 +86,7 @@
 	        <Value name="ORION_MODE_RATE" value="0x10" comment="Commands give the line of sight rate of the camera"/>
 	        <Value name="ORION_MODE_FFC" value="0x20" comment="Commands the gimbal to perform a flat field correction, pan and tilt will drive the IR camera to look at the black body"/>
             <Value name="ORION_MODE_SCENE" value="0x30" comment="Commands give the angular rate of the image produced by the camera"/>
+            <Value name="ORION_MODE_TRACK" value="0x31" comment="Commands give the angular rate of the image produced by the camera"/>
             <Value name="ORION_MODE_CALIBRATION" value="0x40" comment="Drives the pan and tilt axes to calibrate the stabilizer gyros"/>
             <Value name="ORION_MODE_POSITION" value="0x50" comment="Commands give the position of the pan and tilt axes with respect to the gimbal mount"/>
 	    </Enum>
@@ -151,11 +154,11 @@
     </Packet>
 
     <Packet name="OrionPerformance" file="OrionPublicPacket" ID="ORION_PKT_PERFORMANCE" parameterInterface="true" comment="Measurements related to stabilization performance">
-        <Data name="Quad"inMemoryType="float32" array="NUM_GIMBAL_AXES" encodedType="signed16" scaler="1000000" comment="Quad rms errors"/>
-        <Data name="Dir" inMemoryType="float32" array="NUM_GIMBAL_AXES" encodedType="signed16" scaler="1000000" comment="Dir rms errors"/>
-        <Data name="Vel" inMemoryType="float32" array="NUM_GIMBAL_AXES" encodedType="signed16" scaler="1000" comment="Vel rms errors"/>
-        <Data name="Pos" inMemoryType="float32" array="NUM_GIMBAL_AXES" encodedType="signed16" scaler="1000000" comment="Pos rms errors"/>
-        <Data name="Iout" inMemoryType="float32" array="NUM_GIMBAL_AXES" encodedType="signed16" scaler="1000" comment="Output current"/>
+        <Data name="RmsQuad"inMemoryType="float32" array="NUM_GIMBAL_AXES" encodedType="signed16" scaler="1000000" comment="Quad rms errors"/>
+        <Data name="RmsDir" inMemoryType="float32" array="NUM_GIMBAL_AXES" encodedType="signed16" scaler="1000000" comment="Dir rms errors"/>
+        <Data name="RmsVel" inMemoryType="float32" array="NUM_GIMBAL_AXES" encodedType="signed16" scaler="1000" comment="Vel rms errors"/>
+        <Data name="RmsPos" inMemoryType="float32" array="NUM_GIMBAL_AXES" encodedType="signed16" scaler="1000000" comment="Pos rms errors"/>
+        <Data name="RmsIout" inMemoryType="float32" array="NUM_GIMBAL_AXES" encodedType="signed16" scaler="1000" comment="Output current"/>
     </Packet>
 
     <Packet name="OrionSoftwareDiagnostics" file="OrionPublicPacket" ID="ORION_PKT_SOFTWARE_DIAGNOSTICS" comment="Diagnostic information related to software performance for a specific board in the Orion Gimbal">
@@ -247,11 +250,11 @@
         <Data name="noise" inMemoryType="float32" encodedType="unsigned16" max="6.28318531" default="3" comment="Sensor noise of the heading observation in radians. Send 0 to cause the INS to simply shift its heading. Otherwise the extHeading will be fed into the INS kalman filter with this sensor noise."/>
     </Packet>
 
-    <Packet name="OrionGpsData" file="OrionPublicPacket" ID="ORION_PKT_GPS_DATA"
+    <Packet name="GpsData" file="OrionPublicPacket" ID="ORION_PKT_GPS_DATA"
             comment="Raw GPS data for analysis. This packet arrives with each report, or once per second,
                      whichever is faster. Unless the gimbal is in INS debug mode, in which case this packet
                      is sent for every GPS report. Note that not all data in the structure are inclued in
-                     the packet. Everything after GeoidUndulation is not sent in the packet, but can
+                     the packet. Everything after verticalVelocityValid is not sent in the packet, but can
                      instead be constructed from the preceding data">
 
         <Enum name="gpsSource_t" comment="Enumeration for source of GPS data">
@@ -266,8 +269,8 @@
         <Data name="FixState" inMemoryType="unsigned8" comment="uBlox fix state"/>
         <Data name="TrackedSats" inMemoryType="unsigned8" comment="The number of satellites used in the GPS solution"/>
         <Data name="PDOP" inMemoryType="float32" encodedType="unsigned8" scaler="10" comment="Position dilution of precision"/>
-        <Data name="Latitude" inMemoryType="float64" encodedType="signed32" scaler="572957795.1308232" comment="Geodetic latitude in radians, positive North"/>
-        <Data name="Longitude" inMemoryType="float64" encodedType="signed32" scaler="572957795.1308232" comment="Longitude in radians, positive East"/>
+        <Data name="Latitude" inMemoryType="float64" encodedType="signed32" scaler="180*10000000/pi" comment="Geodetic latitude in radians, positive North"/>
+        <Data name="Longitude" inMemoryType="float64" encodedType="signed32" scaler="180*10000000/pi" comment="Longitude in radians, positive East"/>
         <Data name="Altitude" inMemoryType="float64" encodedType="signed32" scaler="10000" comment="Altitude in meters above the WGS-84 ellipsoid"/>
         <Data name="VelNED" inMemoryType="float32" array="3" encodedType="signed32" scaler="1000" comment="Velocity in North, East, Down meters per second"/>
         <Data name="Hacc" inMemoryType="float32" encodedType="signed32" scaler="1000" comment="Horizontal accuracy in meters"/>
@@ -277,7 +280,7 @@
         <Data name="ITOW" inMemoryType="unsigned32" comment="GPS time of week in milliseconds"/>
         <Data name="Week" inMemoryType="unsigned16" comment="GPS week number since Jan 6 1980"/>
         <Data name="GeoidUndulation" inMemoryType="float32" encodedType="signed16" scaler="100" comment="Height of the mean seal level geoid with respect to the WGS-84 ellipsoid, in meters"/>
-        <Data name="source" enum="gpsSource_t" default="1" encodedType="unsigned8" comment="The source of the GPS data"/>
+        <Data name="source" enum="gpsSource_t" default="ubloxSource" encodedType="unsigned8" comment="The source of the GPS data"/>
         <Data name="verticalVelocityValid" default="1" inMemoryType="unsigned8" comment="0 if vertical velocity data are not valid"/>
         <Data name="Year" inMemoryType="unsigned16" encodedType="null" comment="Year of the date"/>
         <Data name="Month" inMemoryType="unsigned8" encodedType="null" comment="Month of the year from 1 to 12"/>
@@ -285,7 +288,7 @@
         <Data name="Hour" inMemoryType="unsigned8" encodedType="null" comment="Hour of the day from 0 to 23"/>
         <Data name="Minute" inMemoryType="unsigned8" encodedType="null" comment="Minute of the hour from 0 to 59"/>
         <Data name="Second" inMemoryType="unsigned8" encodedType="null" comment="Second of the minute from 0 to 59"/>
-        <Data name="TimeValue" inMemoryType="unsigned8" encodedType="null" comment="Nonzero if time information is valid"/>
+        <Data name="TimeValid" inMemoryType="unsigned8" encodedType="null" comment="Nonzero if time information is valid"/>
         <Data name="GroundSpeed" inMemoryType="float32" encodedType="null" comment="Ground speed in meters per second"/>
         <Data name="GroundHeading" inMemoryType="float32" encodedType="null" comment="Course over ground in radians"/>
         <Data name="valid3DFix" inMemoryType="unsigned8" encodedType="null" comment="Nonzero if position solution is valid and 3D"/>
@@ -333,21 +336,21 @@
 
     </Packet>
 
-    <Packet name="GeolocateTelemetry" file="OrionPublicPacket" ID="ORION_PKT_GEOLOCATE_TELEMETRY"
+    <Packet name="GeolocateTelemetryCore" file="OrionPublicPacket" ID="ORION_PKT_GEOLOCATE_TELEMETRY"
             comment="This packet is transmitted regularly by the gimbal to communicate the information needed to locate the gimbal and its imagery. This includes gimbal position, velocity, attitude, camera angles and fields of view.">
         <Data name="systemTime" inMemoryType="unsigned32" comment="Milliseconds since system bootup"/>
         <Data name="gpsITOW" inMemoryType="unsigned32" comment="GPS time of week in milliseconds"/>
         <Data name="gpsWeek" inMemoryType="unsigned16" comment="GPS week number since Jan 6 1980"/>
-        <Data name="GeoidUndulation" inMemoryType="float64" encodedType="signed16" max="120" comment="Height of the geoid with respect to the WGS84 ellipsoid, in meters"/>
-        <Data name="posLat" inMemoryType="float64" encodedType="signed32" scaler="572957795.1308232" comment="Geodetic latitude of the gimbal in radians, positive North"/>
-        <Data name="posLon" inMemoryType="float64" encodedType="signed32" scaler="572957795.1308232" comment="Longitude of the gimbal in radians, positive East"/>
+        <Data name="geoidUndulation" inMemoryType="float64" encodedType="signed16" max="120" comment="Height of the geoid with respect to the WGS84 ellipsoid, in meters"/>
+        <Data name="posLat" inMemoryType="float64" encodedType="signed32" scaler="180*10000000/pi" comment="Geodetic latitude of the gimbal in radians, positive North"/>
+        <Data name="posLon" inMemoryType="float64" encodedType="signed32" scaler="180*10000000/pi" comment="Longitude of the gimbal in radians, positive East"/>
         <Data name="posAlt" inMemoryType="float64" encodedType="signed32" scaler="10000" comment="Altitude of the gimbal in meters above the WGS-84 ellipsoid"/>
         <Data name="velNED" inMemoryType="float32" array="3" encodedType="signed16" scaler="100" comment="Velocity of the gimbal in North, East, Down meters per second"/>
         <Data name="gimbalQuat" inMemoryType="float32" array="4" encodedType="signed16" max="1" comment="Gimbal quaternion describing the rotation from the gimbal mount frame to the North, East, Down navigation frame"/>
-        <Data name="pan" inMemoryType="float32" encodedType="signed16" max="3.14159265" comment="Gimbal pan angle in radians from -pi to pi"/>
-        <Data name="tilt" inMemoryType="float32" encodedType="signed16" max="3.14159265" comment="Gimbal tilt angle in radians from -pi to pi"/>
-        <Data name="hfov" inMemoryType="float32" encodedType="unsigned16" max="6.28318531" comment="Horizontal field of view of the camera in radians from 0 to 2pi"/>
-        <Data name="vfov" inMemoryType="float32" encodedType="unsigned16" max="6.28318531" comment="Vertical field of view of the camera in radians from 0 to 2pi"/>
+        <Data name="pan" inMemoryType="float32" encodedType="signed16" max="pi" comment="Gimbal pan angle in radians from -pi to pi"/>
+        <Data name="tilt" inMemoryType="float32" encodedType="signed16" max="pi" comment="Gimbal tilt angle in radians from -pi to pi"/>
+        <Data name="hfov" inMemoryType="float32" encodedType="unsigned16" max="2*pi" comment="Horizontal field of view of the camera in radians from 0 to 2pi"/>
+        <Data name="vfov" inMemoryType="float32" encodedType="unsigned16" max="2*pi" comment="Vertical field of view of the camera in radians from 0 to 2pi"/>
         <Data name="losECEF" inMemoryType="float32" encodedType="signed16" scaler="1" array="3" default="0" comment="Vector from the gimbal to the image location in ECEF meters. The image location is only computed if ranging data are provided to the gimbal. Otherwise the image location data are 0,0,0"/>
         <Data name="pixelWidth" inMemoryType="unsigned16" default="0" comment="Active focal plane width in pixels"/>
         <Data name="pixelHeight" inMemoryType="unsigned16" default="0" comment="Active focal plane height in pixels"/>
@@ -357,12 +360,21 @@
             comment="Send this packet to command the gimbal to go to Geopoint mode. In this mode the looks at a target as given by a
                      latitude, longitude, altitude position. The geopoint command can include a target velocity, which the gimbal will
                      cause the gimbal to smoothly move its stare point as it propagates the target position.">
-        <Data name="targetLat" inMemoryType="float64" encodedType="signed32" scaler="572957795.1308232" comment="Geodetic latitude of the target in radians, positive North"/>
-        <Data name="targetLon" inMemoryType="float64" encodedType="signed32" scaler="572957795.1308232" comment="Longitude of the target in radians, positive East"/>
+        <Data name="targetLat" inMemoryType="float64" encodedType="signed32" scaler="180*10000000/pi" comment="Geodetic latitude of the target in radians, positive North"/>
+        <Data name="targetLon" inMemoryType="float64" encodedType="signed32" scaler="180*10000000/pi" comment="Longitude of the target in radians, positive East"/>
         <Data name="targetAlt" inMemoryType="float64" encodedType="signed32" scaler="10000" comment="Altitude of the target in meters above the WGS-84 ellipsoid"/>
         <Data name="targetVelNED" inMemoryType="float32" array="3" encodedType="signed16" scaler="100" comment="Velocity of the target in North, East, Down meters per second"/>
     </Packet>
 
+    <Packet name="OrionPath" file="OrionPublicPacket" ID="ORION_PKT_PATH" comment="The path packet contains a series of waypoints that define a path in 3D space">
+        <Data name="numPoints" inMemoryType="unsigned8" comment="Number of points in the path"/>
+        <Data name="reserved" inMemoryType="null" encodedType="unsigned8" comment="Reserved space for future expansion"/>
+        <Structure name="Point" array="15" variableArray="numPoints" comment="List of path points">
+            <Data name="posEcef" inMemoryType="float32" array="3" encodedType="signed24" scaler="1" comment="ECEF position in meters"/>
+        </Structure>
+        <Data name="stepDistance" inMemoryType="float32" encodedType="unsigned16" scaler="10" default="0" comment="Distance in meters for step-stare functionality. Set to zero for no step-stare"/>
+    </Packet>
+    
     <Packet name="OrionNetworkSettings" file="OrionPublicPacket" ID="ORION_PKT_NETWORK_SETTINGS" parameterInterface="true" comment="Change the IP network settings in the gimbal.">
         <Data name="Ip" inMemoryType="unsigned32" comment="IPv4 address"/>
         <Data name="Mask" inMemoryType="unsigned32" comment="IPv4 network mask"/>

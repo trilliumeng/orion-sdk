@@ -1,10 +1,14 @@
-#ifndef ORIONPACKETSTUB_H
-#define ORIONPACKETSTUB_H
+#ifndef ORIONPACKETSHIM_H
+#define ORIONPACKETSHIM_H
 
 #include "TrilliumPacket.h"
 #include "Constants.h"
 #include "OrionPublicProtocol.h"
 #include "OrionPublicPacket.h"
+
+#ifdef __cplusplus
+extern "C" {
+#endif // __cplusplus
 
 // Orion-specific constants
 #define ORION_SYNC         0xD00D
@@ -48,14 +52,11 @@ BOOL DecodeOrionCameraState(const OrionPkt_t *pPkt, UInt8 *pIndex, float *pZoom,
 void FormOrionNetworkVideo(OrionPkt_t *pPkt, UInt32 DestIp, UInt16 Port, UInt32 Bitrate);
 BOOL DecodeOrionNetworkVideo(const OrionPkt_t *pPkt, UInt32 *pDestIp, UInt16 *pPort, UInt32 *pBitrate);
 
-void FormOrionFrameShift(OrionPkt_t *pPKt, const float Shifts[NUM_GIMBAL_AXES], float DeltaTime, float Confidence);
-BOOL DecodeOrionFrameShift(const OrionPkt_t *pPkt, float Shifts[NUM_GIMBAL_AXES], float *pDeltaTime, float *pConfidence);
-
 void FormOrionExtHeadingData(OrionPkt_t *pPkt, const float* extHeading, const float* noise);
 BOOL DecodeOrionExtHeadingData(const OrionPkt_t *pPkt, float* extHeading, float* noise);
 
-void FormOrionGpsData(OrionPkt_t *pPkt, const OrionGpsData_t *pGps);
-BOOL DecodeOrionGpsData(const OrionPkt_t *pPkt, OrionGpsData_t *pGps);
+void FormOrionGpsData(OrionPkt_t *pPkt, const GpsData_t *pGps);
+BOOL DecodeOrionGpsData(const OrionPkt_t *pPkt, GpsData_t *pGps);
 
 void FormOrionNetworkSettings(OrionPkt_t *pPkt, UInt32 Ip, UInt32 Mask, UInt32 Gateway);
 BOOL DecodeOrionNetworkSettings(const OrionPkt_t *pPkt, UInt32 *pIp, UInt32 *pMask, UInt32 *pGateway);
@@ -69,4 +70,8 @@ BOOL DecodeOrionRetractStatus(const OrionPkt_t *pPkt, OrionRetractCmd_t *pCmd, O
 void FormGeopointCommand(OrionPkt_t *pPkt, const double posLLA[3], const float velNED[3]);
 BOOL DecodeGeopointCommand(const OrionPkt_t *pPkt, double posLLA[3], float velNED[3]);
 
-#endif // ORIONPACKETSTUB_H
+#ifdef __cplusplus
+}
+#endif // __cplusplus
+
+#endif // ORIONPACKETSHIM_H
