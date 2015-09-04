@@ -1,10 +1,47 @@
 <?xml version="1.0"?>
 
-<Protocol name="OrionPublic" api="1" version="0.0.0.a" endian="big" supportInt64="false" comment="The packet protocol for the public packets of the orion gimbal. This is the automatically generated part of the protocol. This protocol mixes with the hand written protocol as documented in OrionPacket.h.">
+<Protocol name="OrionPublic" version="1.3.0.a" endian="big" supportInt64="false" comment=
+"The *OrionPublic* protocol is the packet description for the public interface of the Orion gimbal from [Trillium Engineering](http://w3.trilliumeng.com/).
+The general packet format is given in OrionPublicPacketShim.h and TrilliumPacket.h, and has this form:
+
+\verbatim
+
+[Orion public packet general format]
+| Byte         | Name    | Value                                                  |
+|--------------|---------|--------------------------------------------------------|
+| 0            | Sync0   | 0xD0                                                   |
+| 1            | Sync1   | 0xD0                                                   |
+| 2            | ID      | Packet identifier from 0 to 255                        |
+| 3            | Length  | Number of Data bytes, from 0 to 140                    |
+| 4...Length+3 | Data    | Data bytes of the packet, in the layout described here |
+| Length+4     | Fletch0 | Most significant byte of the 16-bit checksum           |
+| Lenght+5     | Fletch1 | Least significant byte of the 16-bit checksum          |
+\verbatim
+
+The checksum of the packet is a modified 16-bit Fletcher's checksum, using an initial value of 1
+and modulo 251 instead of modulo 255. The checksum starts on byte 0 and goes through all data bytes.
+See TrilliumPacket.c for details.
+
+\verbatim
+
+    static void InitChecksum(UInt8 Byte, UInt16 *pA, UInt16 *pB)
+    {
+        // For the first iteration, both checksum bytes should be equal
+        *pA = *pB = (((UInt16)Byte &amp; 0xFF) + 1) % 251;
+
+    }// InitChecksum
+
+    static void UpdateChecksum(UInt8 Byte, UInt16 *pA, UInt16 *pB)
+    {
+        // Surprise! It's just Fletcher's checksum mod 251 (prime number) instead of 255
+        *pA = (*pA + ((UInt16)Byte &amp; 0xFF)) % 251;
+        *pB = (*pB + *pA) % 251;
+
+    }// UpdateChecksum \verbatim">
 
     <Include name="Constants.h" comment="included for array indices"/>
 
-    <Enum name="OrionPktType_t" comment="enumerated identifers for Orion public packets">
+    <Enum name="OrionPktType_t" comment="enumerated identifiers for Orion public packets">
         <Value name="ORION_PKT_INITIALIZE" value="0x00"/>
         <Value name="ORION_PKT_CMD"/>
         <Value name="ORION_PKT_PRIVATE_02"/>
