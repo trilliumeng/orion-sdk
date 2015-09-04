@@ -158,7 +158,7 @@
         <Data name="RmsDir" inMemoryType="float32" array="NUM_GIMBAL_AXES" encodedType="signed16" scaler="1000000" comment="Dir rms errors"/>
         <Data name="RmsVel" inMemoryType="float32" array="NUM_GIMBAL_AXES" encodedType="signed16" scaler="1000" comment="Vel rms errors"/>
         <Data name="RmsPos" inMemoryType="float32" array="NUM_GIMBAL_AXES" encodedType="signed16" scaler="1000000" comment="Pos rms errors"/>
-        <Data name="RmsIout" inMemoryType="float32" array="NUM_GIMBAL_AXES" encodedType="signed16" scaler="1000" comment="Output current"/>
+        <Data name="Iout" inMemoryType="float32" array="NUM_GIMBAL_AXES" encodedType="signed16" scaler="1000" comment="Output current"/>
     </Packet>
 
     <Packet name="OrionSoftwareDiagnostics" file="OrionPublicPacket" ID="ORION_PKT_SOFTWARE_DIAGNOSTICS" comment="Diagnostic information related to software performance for a specific board in the Orion Gimbal">

@@ -31,8 +31,8 @@ BOOL DecodeOrionCommand(const OrionPkt_t *pPkt, OrionCmd_t *pCmd);
 void FormOrionLaserCommand(OrionPkt_t *pPkt, float Power);
 BOOL DecodeOrionLaserCommand(const OrionPkt_t *pPkt, float *pData);
 
-void FormOrionVersion(OrionPkt_t *pPkt, const char Version[16], const char PartNumber[16]);
-BOOL DecodeOrionVersion(const OrionPkt_t *pPkt, char Version[16], char PartNumber[16]);
+void FormOrionClevisVersion(OrionPkt_t *pPkt, const char Version[16], const char PartNumber[16]);
+BOOL DecodeOrionClevisVersion(const OrionPkt_t *pPkt, char Version[16], char PartNumber[16]);
 
 void FormOrionResetSource(OrionPkt_t *pPkt, UInt32 Vector, UInt32 Address, OrionBoardEnumeration_t sourceBoard);
 BOOL DecodeOrionResetSource(const OrionPkt_t *pPkt, UInt32 *pVector, UInt32 *pAddress, OrionBoardEnumeration_t* pSourceBoard);

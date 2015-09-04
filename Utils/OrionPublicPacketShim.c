@@ -72,13 +72,13 @@ BOOL DecodeOrionLaserCommand(const OrionPkt_t *pPkt, float *pDutyCycle)
 
 }// DecodeOrionLaserCommand
 
-void FormOrionVersion(OrionPkt_t *pPkt, const char Version[16], const char PartNumber[16])
+void FormOrionClevisVersion(OrionPkt_t *pPkt, const char Version[16], const char PartNumber[16])
 {
     encodeOrionClevisVersionPacket(pPkt, Version, PartNumber);
 
 }// FormOrionVersion
 
-BOOL DecodeOrionVersion(const OrionPkt_t *pPkt, char Version[16], char PartNumber[16])
+BOOL DecodeOrionClevisVersion(const OrionPkt_t *pPkt, char Version[16], char PartNumber[16])
 {
     return decodeOrionClevisVersionPacket(pPkt, Version, PartNumber);
 
@@ -110,12 +110,12 @@ BOOL DecodeOrionDiagnostics(const OrionPkt_t *pPkt, OrionDiagnostics_t *pData)
 
 void FormOrionPerformance(OrionPkt_t *pPkt, const OrionPerformance_t *pPerf)
 {
-    encodeOrionPerformancePacket(pPkt, pPerf->RmsQuad, pPerf->RmsDir, pPerf->RmsVel, pPerf->RmsPos, pPerf->RmsIout);
+    encodeOrionPerformancePacket(pPkt, pPerf->RmsQuad, pPerf->RmsDir, pPerf->RmsVel, pPerf->RmsPos, pPerf->Iout);
 }
 
 BOOL DecodeOrionPerformance(const OrionPkt_t *pPkt, OrionPerformance_t *pPerf)
 {
-    return decodeOrionPerformancePacket(pPkt, pPerf->RmsQuad, pPerf->RmsDir, pPerf->RmsVel, pPerf->RmsPos, pPerf->RmsIout);
+    return decodeOrionPerformancePacket(pPkt, pPerf->RmsQuad, pPerf->RmsDir, pPerf->RmsVel, pPerf->RmsPos, pPerf->Iout);
 }
 
 void FormOrionCameraSwitch(OrionPkt_t *pPkt, UInt8 Index)
@@ -206,7 +206,7 @@ BOOL DecodeOrionGpsData(const OrionPkt_t *pPkt, GpsData_t *pGps)
 
         // Compute ground speed data from NED data.
         pGps->GroundSpeed = vector3Lengthf(pGps->VelNED);
-        pGps->GroundHeading = atan2f(pGps->VelNED[EAST], pGps->VelNED[NORTH]);
+        pGps->GroundHeading = atan2(pGps->VelNED[EAST], pGps->VelNED[NORTH]);
 
         // Use GPS time information to compute the Gregorian calendar date.
         computeDateFromWeekAndItow(pGps->Week, pGps->ITOW, &pGps->Year, &pGps->Month, &pGps->Day);
