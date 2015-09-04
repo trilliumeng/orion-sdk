@@ -34,6 +34,12 @@ BOOL DecodeOrionLaserCommand(const OrionPkt_t *pPkt, float *pData);
 void FormOrionClevisVersion(OrionPkt_t *pPkt, const char Version[16], const char PartNumber[16]);
 BOOL DecodeOrionClevisVersion(const OrionPkt_t *pPkt, char Version[16], char PartNumber[16]);
 
+void FormOrionCrownVersion(OrionPkt_t *pPkt, const char Version[16], const char PartNumber[16]);
+BOOL DecodeOrionCrownVersion(const OrionPkt_t *pPkt, char Version[16], char PartNumber[16]);
+
+void FormOrionPayloadVersion(OrionPkt_t *pPkt, const char Version[24], const char PartNumber[24]);
+BOOL DecodeOrionPayloadVersion(const OrionPkt_t *pPkt, char Version[24], char PartNumber[24]);
+
 void FormOrionResetSource(OrionPkt_t *pPkt, UInt32 Vector, UInt32 Address, OrionBoardEnumeration_t sourceBoard);
 BOOL DecodeOrionResetSource(const OrionPkt_t *pPkt, UInt32 *pVector, UInt32 *pAddress, OrionBoardEnumeration_t* pSourceBoard);
 
@@ -69,6 +75,9 @@ BOOL DecodeOrionRetractStatus(const OrionPkt_t *pPkt, OrionRetractCmd_t *pCmd, O
 
 void FormGeopointCommand(OrionPkt_t *pPkt, const double posLLA[3], const float velNED[3]);
 BOOL DecodeGeopointCommand(const OrionPkt_t *pPkt, double posLLA[3], float velNED[3]);
+
+BOOL DecodeBoardData(const OrionPkt_t *pPkt, OrionBoard_t* board);
+void EncodeBoardData(OrionPkt_t *pPkt, const OrionBoard_t* board);
 
 #ifdef __cplusplus
 }

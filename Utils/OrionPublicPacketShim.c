@@ -84,6 +84,30 @@ BOOL DecodeOrionClevisVersion(const OrionPkt_t *pPkt, char Version[16], char Par
 
 }// DecodeOrionVersion
 
+void FormOrionCrownVersion(OrionPkt_t *pPkt, const char Version[16], const char PartNumber[16])
+{
+    encodeOrionCrownVersionPacket(pPkt, Version, PartNumber);
+
+}// FormOrionCrownVersion
+
+BOOL DecodeOrionCrownVersion(const OrionPkt_t *pPkt, char Version[16], char PartNumber[16])
+{
+    return decodeOrionCrownVersionPacket(pPkt, Version, PartNumber);
+
+}// DecodeOrionCrownVersion
+
+void FormOrionPayloadVersion(OrionPkt_t *pPkt, const char Version[24], const char PartNumber[24])
+{
+    encodeOrionCrownVersionPacket(pPkt, Version, PartNumber);
+
+}// FormOrionPayloadVersion
+
+BOOL DecodeOrionPayloadVersion(const OrionPkt_t *pPkt, char Version[24], char PartNumber[24])
+{
+    return decodeOrionCrownVersionPacket(pPkt, Version, PartNumber);
+
+}// DecodeOrionPayloadVersion
+
 void FormOrionResetSource(OrionPkt_t *pPkt, UInt32 Vector, UInt32 Address, OrionBoardEnumeration_t sourceBoard)
 {
     encodeOrionResetSourcePacket(pPkt, Vector, Address, sourceBoard);
@@ -110,12 +134,12 @@ BOOL DecodeOrionDiagnostics(const OrionPkt_t *pPkt, OrionDiagnostics_t *pData)
 
 void FormOrionPerformance(OrionPkt_t *pPkt, const OrionPerformance_t *pPerf)
 {
-    encodeOrionPerformancePacket(pPkt, pPerf->RmsQuad, pPerf->RmsDir, pPerf->RmsVel, pPerf->RmsPos, pPerf->Iout);
+    encodeOrionPerformancePacket(pPkt, pPerf->RmsQuad, pPerf->RmsDir, pPerf->RmsVel, pPerf->RmsPos, pPerf->RmsIout);
 }
 
 BOOL DecodeOrionPerformance(const OrionPkt_t *pPkt, OrionPerformance_t *pPerf)
 {
-    return decodeOrionPerformancePacket(pPkt, pPerf->RmsQuad, pPerf->RmsDir, pPerf->RmsVel, pPerf->RmsPos, pPerf->Iout);
+    return decodeOrionPerformancePacket(pPkt, pPerf->RmsQuad, pPerf->RmsDir, pPerf->RmsVel, pPerf->RmsPos, pPerf->RmsIout);
 }
 
 void FormOrionCameraSwitch(OrionPkt_t *pPkt, UInt8 Index)
