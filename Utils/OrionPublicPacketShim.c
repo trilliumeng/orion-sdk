@@ -134,12 +134,12 @@ BOOL DecodeOrionDiagnostics(const OrionPkt_t *pPkt, OrionDiagnostics_t *pData)
 
 void FormOrionPerformance(OrionPkt_t *pPkt, const OrionPerformance_t *pPerf)
 {
-    encodeOrionPerformancePacket(pPkt, pPerf->RmsQuad, pPerf->RmsDir, pPerf->RmsVel, pPerf->RmsPos, pPerf->RmsIout);
+    encodeOrionPerformancePacket(pPkt, pPerf->RmsQuad, pPerf->RmsDir, pPerf->RmsVel, pPerf->RmsPos, pPerf->Iout);
 }
 
 BOOL DecodeOrionPerformance(const OrionPkt_t *pPkt, OrionPerformance_t *pPerf)
 {
-    return decodeOrionPerformancePacket(pPkt, pPerf->RmsQuad, pPerf->RmsDir, pPerf->RmsVel, pPerf->RmsPos, pPerf->RmsIout);
+    return decodeOrionPerformancePacket(pPkt, pPerf->RmsQuad, pPerf->RmsDir, pPerf->RmsVel, pPerf->RmsPos, pPerf->Iout);
 }
 
 void FormOrionCameraSwitch(OrionPkt_t *pPkt, UInt8 Index)

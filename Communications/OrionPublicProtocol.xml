@@ -39,8 +39,6 @@ See TrilliumPacket.c for details.
 
     }// UpdateChecksum \verbatim">
 
-    <Include name="Constants.h" comment="included for array indices"/>
-
     <Enum name="OrionPktType_t" comment="enumerated identifiers for Orion public packets">
         <Value name="ORION_PKT_INITIALIZE" value="0x00"/>
         <Value name="ORION_PKT_CMD" comment="Basic commands for control of gimbal pan and tilt."/>
@@ -101,6 +99,33 @@ See TrilliumPacket.c for details.
         <Value name="ORION_PKT_PRIVATE_F5" comment="Reserved packet identifier"/>
         <Value name="ORION_PKT_PRIVATE_F6" comment="Reserved packet identifier"/>
 
+    </Enum>
+
+    <Enum name="GimbalAxis_t" comment="Enumeration of gimbal pan and tilt axes">
+        <Value name="GIMBAL_AXIS_PAN" comment="The pan axis"/>
+        <Value name="GIMBAL_AXIS_TILT" comment="The tilt axis"/>
+        <Value name="NUM_GIMBAL_AXES" comment="Total number of axis in the gimbal"/>
+    </Enum>
+    
+    <Enum name="Axis_t" comment="3D attitude axis enumeration">
+        <Value name="AXIS_ROLL" comment="Roll axis (rotation about x)"/>
+        <Value name="AXIS_PITCH" comment="Pitch axis (rotation about y)"/>
+        <Value name="AXIS_YAW" comment="Yaw axis (rotation about z)"/>
+        <Value name="NUM_AXES" comment="Number of attitude axes"/>
+    </Enum>
+
+    <Enum name="BodyAxis_t" comment="Enumeration for body axis X, Y, Z arrays">
+        <Value name="AXIS_X" comment="X points forward (away from connector)"/>
+        <Value name="AXIS_Y" comment="Y points to the right (if X is forward)"/>
+        <Value name="AXIS_Z" comment="Z points down"/>
+        <Value name="NUM_XYZ" comment="Number of body axes"/>
+    </Enum>
+
+    <Enum name="Stator_t" comment="Enumeration for motor stator axes">
+        <Value name="STATOR_U"/>
+        <Value name="STATOR_V"/>
+        <Value name="STATOR_W"/>
+        <Value name="NUM_STATORS" comment="Three phase motors"/>
     </Enum>
 
     <Enum name="OrionBoardEnumeration_t" comment="Enumeration identifying different boards in the Orion Gimbal">
