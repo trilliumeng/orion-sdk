@@ -1,6 +1,6 @@
 <?xml version="1.0"?>
 
-<Protocol name="OrionPublic" version="1.3.0.a" endian="big" supportInt64="false" comment=
+<Protocol name="OrionPublic" version="1.3.0.a" endian="big" supportInt64="true" comment=
 "The *OrionPublic* protocol is the packet description for the public interface of the Orion gimbal from [Trillium Engineering](http://w3.trilliumeng.com/).
 The general packet format is given in OrionPublicPacketShim.h and TrilliumPacket.h, and has this form:
 
