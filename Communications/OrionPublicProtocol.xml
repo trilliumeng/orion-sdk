@@ -66,7 +66,7 @@ See TrilliumPacket.c for details.
         <Value name="ORION_PKT_CAMERA_STATE" comment="Command a camera in the gimbal"/>
         <Value name="ORION_PKT_NETWORK_VIDEO" comment="Command the IP settings for video delivery"/>
         <Value name="ORION_PKT_PRIVATE_63" comment="Reserved packet identifier"/>
-        <Value name="ORION_PKT_FRAME_SHIFT" comment="The amount of shift measured in the image since the last image was processed"/>
+        <Value name="ORION_PKT_PRIVATE_64" comment="Reserved packet identifier"/>
         <Value name="ORION_PKT_PRIVATE_65" comment="Reserved packet identifier"/>
         <Value name="ORION_PKT_PRIVATE_66" comment="Reserved packet identifier"/>
         <Value name="ORION_PKT_RETRACT_CMD" value="0xA0" comment="Retract or deploy command for a gimbal retraction mechanism"/>
@@ -257,12 +257,6 @@ See TrilliumPacket.c for details.
         <Data name="DestIp" inMemoryType="unsigned32" comment="destination IPv4 address"/>
         <Data name="Port" inMemoryType="unsigned16" comment="desitnation port"/>
         <Data name="Bitrate" inMemoryType="unsigned32" default="0" comment="Video encoding target bitrate, in bits per second"/>
-    </Packet>
-
-    <Packet name="OrionFrameShift" file="OrionPublicPacket" ID="ORION_PKT_FRAME_SHIFT" parameterInterface="true" comment="The amount of shift measured in the image since the last image was processed. This packet is sent by the ginbal to users only if the INS logging is enabled.">
-        <Data name="Shifts" inMemoryType="float32" array="NUM_GIMBAL_AXES" encodedType="signed32" scaler="1000000" comment="X and Y image shifts in radians"/>
-        <Data name="DeltaTime" inMemoryType="float32" encodedType="unsigned16" scaler="1000" comment="The amount of time in seconds over which these shifts apply"/>
-        <Data name="Confidence" inMemoryType="float32" encodedType="unsigned8" scaler="255" default="1" comment="Registration solution confidence"/>
     </Packet>
 
     <Enum name="OrionRetractCmd_t" comment="The retraction mechanism command">
