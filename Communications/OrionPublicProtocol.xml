@@ -248,8 +248,8 @@ See TrilliumPacket.c for details.
     </Packet>
 
     <Packet name="OrionCameraState" file="OrionPublicPacket" ID="ORION_PKT_CAMERA_STATE" parameterInterface="true" comment="Command a camera in the gimbal. Note this packet will eventually be deprecated">
-        <Data name="Zoom" inMemoryType="float32" encodedType="signed16" comment="Digital zoom ratio"/>
-        <Data name="Focus" inMemoryType="float32" encodedType="signed16" default="-1" comment="Focus command/position"/>
+        <Data name="Zoom" inMemoryType="float32" encodedType="signed16" scaler="100" comment="Digital zoom ratio"/>
+        <Data name="Focus" inMemoryType="float32" encodedType="signed16" scaler="10000" default="-1" comment="Focus command/position"/>
         <Data name="Index" inMemoryType="unsigned8" default="0" comment="The index of the camera to command"/>
     </Packet>
 
