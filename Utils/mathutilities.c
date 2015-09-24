@@ -153,3 +153,37 @@ float firstOrderFilterf(float prev, float sig, float tau, float sampleTime)
     return alpha*prev + (1 - alpha)*sig;
 
 }// firstOrderFilterf
+
+
+/*!
+ * Apply a rate of change limit
+ * \param prev is the previous output of the limiter
+ * \param value is the new proposed value whose derivative should be limited
+ * \param limit is the time-rate-of-change limit for value, i.e. the max time derivative of value.
+ * \param sampleTime is the elapsed time since prev was computed.
+ * \return The rate-of-change limited value.
+ */
+float rateOfChangeLimitf(float prev, float value, float limit, float sampleTime)
+{
+	float delta;
+
+	// the maximum amount of change allowed
+	float maxDelta = sampleTime*limit;
+
+	// Which must be positive non-zero to make sense
+	if(maxDelta <= 0)
+		return value;
+
+	// The actual proposed changed
+	delta = value-prev;
+
+	// Return the limited value if needed
+	if(delta > maxDelta)
+		return prev + maxDelta;
+	else if(delta < -maxDelta)
+		return prev - maxDelta;
+	else
+		return value;
+
+}
+

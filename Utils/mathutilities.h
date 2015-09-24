@@ -41,6 +41,9 @@ float wrapAngle90f(float angle);
 //! Apply a first order low pass filter
 float firstOrderFilterf(float prev, float sig, float tau, float sampleTime);
 
+//! Apply a rate of change limit
+float rateOfChangeLimitf(float prev, float value, float limit, float sampleTime);
+
 // C++ compilers: don't mangle us
 #ifdef __cplusplus
 }
