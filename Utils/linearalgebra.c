@@ -5,6 +5,24 @@
 
 
 /*!
+ * Set all elements of a vector3 to a specific value
+ * \param vector is the vector3 to change
+ * \param value is the value to use for all elements of vector
+ * \return a pointer to vector
+ */
+double* vector3Set(double vector[NVECTOR3], double value)
+{
+	int i;
+
+	for(i = 0; i < NVECTOR3; i++)
+		vector[i] = value;
+
+	return vector;
+
+}// vector3Set
+
+
+/*!
  * Copy one vector to another
  * \param source is the source vector
  * \param dest receives a copy of the source vector
@@ -877,6 +895,24 @@ double testForIdentity(const Matrix_t* M)
 
     return error;
 }
+
+
+/*!
+ * Set all elements of a vector3 to a specific value
+ * \param vector is the vector3 to change
+ * \param value is the value to use for all elements of vector
+ * \return a pointer to vector
+ */
+float* vector3Setf(float vector[NVECTOR3], float value)
+{
+	int i;
+
+	for(i = 0; i < NVECTOR3; i++)
+		vector[i] = value;
+
+	return vector;
+
+}// vector3Setf
 
 
 /*!

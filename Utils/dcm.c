@@ -552,6 +552,33 @@ void dcmMultiplyTransB(const DCM_t* A, const DCM_t* B, DCM_t* C)
 
 
 /*!
+ * Transpose a DCM in place
+ * \param A is the DCM to transpose
+ */
+void dcmTransposeInPlace(DCM_t* A)
+{
+	float* Adata = A->data;
+	float temp;
+
+	// (0, 1) swaps with (1, 0)
+	temp = Adata[1];
+	Adata[1] = Adata[3];
+	Adata[3] = temp;
+
+	// (0, 2) swaps with (2, 0)
+	temp = Adata[2];
+	Adata[2] = Adata[6];
+	Adata[6] = temp;
+
+	// (1, 2) swaps with (2, 1)
+	temp = Adata[5];
+	Adata[5] = Adata[7];
+	Adata[7] = temp;
+
+}// dcmTransposeInPlace
+
+
+/*!
  *  Add two DCMs together and multiply each element by 0.5. This might be
  *  faster than using separate Add() and Scale() functions since the compiler
  *  can utilize a multiply-accumulate instruction. This is faster than

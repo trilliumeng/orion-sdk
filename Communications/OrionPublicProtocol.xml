@@ -86,6 +86,8 @@ See TrilliumPacket.c for details.
         <Value name="ORION_PKT_GEOPOINT_CMD" comment="Command the gimbal to go to Geopoint mode"/>
         <Value name="ORION_PKT_PRIVATE_D6" comment="Reserved packet identifier"/>
         <Value name="ORION_PKT_PATH" comment="Command the gimbal to path track mode"/>
+        <Value name="ORION_PKT_INS_OPTIONS" comment="Configuration options for the Inertial Navigation System"/>
+        
         <Value name="ORION_PKT_PRIVATE_E0" value="0xE0" comment="Reserved packet identifier"/>
         <Value name="ORION_PKT_PRIVATE_E1" comment="Reserved packet identifier"/>
         <Value name="ORION_PKT_PRIVATE_E2" comment="Reserved packet identifier"/>
@@ -189,9 +191,7 @@ See TrilliumPacket.c for details.
         <Data name="boardSN" inMemoryType="unsigned32" comment="Serial number of this board"/>
         <Data name="assemblySN" inMemoryType="unsigned32" comment="Serial number of the whole assembly"/>
         <Data name="config" inMemoryType="unsigned32" comment="Configuration bits"/>
-        <Data name="reserved0" inMemoryType="unsigned8" comment="Reserved bits for future things"/>
-        <Data name="reserved1" inMemoryType="unsigned8" comment="Reserved bits for future things"/>
-        <Data name="reserved2" inMemoryType="unsigned8" comment="Reserved bits for future things"/>
+        <Data name="reserved" inMemoryType="null" array="3" encodedType="unsigned8" comment="Reserved space for future things"/>
         <Data name="boardEnum" enum="OrionBoardEnumeration_t" encodedType="unsigned8" comment="Enumeration defining which board in the gimbal this data applies to"/>
         <Data name="manufactureDate" struct="Date" comment="Date the board was manufactured"/>
         <Data name="calibrationDate" struct="Date" comment="Date the board was calibrated"/>
@@ -431,6 +431,28 @@ See TrilliumPacket.c for details.
             <Data name="posEcef" inMemoryType="float32" array="3" encodedType="signed24" scaler="1" comment="ECEF position in meters"/>
         </Structure>
         <Data name="stepDistance" inMemoryType="float32" encodedType="unsigned16" scaler="10" default="0" comment="Distance in meters for step-stare functionality. Set to zero for no step-stare"/>
+    </Packet>
+    
+    <Packet name="InsOptions" file="OrionPublicPacket" ID="ORION_PKT_INS_OPTIONS" 
+            comment="INS options give configuration options for the INS system on the Orion crown. Send this packet with zero length to request the options.
+                     Changing the INS options will cause the INS to be restarted if the platform rotation changes. When using platform rotation note the order:
+                     First yaw about the gimbal's z-axis to create an intermediate axis. Then pitch about the intermediate y-axis to 
+                     create a second intermediate axis. Finally roll about the second intermediate x-axis to reach the platform orientation.">
+        <Data name="enablePlatformRotation" inMemoryType="bifield1" 
+              comment="The INS will be run in the platform reference frame if this is set.
+                       The platform reference frame is defined by the rotation from the 
+                       gimbal reference frame to the platform frame. Set this if the 
+                       gimbal is installed such that the gimbal reference frame is often
+                       near pitch of +/- 90 degrees."/>
+        <Data name="enableCourseIsHeading" inMemoryType="bitfield1"
+              comment="If set then the INS will use the course of the GPS as a heading input
+                       for initialization and heading updates when the heading confidence is
+                       poor. This is appropriate for fixed wing aircraft if enablePlatformRotation is set."/>
+        <Data name="disableMagnetometer" inMemoryType="bitfield1" comment="If set then the INS will ignore any magnetometer measurements."/>
+        <Data name="disableGPS" inMemoryType="bitfield1" comment="If set then the INS will ignore any GPS measurements."/>
+        <Data name="reserved" inMemoryType="null" array="3" encodedType="unsigned8" comment="reserved space for future expansion"/>
+        <Data name="gimbalToPlatformEuler" inMemoryType="float32" array="NUM_AXES" encodedType="signed16" max="pi" comment="Roll, Pitch, Yaw angles in radians from -pi to pi. The angles give the Euler rotation (yaw first, then pitch, then roll) that rotates a vector in the gimbal reference frame into the platform reference frame"/>
+        <Data name="initialHeading" inMemoryType="float32" encodedType="signed16" max="pi" comment="Initial heading angle in radians for the INS"/>
     </Packet>
     
     <Packet name="OrionNetworkSettings" file="OrionPublicPacket" ID="ORION_PKT_NETWORK_SETTINGS" parameterInterface="true" comment="Change the IP network settings in the gimbal">

@@ -17,6 +17,9 @@ enum
     NVECTOR3
 };
 
+//! Set all elements of a vector3 to a specific value
+double* vector3Set(double vector[NVECTOR3], double value);
+
 //! Copy one vector to another
 const double* vector3Copy(const double source[NVECTOR3], double dest[NVECTOR3]);
 
@@ -153,6 +156,9 @@ BOOL matrixInverse(const Matrix_t* A, Matrix_t* B);
 
 //! Test a matrix for its error to identity
 double testForIdentity(const Matrix_t* M);
+
+//! Set all elements of a vector3 to a specific value
+float* vector3Setf(float vector[NVECTOR3], float value);
 
 //! Copy one vector to another
 const float* vector3Copyf(const float source[NVECTOR3], float dest[NVECTOR3]);

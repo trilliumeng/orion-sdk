@@ -142,6 +142,9 @@ void dcmMultiplyTransA(const DCM_t* A, const DCM_t* B, DCM_t* C);
 //! Multiply a DCM against another the transpose of another DCM.
 void dcmMultiplyTransB(const DCM_t* A, const DCM_t* B, DCM_t* C);
 
+//! Transpose a DCM in place
+void dcmTransposeInPlace(DCM_t* A);
+
 //! Add two DCMs together and multiply each element by 0.5.
 void dcmAverage(const DCM_t* A, const DCM_t* B, DCM_t* C);
 
