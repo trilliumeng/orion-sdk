@@ -431,6 +431,9 @@ See TrilliumPacket.c for details.
         <Data name="mode" enum="OrionMode_t" encodedType="unsigned8" default="ORION_MODE_DISABLED" comment="Operational mode of the gimbal."/>
         <Data name="pathProgress" inMemoryType="float32" encodedType="unsigned8" max="1" default="0" comment="Distance along the path from 0 (the starting point) to 1 (the ending point). This only applies if the mode is ORION_MODE_PATH."/>
         <Data name="stareTime" inMemoryType="float32" encodedType="unsigned8" max="2.55" default="0" comment="Seconds remaining in the stare portion of a step stare point, 0 if stare is not in progress. This only applies if the mode is ORION_MODE_PATH."/>        
+        <Data name="pathFrom" inMemoryType="unsigned8" default="0" comment="Index of the path point gimbal is traveling from. This only applies if the mode is ORION_MODE_PATH."/>
+        <Data name="pathTo" inMemoryType="unsigned8" default="0" comment="Index of the path point gimbal is traveling to. This only applies if the mode is ORION_MODE_PATH."/>
+        
     </Packet>
 
     <Packet name="GeopointCmd" file="OrionPublicPacket" ID="ORION_PKT_GEOPOINT_CMD" parameterInterface="true"
@@ -494,9 +497,16 @@ See TrilliumPacket.c for details.
         <Data name="initialHeading" inMemoryType="float32" encodedType="signed16" max="pi" comment="Initial heading angle in radians for the INS"/>
     </Packet>
     
-    <Packet name="StareStart" file="OrionPublicPacket" ID="ORION_PKT_STARE_START" parameterInterface="true" comment="Stare portion of step stare started. This packet is transmitted by the gimbal during step-stare operations to indicate that it is safe to acquire a step-stare image.">
+    <Packet name="StareStart" file="OrionPublicPacket" ID="ORION_PKT_STARE_START" 
+            comment="Stare portion of step stare started. This packet is transmitted by the gimbal during 
+                     step-stare operations to indicate that it is safe to acquire a step-stare image. The
+                     position data mark the desired location that the gimbal is trying to stare at.">
         <Data name="systemTime" inMemoryType="unsigned32" comment="Milliseconds since system bootup. This value should be echoed in the ORION_PKT_STARE_ACK respone."/>
-        <Data name="stareTime" inMemoryType="float32" encodedType="unsigned8" max="2.55" default="0" comment="Seconds remaining before the stare is finished. Send ORION_PKT_STARE_ACK to terminate the stare early."/>                
+        <Data name="stareTime" inMemoryType="float32" encodedType="unsigned8" max="2.55" comment="Seconds remaining before the stare is finished. Send ORION_PKT_STARE_ACK to terminate the stare early."/>                
+        <Data name="reserved" inMemoryType="null" array="3" encodedType="unsigned8" comment="Reserved data space."/>                
+        <Data name="posLat" inMemoryType="float64" encodedType="signed32" scaler="180*10000000/pi" comment="Geodetic latitude of the stare point in radians, positive North"/>
+        <Data name="posLon" inMemoryType="float64" encodedType="signed32" scaler="180*10000000/pi" comment="Longitude of the stare point in radians, positive East"/>
+        <Data name="posAlt" inMemoryType="float64" encodedType="signed32" scaler="10000" comment="Altitude of the stare point in meters above the WGS-84 ellipsoid"/>
     </Packet>
     
     <Packet name="StareAck" file="OrionPublicPacket" ID="ORION_PKT_STARE_ACK" parameterInterface="true" comment="This packet tells the gimbal that the step-stare image has been acquired and the gimbal can move to the next step stare point">
