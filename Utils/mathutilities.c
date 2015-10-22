@@ -137,6 +137,21 @@ float wrapAngle90f(float angle)
 
 
 /*!
+ * Adjust an angle for circular wrap with the wrap point at 0/360. The input
+ * angle will only be adjusted by one circle (2PI).
+ * \param angle is the angle to adjust in radians, in the range of -2PI to 2PI.
+ * \return an equivalent angle in the range of 0 to 2PI.
+ */
+float wrapAngle360f(float angle)
+{
+	if(angle < 0)
+		angle += 2*PIf;
+
+	return angle;
+}
+
+
+/*!
  * A simple first order low pass filter where state is stored by the caller.
  * Note that the filter time constant tau should be more than half sampleTime
  * or this function will amplify noise rather than filter it.

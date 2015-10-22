@@ -38,6 +38,9 @@ float wrapAnglef(float angle);
 //! Adjust an angle for circular wrap with the wrap point at -270/+90
 float wrapAngle90f(float angle);
 
+//! Adjust an angle for circular wrap with the wrap point at 0/360
+float wrapAngle360f(float angle);
+
 //! Apply a first order low pass filter
 float firstOrderFilterf(float prev, float sig, float tau, float sampleTime);
 
