@@ -1,4 +1,4 @@
-<?xml version="1.0"?>
+<?xml version="10x0"?>
 
 <Protocol name="OrionPublic" version="1.3.0.a" endian="big" supportInt64="false" comment=
 "The *OrionPublic* protocol is the packet description for the public interface of the Orion gimbal from [Trillium Engineering](http://w3.trilliumeng.com/).
@@ -10,7 +10,7 @@ The general packet format is given in OrionPublicPacketShim.h and TrilliumPacket
 | Byte         | Name    | Value                                                  |
 |--------------|---------|--------------------------------------------------------|
 | 0            | Sync0   | 0xD0                                                   |
-| 1            | Sync1   | 0xD0                                                   |
+| 1            | Sync1   | 0x0D                                                   |
 | 2            | ID      | Packet identifier from 0 to 255                        |
 | 3            | Length  | Number of Data bytes, from 0 to 140                    |
 | 4...Length+3 | Data    | Data bytes of the packet, in the layout described here |
