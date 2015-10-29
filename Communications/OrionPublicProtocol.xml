@@ -492,6 +492,7 @@ See TrilliumPacket.c for details.
                        poor. This is appropriate for fixed wing aircraft if enablePlatformRotation is set."/>
         <Data name="disableMagnetometer" inMemoryType="bitfield1" comment="If set then the INS will ignore any magnetometer measurements."/>
         <Data name="disableGPS" inMemoryType="bitfield1" comment="If set then the INS will ignore any GPS measurements."/>
+        <Data name="resetINS" inMemoryType="bitfield1" comment="If set then the INS will be reset, all other fields of this packet are ignored in that case."/>
         <Data name="reserved" inMemoryType="null" array="3" encodedType="unsigned8" comment="reserved space for future expansion"/>
         <Data name="gimbalToPlatformEuler" inMemoryType="float32" array="NUM_AXES" encodedType="signed16" max="pi" comment="Roll, Pitch, Yaw angles in radians from -pi to pi. The angles give the Euler rotation (yaw first, then pitch, then roll) that rotates a vector in the gimbal reference frame into the platform reference frame"/>
         <Data name="initialHeading" inMemoryType="float32" encodedType="signed16" max="pi" comment="Initial heading angle in radians for the INS"/>
