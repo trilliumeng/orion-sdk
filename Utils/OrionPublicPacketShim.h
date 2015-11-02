@@ -58,9 +58,6 @@ BOOL DecodeOrionCameraState(const OrionPkt_t *pPkt, UInt8 *pIndex, float *pZoom,
 void FormOrionNetworkVideo(OrionPkt_t *pPkt, UInt32 DestIp, UInt16 Port, UInt32 Bitrate);
 BOOL DecodeOrionNetworkVideo(const OrionPkt_t *pPkt, UInt32 *pDestIp, UInt16 *pPort, UInt32 *pBitrate);
 
-void FormOrionExtHeadingData(OrionPkt_t *pPkt, const float* extHeading, const float* noise);
-BOOL DecodeOrionExtHeadingData(const OrionPkt_t *pPkt, float* extHeading, float* noise);
-
 void FormOrionGpsData(OrionPkt_t *pPkt, const GpsData_t *pGps);
 BOOL DecodeOrionGpsData(const OrionPkt_t *pPkt, GpsData_t *pGps);
 

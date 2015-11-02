@@ -191,31 +191,6 @@ BOOL DecodeOrionNetworkVideo(const OrionPkt_t *pPkt, UInt32 *pDestIp, UInt16 *pP
 
 }// DecodeOrionNetworkVideo
 
-/*!
- *  Form the external heading packet which provides heading information to the INS
- *  \param pPkt receives the formatted ready to transmit packet.
- *  \param extHeading gives the external heading in radians from -PI to PI
- *  \param noise gives the expected heading error magnitude in radians. 0 implies a perfect heading measurement
- */
-void FormOrionExtHeadingData(OrionPkt_t *pPkt, const float* extHeading, const float* noise)
-{
-    encodeOrionExtHeadingDataPacket(pPkt, *extHeading, *noise);
-
-}// FormOrionExtHeadingData
-
-/*!
- *  Decode the external heading packet which provides heading information to the INS
- *  \param pPkt is the packet to decode.
- *  \param extHeading receives the external heading in radians from -PI to PI
- *  \param noise receives the expected heading error magnitude in radians.
- *  \return TRUE if the packet is decoded correctly
- */
-BOOL DecodeOrionExtHeadingData(const OrionPkt_t *pPkt, float* extHeading, float* noise)
-{
-    return decodeOrionExtHeadingDataPacket(pPkt, extHeading, noise);
-
-}// DecodeOrionExtHeadingData
-
 void FormOrionGpsData(OrionPkt_t *pPkt, const GpsData_t *pGps)
 {
     encodeGpsDataPacketStructure(pPkt, pGps);
