@@ -98,13 +98,13 @@ BOOL DecodeOrionCrownVersion(const OrionPkt_t *pPkt, char Version[16], char Part
 
 void FormOrionPayloadVersion(OrionPkt_t *pPkt, const char Version[24], const char PartNumber[24])
 {
-    encodeOrionCrownVersionPacket(pPkt, Version, PartNumber);
+    encodeOrionPayloadVersionPacket(pPkt, Version, PartNumber);
 
 }// FormOrionPayloadVersion
 
 BOOL DecodeOrionPayloadVersion(const OrionPkt_t *pPkt, char Version[24], char PartNumber[24])
 {
-    return decodeOrionCrownVersionPacket(pPkt, Version, PartNumber);
+    return decodeOrionPayloadVersionPacket(pPkt, Version, PartNumber);
 
 }// DecodeOrionPayloadVersion
 
