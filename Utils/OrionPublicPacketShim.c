@@ -204,7 +204,7 @@ BOOL DecodeOrionGpsData(const OrionPkt_t *pPkt, GpsData_t *pGps)
         // Construct the data that is not transmitted
 
         // Compute ground speed data from NED data.
-        pGps->GroundSpeed = vector3Lengthf(pGps->VelNED);
+        pGps->GroundSpeed = sqrtf(SQR(pGps->VelNED[NORTH]) + SQR(pGps->VelNED[EAST]));
         pGps->GroundHeading = atan2(pGps->VelNED[EAST], pGps->VelNED[NORTH]);
 
         // Use GPS time information to compute the Gregorian calendar date.
