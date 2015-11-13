@@ -242,12 +242,12 @@ BOOL DecodeOrionNetworkSettings(const OrionPkt_t *pPkt, UInt32 *pIp, UInt32 *pMa
 
 void FormOrionRetractCmd(OrionPkt_t *pPkt, OrionRetractCmd_t Cmd)
 {
-    encodeOrionRetractCmdPacket(pPkt, Cmd);
+    encodeOrionRetractCommandPacket(pPkt, Cmd);
 }
 
 BOOL DecodeOrionRetractCmd(const OrionPkt_t *pPkt, OrionRetractCmd_t *pCmd)
 {
-    return decodeOrionRetractCmdPacket(pPkt, pCmd);
+    return decodeOrionRetractCommandPacket(pPkt, pCmd);
 }
 
 void FormOrionRetractStatus(OrionPkt_t *pPkt, OrionRetractCmd_t Cmd, OrionRetractState_t State, float Pos, UInt16 Flags)

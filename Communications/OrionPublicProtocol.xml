@@ -281,8 +281,9 @@ See TrilliumPacket.c for details.
         <Value name="RETRACT_CMD_RETRACT" comment="Move the gimbal to a retracted position"/>
     </Enum>
 
-    <Packet name="OrionRetractCmd" file="OrionPublicPacket" ID="ORION_PKT_RETRACT_CMD" comment="Retract or deploy command for a gimbal retraction mechanism">
+    <Packet name="OrionRetractCommand" file="OrionPublicPacket" ID="ORION_PKT_RETRACT_CMD" parameterInterface="true" comment="Retract or deploy command for a gimbal retraction mechanism">
         <Data name="Cmd" enum="OrionRetractCmd_t" encodedType="unsigned8" comment="The retraction mechanism command"/>
+        <Data name="Reserved" inMemoryType="null" encodedType="unsigned8" constant="0" comment="Reserved for future use"/>
     </Packet>
 
     <Packet name="OrionRetractStatus" file="OrionPublicPacket" ID="ORION_PKT_RETRACT_STATUS" parameterInterface="true" comment="Current gimbal retraction mechanism status. This is sent by the gimbal regularly only if a retract system is installed.">
