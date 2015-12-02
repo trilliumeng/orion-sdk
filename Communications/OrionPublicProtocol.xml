@@ -109,7 +109,7 @@ See TrilliumPacket.c for details.
         <Value name="GIMBAL_AXIS_TILT" comment="The tilt axis"/>
         <Value name="NUM_GIMBAL_AXES" comment="Total number of axis in the gimbal"/>
     </Enum>
-    
+
     <Enum name="Axis_t" comment="3D attitude axis enumeration">
         <Value name="AXIS_ROLL" comment="Roll axis (rotation about x)"/>
         <Value name="AXIS_PITCH" comment="Pitch axis (rotation about y)"/>
@@ -159,7 +159,7 @@ See TrilliumPacket.c for details.
     </Structure>
 
     <Packet name="OrionCmd" file="OrionPublicPacket" ID="ORION_PKT_CMD" comment="Basic commands for control of gimbal pan and tilt.">
-	    
+
         <Data name="Target" inMemoryType="float32" array="NUM_GIMBAL_AXES" encodedType="signed16" scaler="1000.0" comment="pan and tilt commands in radians or radians per second. Interpretation depends on Mode"/>
         <Data name="Mode" enum="OrionMode_t" encodedType="unsigned8" comment="operational mode of the gimbal. Note that not all modes can be directly commanded. Path and Geopoint models specifically need to be commanded through their respective packets."/>
         <Data name="Stabilized" inMemoryType="unsigned8" comment="non-zero to enable inertial stabilization. If zero then commands are with respect to gimbal mount, otherwise Target is with respect to inertial or image space."/>
@@ -180,6 +180,7 @@ See TrilliumPacket.c for details.
         <Data name="PeakCur"  inMemoryType="float32" array="NUM_GIMBAL_AXES" encodedType="unsigned16" scaler="1000.0" comment="Maximum peak current in Amps"/>
         <Data name="PeakCurTime"  inMemoryType="float32" array="NUM_GIMBAL_AXES" encodedType="unsigned16" scaler="1000.0" comment="Peak current time in seconds"/>
         <Data name="InitCur"  inMemoryType="float32" array="NUM_GIMBAL_AXES" encodedType="unsigned16" scaler="1000.0" comment="Initialization current in Amps"/>
+        <Data name="MaxPower" inMemoryType="float32" array="NUM_GIMBAL_AXES" encodedType="unsigned8" default="0" comment="Maximum motor output power, in watts. Set to zero for no limit"/>
     </Packet>
 
     <Packet name="OrionClevisVersion" file="OrionPublicPacket" ID="ORION_PKT_CLEVIS_VERSION" parameterInterface="true" comment="Software version for the clevis board in the Orion gimbal. Send this packet with zero length to request the version information.">
@@ -318,7 +319,7 @@ See TrilliumPacket.c for details.
 
     </Packet>
 
-    <Packet name="OrionExtHeadingData" file="OrionPublicPacket" ID="ORION_PKT_EXT_HEADING_DATA" parameterInterface="true" 
+    <Packet name="OrionExtHeadingData" file="OrionPublicPacket" ID="ORION_PKT_EXT_HEADING_DATA" parameterInterface="true"
             comment="Externally supplied heading information. Send this packet to supply a correction to the heading of the
                      inertial navigation system of the gimbal. This packet will be echoed back to the user if INS logging is enabled.">
         <Data name="extHeading" inMemoryType="float32" encodedType="signed16" max="pi" comment="External true heading observation in radians from -pi to pi"/>
@@ -432,7 +433,7 @@ See TrilliumPacket.c for details.
         <Data name="pixelHeight" inMemoryType="unsigned16" default="0" comment="Active focal plane height in pixels"/>
         <Data name="mode" enum="OrionMode_t" encodedType="unsigned8" default="ORION_MODE_DISABLED" comment="Operational mode of the gimbal."/>
         <Data name="pathProgress" inMemoryType="float32" encodedType="unsigned8" max="1" default="0" comment="Distance along the path from 0 (the starting point) to 1 (the ending point). This only applies if the mode is ORION_MODE_PATH."/>
-        <Data name="stareTime" inMemoryType="float32" encodedType="unsigned8" max="2.55" default="0" comment="Seconds remaining in the stare portion of a step stare point, 0 if stare is not in progress. This only applies if the mode is ORION_MODE_PATH."/>        
+        <Data name="stareTime" inMemoryType="float32" encodedType="unsigned8" max="2.55" default="0" comment="Seconds remaining in the stare portion of a step stare point, 0 if stare is not in progress. This only applies if the mode is ORION_MODE_PATH."/>
         <Data name="pathFrom" inMemoryType="unsigned8" default="0" comment="Index of the path point gimbal is traveling from. This only applies if the mode is ORION_MODE_PATH."/>
         <Data name="pathTo" inMemoryType="unsigned8" default="0" comment="Index of the path point gimbal is traveling to. This only applies if the mode is ORION_MODE_PATH."/>
         <Data name="imageShifts" inMemoryType="float32" array="NUM_GIMBAL_AXES" encodedType="signed32" scaler="1000000" default="0" comment="X (horizontal) and Y (vertical) image shifts in radians"/>
@@ -478,16 +479,16 @@ See TrilliumPacket.c for details.
         </Structure>
         <Data name="stepDistance" inMemoryType="float32" encodedType="unsigned16" scaler="10" default="0" comment="Distance in meters for step-stare functionality. Set to zero for no step-stare. If doing downward pointing the gimbal must be receiving ORION_PKT_RANGE_DATA."/>
     </Packet>
-    
-    <Packet name="InsOptions" file="OrionPublicPacket" ID="ORION_PKT_INS_OPTIONS" 
+
+    <Packet name="InsOptions" file="OrionPublicPacket" ID="ORION_PKT_INS_OPTIONS"
             comment="INS options give configuration options for the INS system on the Orion crown. Send this packet with zero length to request the options.
                      Changing the INS options will cause the INS to be restarted if the platform rotation changes. When using platform rotation note the order:
-                     First yaw about the gimbal's z-axis to create an intermediate axis. Then pitch about the intermediate y-axis to 
+                     First yaw about the gimbal's z-axis to create an intermediate axis. Then pitch about the intermediate y-axis to
                      create a second intermediate axis. Finally roll about the second intermediate x-axis to reach the platform orientation.">
-        <Data name="enablePlatformRotation" inMemoryType="bifield1" 
+        <Data name="enablePlatformRotation" inMemoryType="bifield1"
               comment="The INS will be run in the platform reference frame if this is set.
-                       The platform reference frame is defined by the rotation from the 
-                       gimbal reference frame to the platform frame. Set this if the 
+                       The platform reference frame is defined by the rotation from the
+                       gimbal reference frame to the platform frame. Set this if the
                        gimbal is installed such that the gimbal reference frame is often
                        near pitch of +/- 90 degrees."/>
         <Data name="enableCourseIsHeading" inMemoryType="bitfield1"
@@ -501,23 +502,23 @@ See TrilliumPacket.c for details.
         <Data name="gimbalToPlatformEuler" inMemoryType="float32" array="NUM_AXES" encodedType="signed16" max="pi" comment="Roll, Pitch, Yaw angles in radians from -pi to pi. The angles give the Euler rotation (yaw first, then pitch, then roll) that rotates a vector in the gimbal reference frame into the platform reference frame"/>
         <Data name="initialHeading" inMemoryType="float32" encodedType="signed16" max="pi" comment="Initial heading angle in radians for the INS"/>
     </Packet>
-    
-    <Packet name="StareStart" file="OrionPublicPacket" ID="ORION_PKT_STARE_START" 
-            comment="Stare portion of step stare started. This packet is transmitted by the gimbal during 
+
+    <Packet name="StareStart" file="OrionPublicPacket" ID="ORION_PKT_STARE_START"
+            comment="Stare portion of step stare started. This packet is transmitted by the gimbal during
                      step-stare operations to indicate that it is safe to acquire a step-stare image. The
                      position data mark the desired location that the gimbal is trying to stare at.">
         <Data name="systemTime" inMemoryType="unsigned32" comment="Milliseconds since system bootup. This value should be echoed in the ORION_PKT_STARE_ACK respone."/>
-        <Data name="stareTime" inMemoryType="float32" encodedType="unsigned8" max="2.55" comment="Seconds remaining before the stare is finished. Send ORION_PKT_STARE_ACK to terminate the stare early."/>                
-        <Data name="reserved" inMemoryType="null" array="3" encodedType="unsigned8" comment="Reserved data space."/>                
+        <Data name="stareTime" inMemoryType="float32" encodedType="unsigned8" max="2.55" comment="Seconds remaining before the stare is finished. Send ORION_PKT_STARE_ACK to terminate the stare early."/>
+        <Data name="reserved" inMemoryType="null" array="3" encodedType="unsigned8" comment="Reserved data space."/>
         <Data name="posLat" inMemoryType="float64" encodedType="signed32" scaler="180*10000000/pi" comment="Geodetic latitude of the stare point in radians, positive North"/>
         <Data name="posLon" inMemoryType="float64" encodedType="signed32" scaler="180*10000000/pi" comment="Longitude of the stare point in radians, positive East"/>
         <Data name="posAlt" inMemoryType="float64" encodedType="signed32" scaler="10000" comment="Altitude of the stare point in meters above the WGS-84 ellipsoid"/>
     </Packet>
-    
+
     <Packet name="StareAck" file="OrionPublicPacket" ID="ORION_PKT_STARE_ACK" parameterInterface="true" comment="This packet tells the gimbal that the step-stare image has been acquired and the gimbal can move to the next step stare point">
         <Data name="echoSystemTime" inMemoryType="unsigned32" comment="Milliseconds since system bootup received from ORION_PKT_STARE_START. If this value matches the value sent in ORION_PKT_STARE_START then the gimbal will terminate the stare operation early."/>
     </Packet>
-        
+
     <Packet name="OrionNetworkSettings" file="OrionPublicPacket" ID="ORION_PKT_NETWORK_SETTINGS" parameterInterface="true" comment="Change the IP network settings in the gimbal">
         <Data name="Ip" inMemoryType="unsigned32" comment="IPv4 address"/>
         <Data name="Mask" inMemoryType="unsigned32" comment="IPv4 network mask"/>
