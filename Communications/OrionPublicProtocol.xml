@@ -63,6 +63,7 @@ See TrilliumPacket.c for details.
         <Value name="ORION_PKT_FAULTS"/>
         <Value name="ORION_PKT_PERFORMANCE" comment="Measurements related to stabilization performance"/>
         <Value name="ORION_PKT_SOFTWARE_DIAGNOSTICS" comment="Diagnostic information related to software performance for a processor"/>
+        <Value name="ORION_PKT_VIBRATION" comment="Platform vibration statistics"/>
         <Value name="ORION_PKT_CAMERA_SWITCH" value="0x60" comment="Command the gimbal to swtich cameras"/>
         <Value name="ORION_PKT_CAMERA_STATE" comment="Command a camera in the gimbal"/>
         <Value name="ORION_PKT_NETWORK_VIDEO" comment="Command the IP settings for video delivery"/>
@@ -257,6 +258,16 @@ See TrilliumPacket.c for details.
                 <Data name="watchdogLeft" inMemoryType="float32" encodedType="unsigned8" max="100" comment="Worst case amount of watchdog time remaining in this reporting period for this thread, 0 if watchdog has timed out"/>
                 <Data name="reserved" inMemoryType="null" encodedType="unsigned16" comment="Reserved space for future expansion"/>
             </Structure>
+        </Structure>
+    </Packet>
+
+    <Packet name="OrionVibration" file="OrionPublicPacket" ID="ORION_PKT_VIBRATION" comment="Platform vibration amplitude and frequency information. This packet is sent by the gimbal once every five seconds.">
+        <Data name="MaxAccel" inMemoryType="float32" encodedType="signed16" max="20" array="NUM_AXES" comment="Maximum acceleration values, in m/s/s"/>
+        <Data name="MaxGyro" inMemoryType="float32" encodedType="signed16" max="0.1" array="NUM_AXES" comment="Maximum angular rate values, in rad/s"/>
+        <Structure name="FftData" array="16" comment="A series of points containing FFT-derived frequency and magnitude data">
+            <Data name="Frequency" inMemoryType="float32" encodedType="signed16" max="100" comment="Frequency, in Hertz, of the data point defined by this element"/>
+            <Data name="Accel" inMemoryType="float32" encodedType="unsigned8" max="1" array="NUM_AXES" comment="Acceleration magnitude, expressed as a percentage of MaxAccel"/>
+            <Data name="Gyro" inMemoryType="float32" encodedType="unsigned8" max="1" array="NUM_AXES" comment="Angular rate magnitude, expressed as a percentage of MaxGyro"/>
         </Structure>
     </Packet>
 
