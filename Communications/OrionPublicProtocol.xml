@@ -75,6 +75,7 @@ See TrilliumPacket.c for details.
         <Value name="ORION_PKT_RETRACT_STATUS" comment="Current gimbal retraction mechanism status"/>
         <Value name="ORION_PKT_PRIVATE_B0" value="0xB0" comment="Reserved packet identifier"/>
         <Value name="ORION_PKT_DEBUG_STRING" comment="A human readable text string which is typically used for debugging purposes"/>
+        <Value name="ORION_PKT_USER_DATA" comment="Packet for sending user data to a serial port in the gimbal" />
         <Value name="ORION_PKT_PRIVATE_C0" value="0xC0" comment="Reserved packet identifier"/>
         <Value name="ORION_PKT_PRIVATE_C1" comment="Reserved packet identifier"/>
         <Value name="ORION_PKT_PRIVATE_C2" comment="Reserved packet identifier"/>
@@ -326,8 +327,15 @@ See TrilliumPacket.c for details.
         <Data name="priority" inMemoryType="unsigned8" comment="The importance of the debug message (to be defined)"/>
         <Data name="reserved1" inMemoryType="unsigned8"/>
         <Data name="reserved2" inMemoryType="unsigned8"/>
-        <Data name="description" inMemoryType="signed8" array = "128" encodedType = "string" comment="human readable description of the debug problem"/>
+        <Data name="description" inMemoryType="signed8" array="128" encodedType="string" comment="human readable description of the debug problem"/>
 
+    </Packet>
+
+    <Packet name="OrionUserData" file="OrionPublicPacket" ID="ORION_PKT_USER_DATA" comment=" This packet can be used to transfer user-defined data payloads between communication ports on the gimbal">
+        <Data name="port" inMemoryType="unsigned8" comment="Destination INS board communication port identifier"/>
+        <Data name="size" inMemoryType="unsigned8" comment="User data array size in bytes"/>
+        <Data name="id" inMemoryType="unsigned32" comment="User-defined unique identifier or sequence number for this data block"/>
+        <Data name="data" inMemoryType="unsigned8" array="128" variableArray="size" comment="User data byte array"/>
     </Packet>
 
     <Packet name="OrionExtHeadingData" file="OrionPublicPacket" ID="ORION_PKT_EXT_HEADING_DATA" parameterInterface="true"
