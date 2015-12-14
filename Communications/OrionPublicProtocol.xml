@@ -496,7 +496,7 @@ See TrilliumPacket.c for details.
         <Structure name="Point" array="MAX_PATH_POINTS" variableArray="numPoints" comment="List of path points">
             <Data name="posEcef" inMemoryType="float32" array="3" encodedType="signed24" scaler="1" comment="ECEF position in meters"/>
         </Structure>
-        <Data name="stepDistance" inMemoryType="float32" encodedType="unsigned16" scaler="10" default="0" comment="Distance in meters for step-stare functionality. Set to zero for no step-stare. If doing downward pointing the gimbal must be receiving ORION_PKT_RANGE_DATA."/>
+        <Data name="stepAngle" inMemoryType="float32" encodedType="unsigned16" max="pi" default="0" comment="Angle in radians for step-stare functionality. Set to zero for no step-stare. If doing downward pointing the gimbal must be receiving ORION_PKT_RANGE_DATA."/>
     </Packet>
 
     <Packet name="InsOptions" file="OrionPublicPacket" ID="ORION_PKT_INS_OPTIONS"

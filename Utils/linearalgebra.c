@@ -104,7 +104,7 @@ const double* vector3Difference(const double left[NVECTOR3], const double right[
  * Take the dot product of two three dimensional vectors. a and b can be the
  * same vector in order to compute the square of the vector length
  * \param a is the first argument vector of the dot product
- * \param b is the second argument vector of the dot produc
+ * \param b is the second argument vector of the dot product
  * \return the dot product result
  */
 double vector3Dot(const double a[NVECTOR3], const double b[NVECTOR3])
@@ -117,6 +117,28 @@ double vector3Dot(const double a[NVECTOR3], const double b[NVECTOR3])
     return result;
 
 }// vector3Dot
+
+
+/*!
+ * Compute the angle between two three dimensional vectors
+ * \param a is the first argument vector
+ * \param b is the second argument vector
+ * \return the angle between a and b from 0 to pi radians. 0 is returned if either vector is zero length.
+ */
+double vector3AngleBetween(const double a[NVECTOR3], const double b[NVECTOR3])
+{
+	double dot = vector3Dot(a, b);
+
+	double magnitude = vector3LengthSquared(a)*vector3LengthSquared(b);
+
+	if(magnitude > 0)
+	{
+		magnitude = sqrt(magnitude);
+		return acos(dot/magnitude);
+	}
+	else
+		return 0;
+}
 
 
 /*!
@@ -1009,7 +1031,29 @@ float vector3Dotf(const float a[NVECTOR3], const float b[NVECTOR3])
 
     return result;
 
-}// vector3Dot
+}// vector3Dotf
+
+
+/*!
+ * Compute the angle between two three dimensional vectors
+ * \param a is the first argument vector
+ * \param b is the second argument vector
+ * \return the angle between a and b from 0 to pi radians. 0 is returned if either vector is zero length.
+ */
+float vector3AngleBetweenf(const float a[NVECTOR3], const float b[NVECTOR3])
+{
+	float dot = vector3Dot(a, b);
+
+	float magnitude = vector3LengthSquaredf(a)*vector3LengthSquaredf(b);
+
+	if(magnitude > 0)
+	{
+		magnitude = sqrtf(magnitude);
+		return acosf(dot/magnitude);
+	}
+	else
+		return 0;
+}
 
 
 /*!

@@ -35,6 +35,9 @@ const double* vector3Difference(const double left[NVECTOR3], const double right[
 //! Compute the dot product of two three dimensional vectors
 double vector3Dot(const double a[NVECTOR3], const double b[NVECTOR3]);
 
+//! Compute the angle between two three dimensional vectors
+double vector3AngleBetween(const double a[NVECTOR3], const double b[NVECTOR3]);
+
 //! Cross one three dimensional vector against another.
 const double* vector3Cross(const double left[NVECTOR3], const double right[NVECTOR3], double result[NVECTOR3]);
 
@@ -174,6 +177,9 @@ const float* vector3Differencef(const float left[NVECTOR3], const float right[NV
 
 //! Compute the dot product of two three dimensional vectors
 float vector3Dotf(const float a[NVECTOR3], const float b[NVECTOR3]);
+
+//! Compute the angle between two three dimensional vectors
+float vector3AngleBetweenf(const float a[NVECTOR3], const float b[NVECTOR3]);
 
 //! Cross one three dimensional vector against another.
 const float* vector3Crossf(const float left[NVECTOR3], const float right[NVECTOR3], float result[NVECTOR3]);
