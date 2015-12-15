@@ -1042,7 +1042,7 @@ float vector3Dotf(const float a[NVECTOR3], const float b[NVECTOR3])
  */
 float vector3AngleBetweenf(const float a[NVECTOR3], const float b[NVECTOR3])
 {
-	float dot = vector3Dot(a, b);
+	float dot = vector3Dotf(a, b);
 
 	float magnitude = vector3LengthSquaredf(a)*vector3LengthSquaredf(b);
 
