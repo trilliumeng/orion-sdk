@@ -56,22 +56,6 @@ BOOL DecodeOrionCommand(const OrionPkt_t *pPkt, OrionCmd_t *pCmd)
 
 }// DecodeOrionCommand
 
-void FormOrionLaserCommand(OrionPkt_t *pPkt, float DutyCycle)
-{
-    // Limit the duty cycle to [0, 100]%
-    if (DutyCycle > 1.0f) DutyCycle = 1.0f;
-    else if (DutyCycle < 0.0f) DutyCycle = 0.0f;
-
-    encodeOrionLaserCommandPacket(pPkt, DutyCycle);
-
-}// FormOrionLaserCommand
-
-BOOL DecodeOrionLaserCommand(const OrionPkt_t *pPkt, float *pDutyCycle)
-{
-    return decodeOrionLaserCommandPacket(pPkt, pDutyCycle);
-
-}// DecodeOrionLaserCommand
-
 void FormOrionClevisVersion(OrionPkt_t *pPkt, const char Version[16], const char PartNumber[16])
 {
     encodeOrionClevisVersionPacket(pPkt, Version, PartNumber);

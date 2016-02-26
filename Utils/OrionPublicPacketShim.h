@@ -28,9 +28,6 @@ typedef TrilliumPkt_t OrionPkt_t;
 void FormOrionCommand(OrionPkt_t *pPkt, const OrionCmd_t *pCmd);
 BOOL DecodeOrionCommand(const OrionPkt_t *pPkt, OrionCmd_t *pCmd);
 
-void FormOrionLaserCommand(OrionPkt_t *pPkt, float Power);
-BOOL DecodeOrionLaserCommand(const OrionPkt_t *pPkt, float *pData);
-
 void FormOrionClevisVersion(OrionPkt_t *pPkt, const char Version[16], const char PartNumber[16]);
 BOOL DecodeOrionClevisVersion(const OrionPkt_t *pPkt, char Version[16], char PartNumber[16]);
 

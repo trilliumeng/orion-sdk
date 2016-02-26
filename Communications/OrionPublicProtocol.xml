@@ -45,6 +45,8 @@ See TrilliumPacket.c for details.
         <Value name="ORION_PKT_PRIVATE_02" comment="Reserved packet identifier"/>
         <Value name="ORION_PKT_LASER_CMD" comment="Command to fire the laser"/>
         <Value name="ORION_PKT_RESET" comment="Send this packet to cause the gimbal to reset"/>
+        <Value name="ORION_PKT_PRIVATE_05" comment="Reserved packet identifier" />
+        <Value name="ORION_PKT_LASER_STATE" comment="Laser state information" />
         <Value name="ORION_PKT_PRIVATE_1F" value="0x1F" comment="Reserved packet identifier"/>
         <Value name="ORION_PKT_PRIVATE_20" comment="Reserved packet identifier"/>
         <Value name="ORION_PKT_PRIVATE_21" comment="Reserved packet identifier"/>
@@ -169,8 +171,37 @@ See TrilliumPacket.c for details.
 
     </Packet>
 
-    <Packet name="OrionLaserCommand" file="OrionPublicPacket" ID="ORION_PKT_LASER_CMD" parameterInterface="true" comment="Command to fire the laser (if installed).">
-	    <Data name="DutyCycle" inMemoryType="float32" encodedType="unsigned16" scaler="100.0" comment="The laser duty cycle from 0.0 (off) to 1.0 (full power)"/>
+    <Packet name="OrionLaserCommand" file="OrionPublicPacket" ID="ORION_PKT_LASER_CMD" comment="Command to fire the laser (if installed).">
+	    <Data name="Reserved" inMemoryType="null" encodedType="unsigned16" constant="0" comment="Deprecated parameter - set to zero" />
+        <Data name="Index" inMemoryType="unsigned8" comment="Index of the laser to apply this command to" />
+        <Data name="Password" inMemoryType="signed8" array="64" encodedType="string" comment="Password, if required by the laser. If a password is required, it must be provided in order to change any aspect of the laser's state (e.g., enable/disable, arm/disarm, fire/deactivate" />
+        <Data name="Enable" inMemoryType="unsigned8" comment="Set to zero to disable the laser, or non-zero to enable it" />
+        <Data name="Arm" inMemoryType="unsigned8" comment="Set to zero to disarm the laser, or non-zero to arm" />
+        <Data name="Fire" inMemoryType="unsigned8" comment="Set to zero to deactivate the laser, or non-zero to activate it" />
+    </Packet>
+
+    <Enum name="OrionMaxLasers_t" comment="The maximum number of lasers in an Orion Gimbal">
+        <Value name="MAX_LASERS" value="2"/>
+    </Enum>
+
+    <Enum name="OrionLaserType_t" comment="Laser type identifiers">
+        <Value name="LASER_TYPE_POINTER" comment="Laser pointer" />
+        <Value name="LASER_TYPE_10MJ_MARKER" comment="" />
+    </Enum>
+
+    <Packet name="OrionLaserState" file="OrionPublicPacket" ID="ORION_PKT_LASER_STATE" >
+        <Data name="NumLasers" inMemoryType="unsigned8" comment="Number of installed lasers" />
+        <Structure name="LaserState" array="MAX_LASERS" variableArray="NumLasers" comment="Per-laser state information">
+            <Data name="Type" enum="OrionLaserType_t" encodedType="unsigned8" comment="The type of this laser" />
+            <Data name="Enabled" inMemoryType="bitfield1" comment="Set to 1 if the laser is enabled, otherwise 0" />
+            <Data name="Armed" inMemoryType="bitfield1" comment="Set to 1 if the laser is armed, otherwise 0" />
+            <Data name="Active" inMemoryType="bitfield1" comment="Set to 1 if the laser is active, otherwise 0" />
+            <Data name="GroundSpeedLock" inMemoryType="bitfield1" comment="Set to 1 if the laser is locked due to low ground speed, otherwise 0" />
+            <Data name="AltitudeLock" inMemoryType="bitfield1" comment="Set to 1 if the laser is locked due to low GPS altitude, otherwise 0" />
+            <Data name="PasswordLock" inMemoryType="bitfield1" comment="Set to 1 if the laser is locked by password, otherwise 0" />
+            <Data name="Reserved" inMemoryType="bitfield10" constant="0" comment="Reserved for future use" />
+            <Data name="WaitTimer" inMemoryType="unsigned16" comment="Time remaining, in milliseconds, before the laser will accept another command" />
+        </Structure>
     </Packet>
 
     <Packet name="OrionLimitsData" file="OrionPublicPacket" ID="ORION_PKT_LIMITS" comment=" and tilt limits of operation.">
