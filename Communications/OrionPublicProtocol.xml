@@ -322,6 +322,7 @@ See TrilliumPacket.c for details.
         <Data name="DestIp" inMemoryType="unsigned32" comment="destination IPv4 address"/>
         <Data name="Port" inMemoryType="unsigned16" comment="desitnation port"/>
         <Data name="Bitrate" inMemoryType="unsigned32" default="0" comment="Video encoding target bitrate, in bits per second"/>
+        <Data name="Ttl" inMemoryType="signed8" default="-1" comment="TTL value for UDP video packets. Values less than or equal to zero will use default values of 64 for unicast and 1 for multicast." />
     </Packet>
 
     <Packet name="OrionFlirSettings" file="OrionPublicPacket" ID="ORION_PKT_FLIR_SETTINGS" comment="FLIR-specific camera settings">

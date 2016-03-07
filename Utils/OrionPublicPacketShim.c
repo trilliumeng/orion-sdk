@@ -165,13 +165,14 @@ BOOL DecodeOrionCameraState(const OrionPkt_t *pPkt, UInt8 *pIndex, float *pZoom,
 
 void FormOrionNetworkVideo(OrionPkt_t *pPkt, UInt32 DestIp, UInt16 Port, UInt32 Bitrate)
 {
-    encodeOrionNetworkVideoPacket(pPkt, DestIp, Port, Bitrate);
+    encodeOrionNetworkVideoPacket(pPkt, DestIp, Port, Bitrate, -1);
 
 }// FormOrionNetworkVideo
 
 BOOL DecodeOrionNetworkVideo(const OrionPkt_t *pPkt, UInt32 *pDestIp, UInt16 *pPort, UInt32 *pBitrate)
 {
-    return decodeOrionNetworkVideoPacket(pPkt, pDestIp, pPort, pBitrate);
+    SInt8 Ttl;
+    return decodeOrionNetworkVideoPacket(pPkt, pDestIp, pPort, pBitrate, &Ttl);
 
 }// DecodeOrionNetworkVideo
 
