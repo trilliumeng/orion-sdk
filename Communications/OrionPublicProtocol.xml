@@ -339,7 +339,10 @@ See TrilliumPacket.c for details.
         <Data name="MaxExposure" inMemoryType="unsigned16" comment="Maximum exposure time in microseconds" min="50" max="33000"/>
         <Data name="MinGain" inMemoryType="float32" encodedType="unsigned16" comment="Minimum sensor luminance gain" min="1" max="32"/>
         <Data name="MaxGain" inMemoryType="float32" encodedType="unsigned16" comment="Maximum sensor luminance gain" min="1" max="32"/>
-        <Data name="Brightness" inMemoryType="uint8" comment="Brightness target"/>
+        <Data name="Brightness" inMemoryType="signed8" comment="Brightness adjustment"/>
+        <Data name="Contrast" inMemoryType="float32" encodedType="signed8" max="1" comment="Contrast adjustment"/>
+        <Data name="Saturation" inMemoryType="float32" encodedType="signed8" max="1" comment="Saturation adjustment"/>
+        <Data name="Sharpness" inMemoryType="float32" encodedType="unsigned8" max="5" comment="Sharpening filter strength" />
     </Packet>
 
     <Packet name="OrionZafiroSettings" file="OrionPublicPacket" ID="ORION_PKT_ZAFIRO_SETTINGS" comment="Zafiro-specific camera settings">
