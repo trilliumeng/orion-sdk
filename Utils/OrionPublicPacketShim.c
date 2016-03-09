@@ -215,13 +215,28 @@ BOOL DecodeOrionGpsData(const OrionPkt_t *pPkt, GpsData_t *pGps)
 
 void FormOrionNetworkSettings(OrionPkt_t *pPkt, UInt32 Ip, UInt32 Mask, UInt32 Gateway)
 {
-    encodeOrionNetworkSettingsPacket(pPkt, Ip, Mask, Gateway);
+    OrionNetworkSettings_t Settings;
+    Settings.Ip = Ip;
+    Settings.Mask = Mask;
+    Settings.Gateway = Gateway;
+    Settings.LowDelay = 0;
+    encodeOrionNetworkSettingsPacketStructure(pPkt, &Settings);
 
 }// FormOrionNetworkSettings
 
 BOOL DecodeOrionNetworkSettings(const OrionPkt_t *pPkt, UInt32 *pIp, UInt32 *pMask, UInt32 *pGateway)
 {
-    return decodeOrionNetworkSettingsPacket(pPkt, pIp, pMask, pGateway);
+    OrionNetworkSettings_t Settings;
+    if (decodeOrionNetworkSettingsPacketStructure(pPkt, &Settings))
+    {
+        *pIp = Settings.Ip;
+        *pMask = Settings.Mask;
+        *pGateway = Settings.Gateway;
+
+        return TRUE;
+    }
+
+    return FALSE;
 
 }// DecodeOrionNetworkSettings
 
