@@ -335,8 +335,8 @@ See TrilliumPacket.c for details.
 
     <Packet name="OrionAptinaSettings" file="OrionPublicPacket" ID="ORION_PKT_APTINA_SETTINGS" comment="Aptina-specific camera settings">
         <Data name="Index" inMemoryType="unsigned8" comment="Index of the camera that these settings should apply to. Use 0xFF to apply to any connected Aptina camera."/>
-        <Data name="MinExposure" inMemoryType="unsigned16" comment="Minimum exposure time in microseconds" min="50" max="33000"/>
-        <Data name="MaxExposure" inMemoryType="unsigned16" comment="Maximum exposure time in microseconds" min="50" max="33000"/>
+        <Data name="MinExposure" inMemoryType="float32" encodedType="unsigned16" comment="Minimum exposure time in microseconds" min="0.05" max="33"/>
+        <Data name="MaxExposure" inMemoryType="float32" encodedType="unsigned16" comment="Maximum exposure time in milliseconds" min="0.05" max="33"/>
         <Data name="MinGain" inMemoryType="float32" encodedType="unsigned16" comment="Minimum sensor luminance gain" min="1" max="32"/>
         <Data name="MaxGain" inMemoryType="float32" encodedType="unsigned16" comment="Maximum sensor luminance gain" min="1" max="32"/>
         <Data name="Brightness" inMemoryType="signed8" comment="Brightness adjustment"/>
