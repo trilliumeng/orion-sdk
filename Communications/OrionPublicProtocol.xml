@@ -331,6 +331,7 @@ See TrilliumPacket.c for details.
         <Data name="MaxAgcGain" inMemoryType="unsigned8" comment="Maximum AGC output gain"/>
         <Data name="AceLevel" inMemoryType="signed8" comment="Active Contrast Enhancement (ACE) level"/>
         <Data name="DdeThreshold" inMemoryType="unsigned8" comment="DDE spatial threshold"/>
+        <Data name="AgcMidpoint" inMemoryType="unsigned8" default="128" comment="AGC output midpoint, from 0 to 255"/>
     </Packet>
 
     <Packet name="OrionAptinaSettings" file="OrionPublicPacket" ID="ORION_PKT_APTINA_SETTINGS" comment="Aptina-specific camera settings">
