@@ -348,9 +348,10 @@ See TrilliumPacket.c for details.
 
     <Packet name="OrionZafiroSettings" file="OrionPublicPacket" ID="ORION_PKT_ZAFIRO_SETTINGS" comment="Zafiro-specific camera settings">
         <Data name="Index" inMemoryType="unsigned8" comment="Index of the camera that these settings should apply to. Use 0xFF to apply to any connected Zafiro camera."/>
-        <Data name="IntegrationTime" inMemoryType="unsigned16" comment="Integration time, in microseconds"/>
+        <Data name="IntegrationTime" inMemoryType="float32" encodedType="unsigned8" min="1" max="30" comment="Integration time, in milliseconds"/>
         <Data name="LapEnabled" inMemoryType="unsigned8" comment="Local Area Processing (LAP) enable/disable flag. Set to zero to disable, or non-zero to enable."/>
         <Data name="LapGain" inMemoryType="float32" encodedType="unsigned8" min="0.5" max="4.0" comment="LAP Sharpening gain"/>
+        <Data name="AgcSaturation" inMemoryType="float32" encodedType="unsigned8" min="0" max="5" comment="AGC histogram saturation"/>
     </Packet>
 
     <Packet name="OrionHitachiSettings" file="OrionPublicPacket" ID="ORION_PKT_HITACHI_SETTINGS" comment="Hitachi-specific camera settings">
