@@ -271,7 +271,7 @@ int isLeapYear(uint16_t year)
 	// 1896 is leap year,
 	// 1900 is not (modulo 100),
 	// 1904 is
-	// 1995 is
+	// 1996 is
 	// 2000 is (modulo 400)
 	// 2004 is
 	// 2100 is not (module 100)

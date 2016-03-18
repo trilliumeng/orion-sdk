@@ -427,7 +427,17 @@ See TrilliumPacket.c for details.
             <Value name="ubloxSource" comment="uBlox internal GPS"/>
             <Value name="mavlinkSource" comment="Mavlink supplied data"/>
             <Value name="nmeaSource" comment="External GPS, supplied by NMEA input"/>
+            <Value name="novatelSource" comment="Novatel dual frequency GPS"/>
             <Value name="numGpsSources" comment="Number of possible GPS sources"/>
+        </Enum>
+        
+        <Enum name="ubloxFixType_t" comment="Enumeration for types of GPS solutions, derived from uBlox specification">
+            <Value name="noFix" comment="No solution"/>
+            <Value name="deadReckoningOnly" comment="Dead reckoning only"/>
+            <Value name="twoDFix" comment="Two dimensional solution"/>
+            <Value name="threeDFix" comment="Three dimensional solution"/>
+            <Value name="gnssDeadReckoning" comment="GNSS and dead reckoning combined"/>
+            <Value name="timeOnly" comment="Time only, no position or velocity"/>
         </Enum>
 
         <Data name="FixType" inMemoryType="unsigned8" comment="uBlox fix type"/>
