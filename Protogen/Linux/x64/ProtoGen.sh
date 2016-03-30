@@ -7,6 +7,6 @@ tmp="${dirname#?}"
 if [ "${dirname%$tmp}" != "/" ]; then
 dirname=$PWD/$dirname
 fi
-LD_LIBRARY_PATH=$dirname:$LD_LIBRARY_PATH
+LD_LIBRARY_PATH=$dirname:/usr/lib/x86_64-linux-gnu:$LD_LIBRARY_PATH
 export LD_LIBRARY_PATH
 $dirname/$appname "$@"
