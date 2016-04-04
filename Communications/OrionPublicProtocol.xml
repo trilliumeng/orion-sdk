@@ -159,6 +159,7 @@ See TrilliumPacket.c for details.
         <Value name="ORION_MODE_GEOPOINT" value="0x60" comment="Gimbal is pointing toward a fixed spatial location"/>
         <Value name="ORION_MODE_PATH" value="0x70" comment="Gimbal is pointing toward a fixed path in space, and may be doing step-stare"/>
         <Value name="ORION_MODE_DOWN" value="0x71" comment="Gimbal is pointing straight down, and may be doing step-stare"/>
+        <Value name="ORION_MODE_UNKNOWN" value="0xFF" comment="Unknown gimbal mode. This is unused in normal operation and is strictly to maintain compatibility with v1.2"/>
     </Enum>
 
     <Structure name="Date" file="OrionPublicPacket" comment="Compresssed date format">
@@ -532,7 +533,7 @@ See TrilliumPacket.c for details.
         <Data name="losECEF" inMemoryType="float32" encodedType="signed16" scaler="1" array="3" default="0" comment="Vector from the gimbal to the image location in ECEF meters. The image location is only computed if ranging data are provided to the gimbal. Otherwise the image location data are 0,0,0"/>
         <Data name="pixelWidth" inMemoryType="unsigned16" default="0" comment="Active focal plane width in pixels"/>
         <Data name="pixelHeight" inMemoryType="unsigned16" default="0" comment="Active focal plane height in pixels"/>
-        <Data name="mode" enum="OrionMode_t" encodedType="unsigned8" default="ORION_MODE_DISABLED" comment="Operational mode of the gimbal."/>
+        <Data name="mode" enum="OrionMode_t" encodedType="unsigned8" default="ORION_MODE_UNKNOWN" comment="Operational mode of the gimbal."/>
         <Data name="pathProgress" inMemoryType="float32" encodedType="unsigned8" max="1" default="0" comment="Distance along the path from 0 (the starting point) to 1 (the ending point). This only applies if the mode is ORION_MODE_PATH."/>
         <Data name="stareTime" inMemoryType="float32" encodedType="unsigned8" max="2.55" default="0" comment="Seconds remaining in the stare portion of a step stare point, 0 if stare is not in progress. This only applies if the mode is ORION_MODE_PATH."/>
         <Data name="pathFrom" inMemoryType="unsigned8" default="0" comment="Index of the path point gimbal is traveling from. This only applies if the mode is ORION_MODE_PATH."/>
