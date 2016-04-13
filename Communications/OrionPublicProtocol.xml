@@ -538,9 +538,10 @@ See TrilliumPacket.c for details.
         <Data name="stareTime" inMemoryType="float32" encodedType="unsigned8" max="2.55" default="0" comment="Seconds remaining in the stare portion of a step stare point, 0 if stare is not in progress. This only applies if the mode is ORION_MODE_PATH."/>
         <Data name="pathFrom" inMemoryType="unsigned8" default="0" comment="Index of the path point gimbal is traveling from. This only applies if the mode is ORION_MODE_PATH."/>
         <Data name="pathTo" inMemoryType="unsigned8" default="0" comment="Index of the path point gimbal is traveling to. This only applies if the mode is ORION_MODE_PATH."/>
-        <Data name="imageShifts" inMemoryType="float32" array="NUM_GIMBAL_AXES" encodedType="signed32" scaler="1000000" default="0" comment="X (horizontal) and Y (vertical) image shifts in radians"/>
+        <Data name="imageShifts" inMemoryType="float32" array="NUM_GIMBAL_AXES" encodedType="signed32" scaler="1000000" default="0" comment="X (horizontal) and Y (vertical) instantaneous image shifts in radians"/>
         <Data name="imageShiftDeltaTime" inMemoryType="float32" encodedType="unsigned16" scaler="1000" default="0" comment="The amount of time in seconds over which these shifts apply. If no new shift data has arrived since this packet was last transmitted then the "/>
         <Data name="imageShiftConfidence" inMemoryType="float32" encodedType="unsigned8" max="1" default="0" comment="Registration solution confidence, from 0 (no confidence) to 1 (full confidence)."/>
+        <Data name="outputShifts" inMemoryType="float32" array="NUM_GIMBAL_AXES" encodedType="signed16" max="pi" default="0" comment="X (horizontal) and Y (vertical) image shifts in radians, as displayed in the video stream"/>
     </Packet>
 
     <Packet name="GeopointCmd" file="OrionPublicPacket" ID="ORION_PKT_GEOPOINT_CMD" parameterInterface="true"

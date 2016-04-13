@@ -40,6 +40,7 @@ BOOL DecodeGeolocateTelemetry(const OrionPkt_t *pPkt, GeolocateTelemetry_t *pGeo
     if (decodeGeolocateTelemetryCorePacketStructure(pPkt, &pGeo->base))
 	{
 		stackAllocateDCM(tempDcm);
+        float Pan, Tilt;
 
         // Date and time
         computeDateFromWeekAndItow(pGeo->base.gpsWeek, pGeo->base.gpsITOW, &pGeo->Year, &pGeo->Month, &pGeo->Day);
@@ -67,9 +68,13 @@ BOOL DecodeGeolocateTelemetry(const OrionPkt_t *pPkt, GeolocateTelemetry_t *pGeo
 		pGeo->gimbalEuler[AXIS_PITCH] = dcmPitch(&pGeo->gimbalDcm);
 		pGeo->gimbalEuler[AXIS_YAW]   = dcmYaw(&pGeo->gimbalDcm);
 
+        // Offset the pan/tilt angles with the current estab output shifts
+        Pan  = pGeo->base.pan  - pGeo->base.outputShifts[GIMBAL_AXIS_PAN];
+        Tilt = pGeo->base.tilt - pGeo->base.outputShifts[GIMBAL_AXIS_TILT];
+
 		// Rotation from camera to gimbal, note that this only works if pan
 		// is over tilt (pan first, then tilt, just like Euler)
-        setDCMBasedOnEuler(&tempDcm, pGeo->base.pan, pGeo->base.tilt, 0.0f);
+        setDCMBasedOnEuler(&tempDcm, Pan, Tilt, 0.0f);
 
 		// Now create the rotation from camera to nav.
         matrixMultiplyf(&pGeo->gimbalDcm, &tempDcm, &pGeo->cameraDcm);
