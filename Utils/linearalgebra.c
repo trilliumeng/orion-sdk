@@ -920,6 +920,104 @@ double testForIdentity(const Matrix_t* M)
 
 
 /*!
+ * Evaluate the derivative of quadratic equation at x
+ * \param cba is the c, b, and a coeficients in the equation y = ax^2 + bx + c.
+ * \param x is the location to evaluate
+ * \return the value of dy/dx at x.
+ */
+double quadraticDerivativeEvaluation(const double cba[3], double x)
+{
+	return 2*cba[2]*x + cba[1];
+}
+
+
+/*!
+ * Evaluate a quadratic equation with 3 coefficients at x
+ * \param cba is the c, b, and a coeficients in the equation y = ax^2 + bx + c.
+ * \param x is the location to evaluate
+ * \return the value of y at x.
+ */
+double quadraticEvaluation(const double cba[3], double x)
+{
+    // The value of the function at that location
+    return x*x*cba[2] + x*cba[1] + cba[0];
+}
+
+
+/*!
+ * Solve a quadratic regression to determine the coefficients c, b, and a in
+ * the equation y = ax^2 + bx + c.
+ * \param x is the vector of xs, which must be at least three elements long
+ * \param y is the vector of ys, which must be the same length as x
+ * \param num is the number of elements in x and y
+ * \param cba receives the three coefficients, c = cba[0], b = cba[1], a = cba[2]
+ * \return true if a solution was found, else false
+ */
+BOOL quadraticRegression(const double x[], const double y[], int num, double cba[3])
+{
+    /// TODO: this can be made faster if done in a less general way
+    int i;
+    double sumx4 = 0, sumx3 = 0, sumx2 = 0, sumx1 = 0, sumx2y1 = 0, sumx1y1 = 0, sumy1 = 0;
+
+    stackAllocateMatrix(left, 3, 3);
+    stackAllocateMatrix(invleft, 3, 3);
+    stackAllocateMatrix(right, 3, 1);
+    stackAllocateMatrix(solution, 3, 1);
+
+    if(num < 3)
+        return 0;
+
+    for(i = 0; i < num; i++)
+    {
+        double x1 = x[i];
+        double y1 = y[i];
+        double x2 = x1*x1;
+
+        sumx1 += x1;
+        sumy1 += y1;
+        sumx2 += x2;
+        sumx3 += x2*x1;
+        sumx4 += x2*x2;
+        sumx1y1 += x1*y1;
+        sumx2y1 += x2*y1;
+
+    }// for all inputs
+
+    // fill out the matrices
+    matrixSet(&left, 0, 0, sumx4);
+    matrixSet(&left, 0, 1, sumx3);
+    matrixSet(&left, 0, 2, sumx2);
+
+    matrixSet(&left, 1, 0, sumx3);
+    matrixSet(&left, 1, 1, sumx2);
+    matrixSet(&left, 1, 2, sumx1);
+
+    matrixSet(&left, 2, 0, sumx2);
+    matrixSet(&left, 2, 1, sumx1);
+    matrixSet(&left, 2, 2, num);
+
+    if(!matrixInverse(&left, &invleft))
+        return FALSE;
+
+    // The right side column vector
+    matrixSet(&right, 0, 0, sumx2y1);
+    matrixSet(&right, 0, 1, sumx1y1);
+    matrixSet(&right, 0, 2, sumy1);
+
+    // Compute the solution column vector
+    matrixMultiply(&invleft, &right, &solution);
+
+    // Record the results
+    cba[2] = matrixGet(&solution, 0, 0);
+    cba[1] = matrixGet(&solution, 0, 1);
+    cba[0] = matrixGet(&solution, 0, 2);
+
+    return TRUE;
+
+}// quadraticRegression
+
+
+/*!
  * Set all elements of a vector3 to a specific value
  * \param vector is the vector3 to change
  * \param value is the value to use for all elements of vector
@@ -1815,4 +1913,106 @@ float testForIdentityf(const Matrixf_t* M)
 
     return error;
 }
+
+
+/*!
+ * Evaluate the derivative of quadratic equation at x
+ * \param cba is the c, b, and a coeficients in the equation y = ax^2 + bx + c.
+ * \param x is the location to evaluate
+ * \return the value of dy/dx at x.
+ */
+float quadraticDerivativeEvaluationf(const float cba[3], float x)
+{
+	return 2*cba[2]*x + cba[1];
+}
+
+
+/*!
+ * Evaluate a quadratic equation with 3 coefficients at x
+ * \param cba is the c, b, and a coeficients in the equation y = ax^2 + bx + c.
+ * \param x is the location to evaluate
+ * \return the value of y at x.
+ */
+float quadraticEvaluationf(const float cba[3], float x)
+{
+    // The value of the function at that location
+    return x*x*cba[2] + x*cba[1] + cba[0];
+}
+
+
+/*!
+ * Solve a quadratic regression to determine the coefficients c, b, and a in
+ * the equation y = ax^2 + bx + c.
+ * \param x is the vector of xs, which must be at least three elements long
+ * \param y is the vector of ys, which must be the same length as x
+ * \param num is the number of elements in x and y
+ * \param cba receives the three coefficients, c = cba[0], b = cba[1], a = cba[2]
+ * \return true if a solution was found, else false
+ */
+BOOL quadraticRegressionf(const float x[], const float y[], int num, float cba[3])
+{
+    /// TODO: this can be made faster if done in a less general way
+
+    int i;
+    float sumx4 = 0, sumx3 = 0, sumx2 = 0, sumx1 = 0, sumx2y1 = 0, sumx1y1 = 0, sumy1 = 0;
+
+    stackAllocateMatrixf(left, 3, 3);
+    stackAllocateMatrixf(invleft, 3, 3);
+    stackAllocateMatrixf(right, 3, 1);
+    stackAllocateMatrixf(solution, 3, 1);
+
+    if(num < 3)
+        return 0;
+
+    for(i = 0; i < num; i++)
+    {
+        float x1 = x[i];
+        float y1 = y[i];
+        float x2 = x1*x1;
+
+        sumx1 += x1;
+        sumy1 += y1;
+        sumx2 += x2;
+        sumx3 += x2*x1;
+        sumx4 += x2*x2;
+        sumx1y1 += x1*y1;
+        sumx2y1 += x2*y1;
+
+    }// for all inputs
+
+    // fill out the matrices
+    matrixSetf(&left, 0, 0, sumx4);
+    matrixSetf(&left, 0, 1, sumx3);
+    matrixSetf(&left, 0, 2, sumx2);
+
+    matrixSetf(&left, 1, 0, sumx3);
+    matrixSetf(&left, 1, 1, sumx2);
+    matrixSetf(&left, 1, 2, sumx1);
+
+    matrixSetf(&left, 2, 0, sumx2);
+    matrixSetf(&left, 2, 1, sumx1);
+    matrixSetf(&left, 2, 2, num);
+
+    if(!matrixInversef(&left, &invleft))
+        return FALSE;
+
+    // The right side column vector
+    matrixSetf(&right, 0, 0, sumx2y1);
+    matrixSetf(&right, 0, 1, sumx1y1);
+    matrixSetf(&right, 0, 2, sumy1);
+
+    // Compute the solution column vector
+    matrixMultiplyf(&invleft, &right, &solution);
+
+    // Record the results
+    cba[2] = matrixGetf(&solution, 0, 0);
+    cba[1] = matrixGetf(&solution, 0, 1);
+    cba[0] = matrixGetf(&solution, 0, 2);
+
+    return TRUE;
+
+}// quadraticRegression
+
+
+
 

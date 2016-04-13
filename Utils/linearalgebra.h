@@ -160,6 +160,15 @@ BOOL matrixInverse(const Matrix_t* A, Matrix_t* B);
 //! Test a matrix for its error to identity
 double testForIdentity(const Matrix_t* M);
 
+//! Evaluate the derivative of quadratic equation at x
+double quadraticDerivativeEvaluation(const double cba[3], double x);
+
+//! Evaluate a quadratic equation with 3 coefficients at x
+double quadraticEvaluation(const double cba[3], double x);
+
+//! Solve a quadratic regression to determine the coefficients c, b, and a.
+BOOL quadraticRegression(const double x[], const double y[], int num, double cba[3]);
+
 //! Set all elements of a vector3 to a specific value
 float* vector3Setf(float vector[NVECTOR3], float value);
 
@@ -294,6 +303,15 @@ BOOL matrixInversef(const Matrixf_t* A, Matrixf_t* B);
 
 //! Test a matrix for its error to identity
 float testForIdentityf(const Matrixf_t* M);
+
+//! Evaluate the derivative of quadratic equation at x
+float quadraticDerivativeEvaluationf(const float cba[3], float x);
+
+//! Evaluate a quadratic equation with 3 coefficients at x
+float quadraticEvaluationf(const float cba[3], float x);
+
+//! Solve a quadratic regression to determine the coefficients c, b, and a.
+BOOL quadraticRegressionf(const float x[], const float y[], int num, float cba[3]);
 
 // C++ compilers: don't mangle us
 #ifdef __cplusplus
