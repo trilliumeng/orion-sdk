@@ -262,7 +262,8 @@ See TrilliumPacket.c for details.
         <Data name="Current3v3" inMemoryType="float32" encodedType="unsigned16" scaler="1000" comment="Current in Amps of the 3.3-volt rail"/>
         <Data name="CrownTemp" inMemoryType="float32" encodedType="signed8" comment="Temperature of the crown board in degrees Celsius"/>
         <Data name="SlaTemp" inMemoryType="float32" encodedType="signed8" comment="Temperature of the SLA-1500 board (if applicable) in degrees Celsius"/>
-        <Data name="reserved" inMemoryType="null" array="2" encodedType="unsigned8" comment="Reserved space for future expansion"/>
+        <Data name="GyroTemp" inMemoryType="float32" encodedType="signed8" comment="Stabilization gyro ADC temperature in degrees Celsius"/>
+        <Data name="reserved" inMemoryType="null" encodedType="unsigned8" constant="0" comment="Reserved space for future expansion"/>
         <Data name="Voltage24Var" inMemoryType="float32" encodedType="unsigned16" scaler="100000" comment="Voltage variance of the 24-volt rail"/>
         <Data name="Voltage12Var" inMemoryType="float32" encodedType="unsigned16" scaler="100000" comment="Voltage variance of the 12-volt rail"/>
         <Data name="Voltage3v3Var" inMemoryType="float32" encodedType="unsigned16" scaler="100000" comment="Voltage variance of the 3.3-volt rail"/>
