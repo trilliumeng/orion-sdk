@@ -53,6 +53,12 @@ const double* vector3Scale(const double vector[NVECTOR3], double result[NVECTOR3
 //! Scale a three dimensional vector to unit length.
 const double* vector3Unit(const double vector[NVECTOR3], double result[NVECTOR3]);
 
+//! Convert a double-precision vector to single precision
+const float *vector3Convert(const double vector[NVECTOR3], float result[NVECTOR3]);
+
+//! Convert a double-precision vector to single precision
+const double *vector3Convertf(const float vector[NVECTOR3], double result[NVECTOR3]);
+
 //! The matrix structure which holds data in row major format
 typedef struct
 {

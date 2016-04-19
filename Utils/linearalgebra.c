@@ -200,6 +200,39 @@ const double* vector3Scale(const double vector[NVECTOR3], double result[NVECTOR3
 }// vector3Scale
 
 
+/*!
+ * Convert a double-precision vector to single precision
+ * \param vector is the vector to be converted
+ * \param result receives the converted vector
+ * \return a const pointer to result.
+ */
+const float *vector3Convert(const double vector[NVECTOR3], float result[NVECTOR3])
+{
+    result[VECTOR3X] = vector[VECTOR3X];
+    result[VECTOR3Y] = vector[VECTOR3Y];
+    result[VECTOR3Z] = vector[VECTOR3Z];
+
+    return result;
+
+}// vector3Convert
+
+
+/*!
+ * Convert a single-precision vector to double precision
+ * \param vector is the vector to be converted
+ * \param result receives the converted vector
+ * \return a const pointer to result.
+ */
+const double *vector3Convertf(const float vector[NVECTOR3], double result[NVECTOR3])
+{
+    result[VECTOR3X] = vector[VECTOR3X];
+    result[VECTOR3Y] = vector[VECTOR3Y];
+    result[VECTOR3Z] = vector[VECTOR3Z];
+
+    return result;
+
+}// vector3Convertf
+
 
 /*!
  * Scale a three dimensional vector to unit length. If vector is (0, 0, 0)
