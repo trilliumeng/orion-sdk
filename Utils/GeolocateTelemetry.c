@@ -172,6 +172,85 @@ BOOL offsetImageLocation(const GeolocateTelemetry_t *geo, const double imagePosL
 }// offsetImageLocation
 
 
+/*! Get the terrain intersection of the current line of sight given gimbal geolocate telemetry data.
+ *  \param pGeo[in] A pointer to incoming geolocate telemetry data
+ *  \param getElevationHAE[in] Pointer to a terrain model lookup function, which should take a lat/lon
+ *                             pair (in radians) and return the height above ellipsoid of that point
+ *  \param PosLLA[out] Terrain intersection location in the LLA frame
+ *  \param pRange[out] Target range in meters to be sent to the gimbal
+ *  \return TRUE if a valid intersection was found, otherwise FALSE. Note that if this function
+ *          returns FALSE, the data in PosLLA and pRange will still be overwritten with invalid data.
+ */
+BOOL getTerrainIntersection(const GeolocateTelemetry_t *pGeo, float (*getElevationHAE)(double, double), double PosLLA[NLLA], double *pRange)
+{
+    double UnitNED[NNED], Step, End;
+    float Temp[NNED] = { 1.0f, 0.0f, 0.0f };
+
+    // Coarse and fine line of sight ray step distances, in meters
+    static const double StepCoarse = 30.0, StepFine = 1.0;
+
+    // Maximum distance to follow a ray before giving up
+    static const double MaxDistance = 5000.0;
+
+    // Finally, rotate the unit line of sight vector by the camera DCM to get a 1-meter NED look vector
+    dcmApplyRotation(&pGeo->cameraDcm, Temp, Temp);
+
+    // Convert the unit vector in Temp[NNED] from single to double precision
+    vector3Convertf(Temp, UnitNED);
+
+    // Start with a step value of StepCoarse and loop until MaxDistance
+    Step = StepCoarse;
+    End = MaxDistance;
+
+    // Loop through LOS ranges
+    for (*pRange = Step; *pRange <= End; *pRange += Step)
+    {
+        double LineOfSight[NECEF], GroundHeight;
+
+        // Scale the unit LOS vector to the appropriate range
+        vector3Scale(UnitNED, LineOfSight, *pRange);
+
+        // Rotate from NED to ECEF
+        nedToECEFtrig(LineOfSight, LineOfSight, &pGeo->llaTrig);
+
+        // Now add the gimbal position to the line of sight vector to get ECEF position
+        vector3Sum(pGeo->posECEF, LineOfSight, LineOfSight);
+
+        // Convert the ECEF line of sight position to LLA
+        ecefToLLA(LineOfSight, PosLLA);
+
+        // Get the ground HAE
+        GroundHeight = getElevationHAE(PosLLA[LAT], PosLLA[LON]);
+
+        // If the end of this ray is under ground
+        if (PosLLA[ALT] <= GroundHeight)
+        {
+            // If we're using a coarse step
+            if (Step == StepCoarse)
+            {
+                // Back up one step
+                *pRange -= Step;
+
+                // Change to the fine step and loop until the current range
+                Step = StepFine;
+                End = *pRange + StepCoarse;
+            }
+            // If we're fine stepping, we've found the terrain intersection
+            else
+            {
+                // Clamp the altitude to the ground and tell the caller that the image position is good
+                PosLLA[ALT] = GroundHeight;
+                return TRUE;
+            }
+        }
+    }
+
+    // No valid image position
+    return FALSE;
+
+}// getTerrainIntersection
+
+
 /*!
  * Use GPS time information to compute the Gregorian calendar date.
  * This only works for dates after Jan 1 2012.

@@ -90,6 +90,9 @@ BOOL DecodeGeolocateTelemetry(const OrionPkt_t *pPkt, GeolocateTelemetry_t *pGeo
 //! Offset an image location according to a user click
 BOOL offsetImageLocation(const GeolocateTelemetry_t *geo, const double imagePosLLA[NLLA], float ydev, float zdev, double newPosLLA[NLLA]);
 
+//! Get the terrain intersection based on the current telemetry
+BOOL getTerrainIntersection(const GeolocateTelemetry_t *pGeo, float (*getElevationHAE)(double, double), double PosLLA[NLLA], double *pRange);
+
 //! Use GPS time information to compute the Gregorian calendar date.
 void computeDateFromWeekAndItow(uint16_t week, uint32_t itow, uint16_t* pyear, uint8_t* pmonth, uint8_t* pday);
 
