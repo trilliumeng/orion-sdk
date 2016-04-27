@@ -184,6 +184,8 @@ See TrilliumPacket.c for details.
         <Data name="Enable" inMemoryType="unsigned8" comment="Set to zero to disable the laser, or non-zero to enable it" />
         <Data name="Arm" inMemoryType="unsigned8" comment="Set to zero to disarm the laser, or non-zero to arm" />
         <Data name="Fire" inMemoryType="unsigned8" comment="Set to zero to deactivate the laser, or non-zero to activate it" />
+        <Data name="OnTime" inMemoryType="unsigned16" comment="Periodic laser pulse on time, in milliseconds, or zero to fire continuously" />
+        <Data name="OffTime" inMemoryType="unsigned16" comment="Periodic laser pulse off time, in milliseconds, or zero to fire continuously" />
     </Packet>
 
     <Enum name="OrionMaxLasers_t" comment="The maximum number of lasers in an Orion Gimbal">
@@ -191,6 +193,7 @@ See TrilliumPacket.c for details.
     </Enum>
 
     <Enum name="OrionLaserType_t" comment="Laser type identifiers">
+        <Value name="LASER_TYPE_NONE" comment="" />
         <Value name="LASER_TYPE_POINTER" comment="Laser pointer" />
         <Value name="LASER_TYPE_10MJ_MARKER" comment="" />
     </Enum>
