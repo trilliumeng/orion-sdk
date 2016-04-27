@@ -198,19 +198,21 @@ See TrilliumPacket.c for details.
         <Value name="LASER_TYPE_10MJ_MARKER" comment="" />
     </Enum>
 
-    <Packet name="OrionLaserState" file="OrionPublicPacket" ID="ORION_PKT_LASER_STATE" >
+    <Structure name="OrionLaserState" comment="Per-laser state information">
+        <Data name="Type" enum="OrionLaserType_t" encodedType="unsigned8" comment="The type of this laser" />
+        <Data name="Enabled" inMemoryType="bitfield1" comment="Set to 1 if the laser is enabled, otherwise 0" />
+        <Data name="Armed" inMemoryType="bitfield1" comment="Set to 1 if the laser is armed, otherwise 0" />
+        <Data name="Active" inMemoryType="bitfield1" comment="Set to 1 if the laser is active, otherwise 0" />
+        <Data name="GroundSpeedLock" inMemoryType="bitfield1" comment="Set to 1 if the laser is locked due to low ground speed, otherwise 0" />
+        <Data name="AltitudeLock" inMemoryType="bitfield1" comment="Set to 1 if the laser is locked due to low GPS altitude, otherwise 0" />
+        <Data name="PasswordLock" inMemoryType="bitfield1" comment="Set to 1 if the laser is locked by password, otherwise 0" />
+        <Data name="Reserved" inMemoryType="bitfield10" constant="0" comment="Reserved for future use" />
+        <Data name="WaitTimer" inMemoryType="unsigned16" comment="Time remaining, in milliseconds, before the laser will accept another command" />
+    </Structure>
+
+    <Packet name="OrionLaserStates" file="OrionPublicPacket" ID="ORION_PKT_LASER_STATE" >
         <Data name="NumLasers" inMemoryType="unsigned8" comment="Number of installed lasers" />
-        <Structure name="LaserState" array="MAX_LASERS" variableArray="NumLasers" comment="Per-laser state information">
-            <Data name="Type" enum="OrionLaserType_t" encodedType="unsigned8" comment="The type of this laser" />
-            <Data name="Enabled" inMemoryType="bitfield1" comment="Set to 1 if the laser is enabled, otherwise 0" />
-            <Data name="Armed" inMemoryType="bitfield1" comment="Set to 1 if the laser is armed, otherwise 0" />
-            <Data name="Active" inMemoryType="bitfield1" comment="Set to 1 if the laser is active, otherwise 0" />
-            <Data name="GroundSpeedLock" inMemoryType="bitfield1" comment="Set to 1 if the laser is locked due to low ground speed, otherwise 0" />
-            <Data name="AltitudeLock" inMemoryType="bitfield1" comment="Set to 1 if the laser is locked due to low GPS altitude, otherwise 0" />
-            <Data name="PasswordLock" inMemoryType="bitfield1" comment="Set to 1 if the laser is locked by password, otherwise 0" />
-            <Data name="Reserved" inMemoryType="bitfield10" constant="0" comment="Reserved for future use" />
-            <Data name="WaitTimer" inMemoryType="unsigned16" comment="Time remaining, in milliseconds, before the laser will accept another command" />
-        </Structure>
+        <Data name="State" struct="OrionLaserState" array="MAX_LASERS" variableArray="NumLasers" />
     </Packet>
 
     <Packet name="OrionLimitsData" file="OrionPublicPacket" ID="ORION_PKT_LIMITS" comment=" and tilt limits of operation.">
