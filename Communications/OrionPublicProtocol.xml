@@ -180,7 +180,7 @@ See TrilliumPacket.c for details.
     <Packet name="OrionLaserCommand" file="OrionPublicPacket" ID="ORION_PKT_LASER_CMD" comment="Command to fire the laser (if installed).">
 	    <Data name="Reserved" inMemoryType="null" encodedType="unsigned16" constant="0" comment="Deprecated parameter - set to zero" />
         <Data name="Index" inMemoryType="unsigned8" comment="Index of the laser to apply this command to" />
-        <Data name="Password" inMemoryType="signed8" array="64" encodedType="string" comment="Password, if required by the laser. If a password is required, it must be provided in order to change any aspect of the laser's state (e.g., enable/disable, arm/disarm, fire/deactivate" />
+        <Data name="Password" inMemoryType="signed8" array="16" encodedType="string" comment="Password, if required by the laser. If a password is required, it must be provided in order to change any aspect of the laser's state (e.g., enable/disable, arm/disarm, fire/deactivate" />
         <Data name="Enable" inMemoryType="unsigned8" comment="Set to zero to disable the laser, or non-zero to enable it" />
         <Data name="Arm" inMemoryType="unsigned8" comment="Set to zero to disarm the laser, or non-zero to arm" />
         <Data name="Fire" inMemoryType="unsigned8" comment="Set to zero to deactivate the laser, or non-zero to activate it" />
