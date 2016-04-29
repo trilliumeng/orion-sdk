@@ -198,7 +198,7 @@ See TrilliumPacket.c for details.
         <Value name="LASER_TYPE_10MJ_MARKER" comment="" />
     </Enum>
 
-    <Structure name="OrionLaserState" comment="Per-laser state information">
+    <Structure name="OrionLaserState" file="OrionPublicPacket" comment="Per-laser state information">
         <Data name="Type" enum="OrionLaserType_t" encodedType="unsigned8" comment="The type of this laser" />
         <Data name="Enabled" inMemoryType="bitfield1" comment="Set to 1 if the laser is enabled, otherwise 0" />
         <Data name="Armed" inMemoryType="bitfield1" comment="Set to 1 if the laser is armed, otherwise 0" />
