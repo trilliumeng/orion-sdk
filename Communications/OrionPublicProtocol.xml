@@ -99,7 +99,9 @@ See TrilliumPacket.c for details.
         <Value name="ORION_PKT_INS_OPTIONS" comment="Configuration options for the Inertial Navigation System"/>
         <Value name="ORION_PKT_STARE_START" comment="Stare portion of step stare started"/>
         <Value name="ORION_PKT_STARE_ACK" comment="Stare acknowledged, clear to move"/>
-        <Value name="ORION_PKT_PRIVATE_E0" value="0xE0" comment="Reserved packet identifier"/>
+        <Value name="ORION_PKT_PRIVATE_DE" value="0xDE" comment="Reserved packet identifier"/>
+        <Value name="ORION_PKT_PRIVATE_DF" comment="Reserved packet identifier"/>
+        <Value name="ORION_PKT_PRIVATE_E0" comment="Reserved packet identifier"/>
         <Value name="ORION_PKT_PRIVATE_E1" comment="Reserved packet identifier"/>
         <Value name="ORION_PKT_PRIVATE_E2" comment="Reserved packet identifier"/>
         <Value name="ORION_PKT_PRIVATE_E3" comment="Reserved packet identifier"/>
