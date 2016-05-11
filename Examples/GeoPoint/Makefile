@@ -9,19 +9,19 @@ BIN			= GeoPoint
 SRCS			= $(wildcard *.c)
 OBJS			= $(SRCS:.c=.o)
 
-CFLAGS += $(EXTRA_CFLAGS) -I../.. -I../../publiccomms -I../LinuxComm
+CFLAGS += $(EXTRA_CFLAGS) -I../../Communications -I../../Utils -I../LinuxComm
 
 %.o:%.c
-	$(V)$(CC) -c $(CFLAGS) $< -o $@ $(QOUT)
+	@$(CC) -c $(CFLAGS) $< -o $@ $(QOUT)
 
-$(BIN): $(OBJS) ../../libOrionComm.a ../LinuxComm/libLinuxComm.a
-	$(V)$(CC) $(LDFLAGS) -o $(BIN) $(OBJS) $(QOUT) -L../.. -L../LinuxComm -lOrionComm -lLinuxComm
+$(BIN): ../../Communications/libOrionComm.a ../../Utils/libOrionUtils.a $(OBJS)
+	@$(CC) $(LDFLAGS) -o $(BIN) $(OBJS) $(QOUT) -L../../Communications -L../../Utils -L../LinuxComm -lOrionUtils -lOrionComm -lLinuxComm -lm
 
-../../libOrionComm.a:
-	make -C ../../
+../../Communications/libOrionComm.a:
+	@make -C ../../Communications
 
-../LinuxComm/libLinuxComm.a:
-	make -C ../LinuxComm/
+../../Utils/libOrionUtils.a:
+	@make -C ../../Utils
 
 clean: 
-	$(V)rm -f $(BIN) *.debug *.o core *~
+	@rm -f $(BIN) *.debug *.o core *~

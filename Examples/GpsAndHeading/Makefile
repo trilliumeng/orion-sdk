@@ -5,17 +5,17 @@
 .PHONY: build install clean
 
 
-BIN			= libLinuxComm.a
+BIN			= GpsAndHeading
 SRCS			= $(wildcard *.c)
 OBJS			= $(SRCS:.c=.o)
 
-CFLAGS += $(EXTRA_CFLAGS) -I../../Communications -I../../Utils
+CFLAGS += $(EXTRA_CFLAGS) -I../../Communications -I../../Utils -I../LinuxComm
 
 %.o:%.c
 	@$(CC) -c $(CFLAGS) $< -o $@ $(QOUT)
 
 $(BIN): ../../Communications/libOrionComm.a ../../Utils/libOrionUtils.a $(OBJS)
-	@ar rcs $(BIN) $(OBJS)
+	@$(CC) $(LDFLAGS) -o $(BIN) $(OBJS) $(QOUT) -L../../Communications -L../../Utils -L../LinuxComm -lOrionUtils -lOrionComm -lLinuxComm -lm
 
 ../../Communications/libOrionComm.a:
 	@make -C ../../Communications

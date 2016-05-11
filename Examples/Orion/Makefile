@@ -9,16 +9,19 @@ BIN			= Orion
 SRCS			= $(wildcard *.c)
 OBJS			= $(SRCS:.c=.o)
 
-CFLAGS += $(EXTRA_CFLAGS) -I../.. -I../../publiccomms
+CFLAGS += $(EXTRA_CFLAGS) -I../../Communications -I../../Utils
 
 %.o:%.c
-	$(V)$(CC) -c $(CFLAGS) $< -o $@ $(QOUT)
+	@$(CC) -c $(CFLAGS) $< -o $@ $(QOUT)
 
-$(BIN): $(OBJS) ../../libOrionComm.a
-	$(V)$(CC) $(LDFLAGS) -o $(BIN) $(OBJS) $(QOUT) -L../.. -lOrionComm
+$(BIN): ../../Communications/libOrionComm.a ../../Utils/libOrionUtils.a $(OBJS)
+	@$(CC) $(LDFLAGS) -o $(BIN) $(OBJS) $(QOUT) -L../../Communications -L../../Utils -lOrionComm -lOrionUtils -lm
 
-../../libOrionComm.a:
-	make -C ../../
+../../Communications/libOrionComm.a:
+	@make -C ../../Communications
+
+../../Utils/libOrionUtils.a:
+	@make -C ../../Utils
 
 clean: 
-	$(V)rm -f $(BIN) *.debug *.o core *~
+	@rm -f $(BIN) *.debug *.o core *~

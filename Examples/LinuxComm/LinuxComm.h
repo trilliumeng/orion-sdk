@@ -1,7 +1,7 @@
 #ifndef LINUXCOMM_H
 #define LINUXCOMM_H
 
-#include "OrionPacket.h"
+#include "OrionPublicPacketShim.h"
 
 #include <sys/socket.h>
 #include <sys/types.h>

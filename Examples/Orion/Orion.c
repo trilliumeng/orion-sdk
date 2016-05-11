@@ -1,4 +1,4 @@
-#include "OrionPacket.h"
+#include "OrionPublicPacketShim.h"
 #include <string.h>
 #include <stdio.h>
 
@@ -11,15 +11,21 @@ static void ProcessData(const UInt8 *pData, UInt32 Length);
 
 int main(int argc, char **argv)
 {
-    float Pos[2] = { 135.0f * PIf / 180.0f, -30.0f * PIf / 180.0f };
-    float Vel[2] = { 0, 0 };
     UInt8 Buffer[64];
+    OrionCmd_t Cmd;
+
+    // Form a command that will tell the gimbal to move at 10 deg/s in pan for one second
+    Cmd.Target[GIMBAL_AXIS_PAN]  = deg2radf(10.0f);
+    Cmd.Target[GIMBAL_AXIS_TILT] = deg2radf(0.0f);
+    Cmd.Mode = ORION_MODE_RATE;
+    Cmd.ImpulseTime = 1.0f;
+    Cmd.Stabilized = FALSE;
 
     // IMPORTANT: Zero out the packet structure before using for decoding
     memset(&PktIn, 0, sizeof(PktIn));
 
     // This is how you form a packet
-    FormOrionEncoderData(&PktOut, Pos, Vel);
+    encodeOrionCmdPacketStructure(&PktOut, &Cmd);
 
     // For now, I fake sending it by copying it straight into the input buffer
     memcpy(Buffer, &PktOut, PktOut.Length + ORION_PKT_OVERHEAD);
@@ -49,18 +55,18 @@ void ProcessData(const UInt8  *pData, UInt32 Length)
             switch (PktIn.ID)
             {
             // Encoder position/velocity report
-            case ORION_PKT_ENCODER_DATA:
+            case ORION_PKT_CMD:
             {
-                float Pos[NUM_GIMBAL_AXES];
-                float Vel[NUM_GIMBAL_AXES];
+                OrionCmd_t Cmd;
 
                 // If this encoder data packet contains valid data
-                if (DecodeOrionEncoderData(&PktIn, Pos, Vel))
+                if (decodeOrionCmdPacketStructure(&PktIn, &Cmd))
                 {
-                    // Convert the encoder positions to degrees and print them out
-                    printf("Pan: %6.1f, Tilt: %6.1f\r",
-                           Pos[GIMBAL_AXIS_PAN]  * 180.0f / PIf,
-                           Pos[GIMBAL_AXIS_TILT] * 180.0f / PIf);
+                    // Print the command data to stdout
+                    printf("Pan: %.1f deg/s, Tilt: %.1f deg/s, ImpulseTime: %.1f, Mode: %d, Stabilized: %d\r",
+                           rad2degf(Cmd.Target[GIMBAL_AXIS_PAN]),
+                           rad2degf(Cmd.Target[GIMBAL_AXIS_TILT]),
+                           Cmd.ImpulseTime, Cmd.Mode, Cmd.Stabilized);
                 }
                 break;
             }
