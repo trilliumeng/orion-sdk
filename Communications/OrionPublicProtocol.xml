@@ -366,7 +366,8 @@ See TrilliumPacket.c for details.
 
     <Packet name="OrionHitachiSettings" file="OrionPublicPacket" ID="ORION_PKT_HITACHI_SETTINGS" comment="Hitachi-specific camera settings">
         <Data name="Index" inMemoryType="unsigned8" comment="Index of the camera that these settings should apply to. Use 0xFF to apply to any connected Hitachi camera."/>
-        <Data name="Reserved" inMemoryType="unsigned8" comment="TBD"/>
+        <Data name="IntegrationTime" inMemoryType="signed16" comment="Integration time in microseconds, or negative to disable shutter-priority mode" />
+        <Data name="Aperture" inMemoryType="float32" encodedType="signed16" scaler="10" comment="Aperture f-number, or negative to disable aperture-priority mode" />
     </Packet>
 
     <Enum name="OrionRetractCmd_t" comment="The retraction mechanism command">
