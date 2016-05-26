@@ -19,6 +19,7 @@ void quaternionToDCM(const float quat[NQUATERNION], DCM_t* dcm)
     float q2sq = SQR(quat[Q2]);
     float q3sq = SQR(quat[Q3]);
 
+    // This form taken from Groves
     dcmSet(dcm, 0, 0, q0sq + q1sq - q2sq - q3sq);
     dcmSet(dcm, 0, 1, 2*(quat[Q1]*quat[Q2] - quat[Q3]*quat[Q0]));
     dcmSet(dcm, 0, 2, 2*(quat[Q1]*quat[Q3] + quat[Q2]*quat[Q0]));
@@ -49,6 +50,9 @@ void dcmToQuaternion(const DCM_t* dcm, float quat[NQUATERNION])
     // protects agains sqrt of negative. If the argument would have been
     // negative then the fabs changes the sign of all terms of the quat. This is
     // allowable as inverting all 4 elements does not change the rotation.
+    //
+    // This code is derived from:
+    // http://www.euclideanspace.com/maths/geometry/rotations/conversions/matrixToQuaternion/
     quat[Q0] = fabsf(1 + dcmdata[T11] + dcmdata[T22] + dcmdata[T33]);
     quat[Q1] = fabsf(1 + dcmdata[T11] - dcmdata[T22] - dcmdata[T33]);
     quat[Q2] = fabsf(1 - dcmdata[T11] + dcmdata[T22] - dcmdata[T33]);
@@ -74,22 +78,22 @@ void dcmToQuaternion(const DCM_t* dcm, float quat[NQUATERNION])
     switch(imax)
     {
     default:
-    case 0:
+    case Q0:
         quat[Q1] = mult*(dcmdata[T32] - dcmdata[T23]);
         quat[Q2] = mult*(dcmdata[T13] - dcmdata[T31]);
         quat[Q3] = mult*(dcmdata[T21] - dcmdata[T12]);
         break;
-    case 1:
+    case Q1:
         quat[Q0] = mult*(dcmdata[T32] - dcmdata[T23]);
         quat[Q2] = mult*(dcmdata[T21] + dcmdata[T12]);
         quat[Q3] = mult*(dcmdata[T13] + dcmdata[T31]);
         break;
-    case 2:
+    case Q2:
         quat[Q0] = mult*(dcmdata[T13] - dcmdata[T31]);
         quat[Q1] = mult*(dcmdata[T21] + dcmdata[T12]);
         quat[Q3] = mult*(dcmdata[T32] + dcmdata[T23]);
         break;
-    case 3:
+    case Q3:
         quat[Q0] = mult*(dcmdata[T21] - dcmdata[T12]);
         quat[Q1] = mult*(dcmdata[T13] + dcmdata[T31]);
         quat[Q2] = mult*(dcmdata[T32] + dcmdata[T23]);
@@ -344,6 +348,15 @@ BOOL testQuaternion(void)
     error += fabsf(1.0f - quaternionLength(quat));
     error += fabsf(deg2radf(160.0f) - quaternionRoll(quat));
 
+    setDCMBasedOnYaw(&dcm, deg2radf(160.0f));
+    dcmToQuaternion(&dcm, quat);
+    error += fabsf(1.0f - quaternionLength(quat));
+    error += fabsf(deg2radf(160.0f) - quaternionYaw(quat));
+
+    setDCMBasedOnPitch(&dcm, deg2radf(85.5f));
+    dcmToQuaternion(&dcm, quat);
+    error += fabsf(1.0f - quaternionLength(quat));
+    error += fabsf(deg2radf(85.5f) - quaternionPitch(quat));
 
     setQuaternionBasedOnYaw(quat, deg2radf(13.5f));
     error += fabsf(1.0f - quaternionLength(quat));
@@ -360,6 +373,16 @@ BOOL testQuaternion(void)
     quaternionToDCM(quat, &dcm);
     error += fabsf(deg2radf(-160.0f) - dcmRoll(&dcm));
 
+    setQuaternionBasedOnYaw(quat, deg2radf(-160.0f));
+    error += fabsf(1.0f - quaternionLength(quat));
+    quaternionToDCM(quat, &dcm);
+    error += fabsf(deg2radf(-160.0f) - dcmYaw(&dcm));
+
+    setQuaternionBasedOnPitch(quat, deg2radf(-85.5f));
+    error += fabsf(1.0f - quaternionLength(quat));
+    quaternionToDCM(quat, &dcm);
+    error += fabsf(deg2radf(-85.5f) - dcmPitch(&dcm));
+
     setDCMBasedOnEuler(&dcm, deg2radf(-13.5f), deg2radf(27.5f), deg2radf(-160.0f));
     dcmToQuaternion(&dcm, quat);
     error += fabsf(1.0f - quaternionLength(quat));
@@ -370,6 +393,18 @@ BOOL testQuaternion(void)
     quaternionToDCM(quat, &dcm);
     error += fabsf(deg2radf(-13.5f) - dcmYaw(&dcm));
     error += fabsf(deg2radf(27.5f) - dcmPitch(&dcm));
+    error += fabsf(deg2radf(-160.0f) - dcmRoll(&dcm));
+
+    setDCMBasedOnEuler(&dcm, deg2radf(-85.5f), deg2radf(75.0f), deg2radf(-160.0f));
+    dcmToQuaternion(&dcm, quat);
+    error += fabsf(1.0f - quaternionLength(quat));
+    error += fabsf(deg2radf(-85.5f) - quaternionYaw(quat));
+    error += fabsf(deg2radf(75.0f) - quaternionPitch(quat));
+    error += fabsf(deg2radf(-160.0f) - quaternionRoll(quat));
+
+    quaternionToDCM(quat, &dcm);
+    error += fabsf(deg2radf(-85.5f) - dcmYaw(&dcm));
+    error += fabsf(deg2radf(75.0f) - dcmPitch(&dcm));
     error += fabsf(deg2radf(-160.0f) - dcmRoll(&dcm));
 
 
