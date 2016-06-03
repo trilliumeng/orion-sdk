@@ -61,19 +61,15 @@ double wrapAngle90(double angle)
 
 /*!
  * A simple first order low pass filter where state is stored by the caller.
- * Note that the filter time constant tau should be more than half sampleTime
- * or this function will amplify noise rather than filter it.
  * \param prev is the previous output of the filter
  * \param sig is the new signal
- * \param tau is the filter time constant, which should be more than half sampleTime
+ * \param tau is the filter time constant
  * \param sampleTime is the iteration period of the filter, in the same units as tau
  * \return the new filtered value, which the caller must store
  */
 double firstOrderFilter(double prev, double sig, double tau, double sampleTime)
 {
-    double alpha = (2*tau - sampleTime)/(2*tau + sampleTime);
-
-    return alpha*prev + (1 - alpha)*sig;
+    return prev + sampleTime * (sig - prev) / (tau + sampleTime);
 
 }// firstOrderFilter
 
@@ -153,19 +149,15 @@ float wrapAngle360f(float angle)
 
 /*!
  * A simple first order low pass filter where state is stored by the caller.
- * Note that the filter time constant tau should be more than half sampleTime
- * or this function will amplify noise rather than filter it.
  * \param prev is the previous output of the filter
  * \param sig is the new signal
- * \param tau is the filter time constant, which should be more than half sampleTime
+ * \param tau is the filter time constant
  * \param sampleTime is the iteration period of the filter, in the same units as tau
  * \return the new filtered value, which the caller must store
  */
 float firstOrderFilterf(float prev, float sig, float tau, float sampleTime)
 {
-    float alpha = (2*tau - sampleTime)/(2*tau + sampleTime);
-
-    return alpha*prev + (1 - alpha)*sig;
+    return prev + sampleTime * (sig - prev) / (tau + sampleTime);
 
 }// firstOrderFilterf
 
