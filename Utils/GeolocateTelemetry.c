@@ -74,7 +74,7 @@ BOOL DecodeGeolocateTelemetry(const OrionPkt_t *pPkt, GeolocateTelemetry_t *pGeo
 
 		// Rotation from camera to gimbal, note that this only works if pan
 		// is over tilt (pan first, then tilt, just like Euler)
-        setDCMBasedOnEuler(&tempDcm, Pan, Tilt, 0.0f);
+        setDCMBasedOnPanTilt(&tempDcm, Pan, Tilt);
 
 		// Now create the rotation from camera to nav.
         matrixMultiplyf(&pGeo->gimbalDcm, &tempDcm, &pGeo->cameraDcm);
