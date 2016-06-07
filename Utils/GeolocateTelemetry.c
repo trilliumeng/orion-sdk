@@ -262,14 +262,14 @@ BOOL getTerrainIntersection(const GeolocateTelemetry_t *pGeo, float (*getElevati
  */
 void computeDateFromWeekAndItow(uint16_t week, uint32_t itow, uint16_t* pyear, uint8_t* pmonth, uint8_t* pday)
 {
-	int isleap;
-	uint8_t   month;
-	const uint16_t* month_day;
-    uint16_t dayinyear;
-
     // If the date is after 1/1/2012
     if (week >= JAN12012 / 7)
     {
+        int isleap;
+        uint8_t   month;
+        const uint16_t* month_day;
+        uint16_t dayinyear;
+        
         // We don't support dates before this year
         uint16_t year = 2012;
 
