@@ -617,6 +617,8 @@ See TrilliumPacket.c for details.
         <Data name="reserved" inMemoryType="null" array="3" encodedType="unsigned8" comment="reserved space for future expansion"/>
         <Data name="gimbalToPlatformEuler" inMemoryType="float32" array="NUM_AXES" encodedType="signed16" max="pi" comment="Roll, Pitch, Yaw angles in radians from -pi to pi. The angles give the Euler rotation (yaw first, then pitch, then roll) that rotates a vector in the gimbal reference frame into the platform reference frame"/>
         <Data name="initialHeading" inMemoryType="float32" encodedType="signed16" max="pi" comment="Initial heading angle in radians for the INS"/>
+        <Data name="gpsLeverArm" inMemoryType="float32" array="3" encodedType="signed16" scaler="1000" default="0" comment="X, Y, Z meters from GPS antenna to IMU in the gimbal reference frame, or the platform reference frame if enablePlatformRotation is on"/>
+        
     </Packet>
 
     <Packet name="StareStart" file="OrionPublicPacket" ID="ORION_PKT_STARE_START"
