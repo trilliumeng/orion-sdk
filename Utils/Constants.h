@@ -31,4 +31,9 @@
 #define deg2rad(deg)  ((deg)*PId/180.0)
 #define deg2radf(deg) ((deg)*PIf/180.0f)
 
+#define radians deg2rad
+#define radiansf deg2radf
+#define degrees rad2deg
+#define degreesf rad2degf
+
 #endif // CONSTANTS_H
