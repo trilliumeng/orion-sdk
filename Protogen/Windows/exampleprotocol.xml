@@ -1,6 +1,6 @@
 <?xml version="1.0"?>
 
-<Protocol name="Demolink" prefix="" api="1" version="1.0.0.a" endian="big" comment=
+<Protocol name="Demolink" prefix="" file="linkcode" api="1" version="1.0.0.a" endian="big" supportLongBitfield="true" bitfieldTest="true" comment=
 "This is an demonstration protocol definition. This file demonstrates most things
 that the ProtoGen application can do regarding automatic protocol packing/upacking
 code generation.
@@ -29,18 +29,27 @@ interpretation
         <Value name="TELEMETRY" comment="Regular elemetry packet"/>
         <Value name="GPS" comment="Data for a single GPS"/>
         <Value name="CONSTANT" comment="This packet just tests constant values"/>
+        <Value name="ZEROLENGTH" comment="This packet tests a zero length packet"/>
+
+    </Enum>
+
+    <Enum name="ThreeD" comment="3D axis enumeration">
+        <Value name="X"/>
+        <Value name="Y"/>
+        <Value name="Z"/>
+        <Value name="N3D"/>
     </Enum>
 
     <Packet name="KeepAlive" ID="KEEPALIVE" structureInterface="true" parameterInterface="true" comment="Send this packet to inform the receiver that the communications link is still active.">
-        <Data name="api" inMemoryType="unsigned16" constant="getDemolinkApi()" comment="the API of the sending side"/>
-        <Data name="version" inMemoryType="unsigned8" array="16" constant="getDemolinkVersion()" encodedType="fixedstring" comment="the version of the sending side"/>
+        <Data name="api" inMemoryType="unsigned16" constant="getDemolinkApi()" checkConstant="true" comment="the API of the sending side"/>
+        <Data name="version" inMemoryType="unsigned8" array="16" constant="getDemolinkVersion()" checkConstant="true" encodedType="fixedstring" comment="the version of the sending side"/>
     </Packet>
 
     <Structure name="GPS" comment="Information from a GPS including the position, velocity, and quality data.
                                    This is a generic GPS description that should suffice for most GPS devices">
 
         <Structure name="PositionLLA" comment="Position in latitude, longitude, and altitude with respect to the WGS-84 ellipsoid">
-            <Data name="latitude" inMemoryType="float64" encodedType="signed32" scaler="2^31/(pi/2)" comment="The latitude of the position in radians, positive North"/>
+            <Data name="latitude" inMemoryType="float64" encodedType="signed32" max="pi/2" comment="The latitude of the position in radians, positive North"/>
             <Data name="longitude" inMemoryType="float64" encodedType="signed32" max="pi" comment="The longitude of the position in radians, positive East"/>
             <Data name="altitude" inMemoryType="float64" encodedType="unsigned24" min="-1000" scaler="1000" comment="The altitude above the WGS-84 ellipsoid of the position in meters"/>
         </Structure>
@@ -139,7 +148,7 @@ interpretation
 
     <Packet name="Version"  parameterInterface="true" structureInterface="true"
             comment="Version information for the software and hardware. Send
-            this packet with zero lengtht to request the version information.">
+            this packet with zero length to request the version information.">
         
         <Data name="board" struct="Board" comment="details about this boards provenance"/>
         <Data name="major" inMemoryType="unsigned8" comment="major version of the software"/>
@@ -189,12 +198,16 @@ interpretation
     </Packet>
     
     <Packet name="Constant" file="TelemetryPacket" comment="This packet demonstrates all the different ways that a constant value can be used." structureInterface="true" parameterInterface="true">
-        <Data name="constant1" inMemoryType="null" constant="0x1234" encodedType="uint16_t"/>
+        <Data name="constant1" inMemoryType="null" constant="0x1234" encodedType="uint16_t" checkConstant="true"/>
         <Data name="constant2" inMemoryType="signed8" array="24" encodedType="string" constant="To be or not to be" comment="encoding a string constant"/>
         <Data name="cos45" inMemoryType="float32" constant="0.70710678118654752440084436210485" comment="directly encoding floating point constant"/>
         <Data name="sin45" inMemoryType="float32" array="3" constant="0.70710678118654752440084436210485" encodedType="signed8" max ="1" comment="scaling a floating point constant"/>
         <Data name="constant3" inMemoryType="unsigned32" constant="327612" comment="encoding an integer constant"/>
-        <Data name="token" inMemoryType="unsigned8" comment="A value that the user provides"/>
+        <Data name="constant4" inMemoryType="null" encodedType="bitfield4" constant="12" checkConstant="true" comment="encoding an integer constant"/>
+        <Data name="constant5" inMemoryType="bitfield4" constant="13" checkConstant="true" comment="encoding an integer constant"/>
+        <Data name="token" inMemoryType="float32" encodedType="bitfield7" max="127" comment="A value that the user provides"/>
     </Packet>
+
+    <Packet name="Zero" ID="ZEROLENGTH" comment="This demonstrates a zero length packet"/>
 
 </Protocol>
