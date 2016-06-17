@@ -12,7 +12,7 @@ $(LIB): $(OBJ)
 
 # Generate code and populate autogen.mk file with src list
 autogen.mk: OrionPublicProtocol.xml 
-	@../Protogen/Linux/x86/ProtoGen.sh OrionPublicProtocol.xml || true
+	@../GenerateOrionPublicPacketLinux.sh || true
 	@echo "SRC = `echo *.c`" > autogen.mk
 
 clean:
