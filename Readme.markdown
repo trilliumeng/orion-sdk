@@ -43,11 +43,11 @@ The `Utils` directory provides additional functionality for manipulating the gim
 
 It also contains shim functions for compatibility with the legacy pre-1.3 API. These functions should be considered to be deprecated, however, as they will most likely be removed in a future release.
 
-## Building the SDK – Linux
+## Building the SDK – OS X and Linux
 
 Once the prerequisites are installed, the SDK and all the examples can be built by simply running `make` in the root directory. This process will generate two static libraries, `Communications/libOrionComm.a` and `Utils/libOrionUtils.a`, which implement the entire SDK and can be linked into any application. It will also build the example applications in the `Examples` directory which are based on those libraries.
 
-## Getting Started -- Windows
+## Building the SDK – Windows
 
 TBD
 
