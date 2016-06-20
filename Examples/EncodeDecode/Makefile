@@ -5,7 +5,7 @@
 .PHONY: build install clean
 
 
-BIN			= Orion
+BIN			= EncodeDecode
 SRCS			= $(wildcard *.c)
 OBJS			= $(SRCS:.c=.o)
 

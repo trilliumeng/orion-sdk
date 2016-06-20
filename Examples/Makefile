@@ -1,4 +1,4 @@
-DIRS = LinuxComm Orion GeoPoint GpsAndHeading
+DIRS = EncodeDecode LinuxComm GeoPoint GpsAndHeading
 
 build:
 	@for x in $(DIRS); do make -C $$x; done
