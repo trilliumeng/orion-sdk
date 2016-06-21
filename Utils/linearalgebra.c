@@ -953,6 +953,29 @@ double testForIdentity(const Matrix_t* M)
 
 
 /*!
+ * Test for zero matrix by returning the sum of the absolute differences between
+ * a Matrix and a null matrix of the same dimensions.
+ * \param M points to the matrix to test
+ * \return the total error between M and null
+ */
+double testForZeroMatrix(const Matrix_t* M)
+{
+    uint32_t row, col;
+    double error = 0.0;
+
+    for(row = 0; row < M->numRows; row++)
+    {
+        for(col = 0; col < M->numCols; col++)
+        {
+        	error += fabs(0.0 - matrixGet(M, row, col));
+        }
+    }
+
+    return error;
+}
+
+
+/*!
  * Evaluate the derivative of quadratic equation at x
  * \param cba is the c, b, and a coeficients in the equation y = ax^2 + bx + c.
  * \param x is the location to evaluate
@@ -1941,6 +1964,29 @@ float testForIdentityf(const Matrixf_t* M)
                 error += fabsf(1.0f - matrixGetf(M, row, col));
             else
                 error += fabsf(0.0f - matrixGetf(M, row, col));
+        }
+    }
+
+    return error;
+}
+
+
+/*!
+ * Test for zero matrix by returning the sum of the absolute differences between
+ * a Matrix and a null matrix of the same dimensions.
+ * \param M points to the matrix to test
+ * \return the total error between M and null
+ */
+float testForZeroMatrixf(const Matrixf_t* M)
+{
+    uint32_t row, col;
+    float error = 0.0f;
+
+    for(row = 0; row < M->numRows; row++)
+    {
+        for(col = 0; col < M->numCols; col++)
+        {
+        	error += fabsf(0.0f - matrixGetf(M, row, col));
         }
     }
 

@@ -166,6 +166,9 @@ BOOL matrixInverse(const Matrix_t* A, Matrix_t* B);
 //! Test a matrix for its error to identity
 double testForIdentity(const Matrix_t* M);
 
+//! Test a matrix for its error to null
+double testForZeroMatrix(const Matrix_t* M);
+
 //! Evaluate the derivative of quadratic equation at x
 double quadraticDerivativeEvaluation(const double cba[3], double x);
 
@@ -309,6 +312,9 @@ BOOL matrixInversef(const Matrixf_t* A, Matrixf_t* B);
 
 //! Test a matrix for its error to identity
 float testForIdentityf(const Matrixf_t* M);
+
+//! Test a matrix for its error to null
+float testForZeroMatrixf(const Matrixf_t* M);
 
 //! Evaluate the derivative of quadratic equation at x
 float quadraticDerivativeEvaluationf(const float cba[3], float x);
