@@ -51,9 +51,10 @@ int main(int argc, char **argv)
             LinuxCommSend(CommHandle, &PktOut);
 
             // Tell the user how many bytes got sent out
-            printf("\nSending %d bytes...\n", UserOut.size);
+            printf("\nSending packet %d: %d byte%s...\n", UserOut.id, UserOut.size, (UserOut.size == 1) ? "" : "s");
 
-            // Finally, empty the buffer by setting its size to zero
+            // Finally, increment the packet ID and empty the buffer by setting its size to zero
+            UserOut.id++;
             UserOut.size = 0;
         }
 
@@ -67,7 +68,7 @@ int main(int argc, char **argv)
                 UserIn.data[UserIn.size] = 0;
 
                 // Now print the incoming data to stdout
-                printf("RX: %s\n", (char *)UserIn.data);
+                printf("Received Packet %d: %s\n", UserIn.id, (char *)UserIn.data);
             }
         }
 
