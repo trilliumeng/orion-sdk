@@ -1,13 +1,6 @@
-#include "OrionPublicPacketShim.h"
+#include "OrionPublicPacket.h"
+#include "earthposition.h"
 #include "LinuxComm.h"
-
-#include <sys/fcntl.h>
-#include <errno.h>
-#include <stdlib.h>
-#include <termios.h>
-#include <unistd.h>
-#include <string.h>
-#include <stdio.h>
 
 // Incoming and outgoing packet structures. Incoming structure *MUST* be persistent
 //  between calls to ProcessData.
@@ -43,7 +36,7 @@ int main(int argc, char **argv)
     }
 
     // This is how you form a packet
-    FormGeopointCommand(&PktOut, TargetPosLla, TargetVelNed);
+    encodeGeopointCmdPacket(&PktOut, TargetPosLla[LAT], TargetPosLla[LON], TargetPosLla[ALT], TargetVelNed);
 
     // Send the packet
     LinuxCommSend(CommHandle, &PktOut);

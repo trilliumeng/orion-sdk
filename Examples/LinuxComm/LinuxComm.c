@@ -1,5 +1,7 @@
 #include "LinuxComm.h"
 
+#include <arpa/inet.h>
+
 static struct sockaddr *GetSockAddr(uint32_t Address, unsigned short port);
 
 int LinuxCommOpenSerial(const char *pPath)
@@ -80,6 +82,7 @@ int LinuxCommOpenNetwork(void)
             {
                 // Pull the gimbal's IP address from the datagram header
                 UInt32 Address = ntohl(((struct sockaddr_in *)GetSockAddr(0, 0))->sin_addr.s_addr);
+                char IpString[INET_ADDRSTRLEN];
 
                 // Open a file descriptor for the TCP comm socket
                 TcpHandle = socket(AF_INET, SOCK_STREAM, 0);
@@ -92,6 +95,12 @@ int LinuxCommOpenNetwork(void)
 
                 // Now make the socket non-blocking for future reads/writes
                 fcntl(TcpHandle, F_SETFL, O_NONBLOCK);
+
+                // Convert the IP address to network byte order
+                Address = htonl(Address);
+
+                // Now print out the IP address that we connected to
+                printf("Connected to %s\n", inet_ntop(AF_INET, &Address, IpString, INET_ADDRSTRLEN));
 
                 // Close the UDP socket now that we're done with it and get out of this loop
                 close(UdpHandle);

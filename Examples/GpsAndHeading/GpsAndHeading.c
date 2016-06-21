@@ -1,4 +1,4 @@
-#include "OrionPublicPacketShim.h"
+#include "OrionPublicPacket.h"
 #include "LinuxComm.h"
 
 // Incoming and outgoing packet structures. Inco0ming structure *MUST* be persistent
@@ -57,7 +57,7 @@ int main(int argc, char **argv)
     }
 
     // Form a GPS data packet
-    FormOrionGpsData(&PktOut, &Gps);
+    encodeGpsDataPacketStructure(&PktOut, &Gps);
 
     // Send the packet
     LinuxCommSend(CommHandle, &PktOut);

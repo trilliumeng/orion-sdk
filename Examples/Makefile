@@ -1,4 +1,4 @@
-DIRS = EncodeDecode LinuxComm GeoPoint GpsAndHeading
+DIRS = EncodeDecode LinuxComm GeoPoint GpsAndHeading UserData
 
 build:
 	@for x in $(DIRS); do make -C $$x; done
