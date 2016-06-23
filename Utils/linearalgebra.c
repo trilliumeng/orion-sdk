@@ -1293,6 +1293,36 @@ const float* vector3Unitf(const float vector[NVECTOR3], float result[NVECTOR3])
 }// vector3Unit
 
 
+/*!
+ * Compute the absolute value of all three elements in a vector
+ * \param vector is the vector to be scaled to unit lenght
+ * \param result receives the unit vector. Result can be the same as vector.
+ * \return a const pointer to result.
+ */
+const double *vector3Abs(const double vector[NVECTOR3], double result[NVECTOR3])
+{
+    result[VECTOR3X] = fabs(vector[VECTOR3X]);
+    result[VECTOR3Y] = fabs(vector[VECTOR3Y]);
+    result[VECTOR3Z] = fabs(vector[VECTOR3Z]);
+    return result;
+}
+
+
+/*!
+ * Compute the absolute value of all three elements in a vector
+ * \param vector is the vector to be scaled to unit lenght
+ * \param result receives the unit vector. Result can be the same as vector.
+ * \return a const pointer to result.
+ */
+const float *vector3Absf(const float vector[NVECTOR3], float result[NVECTOR3])
+{
+    result[VECTOR3X] = fabsf(vector[VECTOR3X]);
+    result[VECTOR3Y] = fabsf(vector[VECTOR3Y]);
+    result[VECTOR3Z] = fabsf(vector[VECTOR3Z]);
+    return result;
+}
+
+
 //! Invert a 2x2 matrix
 static BOOL matrixInverse2x2f(const Matrixf_t* A, Matrixf_t* B);
 

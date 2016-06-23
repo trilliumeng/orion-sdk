@@ -59,6 +59,24 @@ const float *vector3Convert(const double vector[NVECTOR3], float result[NVECTOR3
 //! Convert a double-precision vector to single precision
 const double *vector3Convertf(const float vector[NVECTOR3], double result[NVECTOR3]);
 
+//! Compute the absolute value of all three elements in a vector
+const double *vector3Abs(const double vector[NVECTOR3], double result[NVECTOR3]);
+
+//! Compute the absolute value of all three elements in a vector
+const float *vector3Absf(const float vector[NVECTOR3], float result[NVECTOR3]);
+
+//! Get the largest element in a vector
+#define vector3Max(vector)  MAX(vector[VECTOR3X], MAX(vector[VECTOR3Y], vector[VECTOR3Z]))
+
+//! Get the largest element in a vector
+#define vector3Maxf(vector) MAX(vector[VECTOR3X], MAX(vector[VECTOR3Y], vector[VECTOR3Z]))
+
+//! Get the smallest element in a vector
+#define vector3Min(vector)  MIN(vector[VECTOR3X], MIN(vector[VECTOR3Y], vector[VECTOR3Z]))
+
+//! Get the smallest element in a vector
+#define vector3Minf(vector) MIN(vector[VECTOR3X], MIN(vector[VECTOR3Y], vector[VECTOR3Z]))
+
 //! The matrix structure which holds data in row major format
 typedef struct
 {
