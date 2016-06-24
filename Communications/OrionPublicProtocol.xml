@@ -191,6 +191,7 @@ See TrilliumPacket.c for details.
         <Data name="OnTime" inMemoryType="unsigned16" comment="Periodic laser pulse on time, in milliseconds, or zero to fire continuously" />
         <Data name="OffTime" inMemoryType="unsigned16" comment="Periodic laser pulse off time, in milliseconds, or zero to fire continuously" />
         <Data name="PrfCode" inMemoryType="unsigned16" default="0" comment="Laser PRF code, if applicable" />
+        <Data name="SafetyBypass" inMemoryType="unsigned8" default="0" comment="Set to a non-zero value to bypass all laser safety checks" />
     </Packet>
 
     <Enum name="OrionMaxLasers_t" comment="The maximum number of lasers in an Orion Gimbal">
@@ -213,6 +214,7 @@ See TrilliumPacket.c for details.
         <Data name="PasswordLock" inMemoryType="bitfield1" comment="Set to 1 if the laser is locked by password, otherwise 0" />
         <Data name="ApCommLock" inMemoryType="bitfield1" comment="Set to 1 if the laser is locked due to lost autopilot comms, otherwise 0" />
         <Data name="ApFlyingLock" inMemoryType="bitfield1" comment="Set to 1 if the laser is locked because the autopilot is not in a 'flying' state, otherwise 0" />
+        <Data name="BypassEnabled" inMemoryType="bitfield1y" comment="Set to 1 if the current command is bypassing the safety interlocks, otherwise 0" />
         <Data name="Reserved" inMemoryType="bitfield8" constant="0" comment="Reserved for future use" />
         <Data name="WaitTimer" inMemoryType="unsigned16" comment="Time remaining, in milliseconds, before the laser will accept another command" />
     </Structure>
