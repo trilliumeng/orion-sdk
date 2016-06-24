@@ -27,7 +27,7 @@ int LinuxCommOpenSerial(const char *pPath)
             memset(&Port, 0, sizeof(Port));
 
             // Now set up all the other miscellaneous flags appropriately
-            Port.c_cflag = B57600 | CS8 | CLOCAL | CREAD;
+            Port.c_cflag = B115200 | CS8 | CLOCAL | CREAD;
 
             // Try passing the new attributes to the port
             if (tcsetattr(Handle, TCSANOW, &Port) != 0)
