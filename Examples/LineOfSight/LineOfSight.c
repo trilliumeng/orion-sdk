@@ -59,10 +59,10 @@ int main(int argc, char **argv)
         if (LinuxCommReceive(CommHandle, &PktIn) && DecodeGeolocateTelemetry(&PktIn, &Geo))
         {
             double TargetLla[NLLA], Range;
-            static int Iteration = 0;
+            static uint32_t LastTime = 0;
 
-            // Throttle lookups back to once every 10 geolocate updates
-            if (++Iteration >= 10)
+            // Throttle lookups back to once every second
+            if (Geo.base.systemTime > LastTime + 1000)
             {
                 // Try finding an intersection with the WGS-84 ellipsoid
                 if (getTerrainIntersection(&Geo, GetElevation, TargetLla, &Range))
@@ -83,8 +83,8 @@ int main(int argc, char **argv)
                 else
                     printf("TARGET LLA: %-44s\r", "INVALID");
 
-                // Zero the throttle timer
-                Iteration = 0;
+                // Keep track of the current system time for the next iteration
+                LastTime = Geo.base.systemTime;
             }
 
             // Flush the stdout buffers to the terminal
