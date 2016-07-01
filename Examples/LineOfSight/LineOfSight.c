@@ -8,6 +8,7 @@
 #include "GeolocateTelemetry.h"
 #include "LinuxComm.h"
 
+#define TILE_CACHE 25
 // #define DEBUG
 
 #ifdef DEBUG
@@ -17,19 +18,18 @@
 #endif
 
 static int TriangleContainsPoint(const double A[NLLA], const double B[NLLA], const double C[NLLA], double P[NLLA]);
-static int GetTile(const Tile_t *pTile);
+static int GetTile(const TileInfo_t *pTile);
 static float GetElevation(double TargetLat, double TargetLon);
 static void KillProcess(const char *pMessage, int Value);
 static void ProcessArgs(int argc, char **argv, int *pLevel);
 
 static OrionPkt_t PktIn, PktOut;
-static Vertices_t Vertices;
-static Triangles_t Triangles;
-static Tile_t CurrentTile = { -1, -1, -1 };
+static Tile_t Tiles[TILE_CACHE];
+static int TileIndex = 0;
 static int CommHandle = -1;
 
-// Elevation tile level of detail - defaults to 15
-static int TileLevel = 15;
+// Elevation tile level of detail - defaults to 12
+static int TileLevel = 12;
 
 int main(int argc, char **argv)
 {
@@ -68,11 +68,12 @@ int main(int argc, char **argv)
                 if (getTerrainIntersection(&Geo, GetElevation, TargetLla, &Range))
                 {
                     // If we got a valid intersection, print it out
-                    printf("TARGET LLA: %10.6lf %11.6lf %6.1lf, RANGE: %5.0lf\r",
+                    printf("TARGET LLA: %10.6lf %11.6lf %6.1lf, RANGE: %5.0lf, %3d TILES LOADED\r",
                            degrees(TargetLla[LAT]),
                            degrees(TargetLla[LON]),
                            TargetLla[ALT],
-                           Range);
+                           Range,
+                           TileIndex);
 
                     // Send the computed slant range data to the gimbal
                     encodeOrionRangeDataPacket(&PktOut, Range, 1000, RANGE_SRC_OTHER);
@@ -80,7 +81,7 @@ int main(int argc, char **argv)
                 }
                 // Otherwise, tell the user that the lookup failed for some reason
                 else
-                    printf("TARGET LLA: %-43s\r", "INVALID");
+                    printf("TARGET LLA: %-44s\r", "INVALID");
 
                 // Zero the throttle timer
                 Iteration = 0;
@@ -170,121 +171,118 @@ static int TriangleContainsPoint(const double A[NLLA], const double B[NLLA], con
 
 }// TriangleContainsPoint
 
-static int GetTile(const Tile_t *pTile)
+static int GetTile(const TileInfo_t *pTileInfo)
 {
-    // If the requested tile is already downloaded and read into RAM
-    if ((pTile->Level == CurrentTile.Level) && (pTile->X == CurrentTile.X) && (pTile->Y == CurrentTile.Y))
+    char Cmd[64], File[64];
+    FILE *pFile;
+    int i;
+
+    for (i = 0; i < MIN(TILE_CACHE, TileIndex); i++)
     {
-        // We're done here
-        return 1;
-    }
-    else
-    {
-        char Cmd[64], File[64];
-        FILE *pFile;
-
-        // Pull the appropriate tile from the server and construct the file name string
-        sprintf(Cmd, "./get_tile.sh %d %d %d", pTile->Level, pTile->X, pTile->Y);
-        system(Cmd);
-        sprintf(File, "cache/%d/%d/%d.terrain", pTile->Level, pTile->X, pTile->Y);
-
-        // Open the terrain file
-        pFile = fopen(File, "rb");
-
-        // If the file opens successfully
-        if (pFile != NULL)
-        {
-            double CenterLla[NLLA], Scale = PId / (1 << pTile->Level);
-            int16_t U = 0, V = 0, H = 0;
-            Header_t Header;
-
-            // Delete all heap-allocated storage
-            free(Triangles.pIndices);
-            free(Vertices.pLla);
-            free(Vertices.pH);
-            free(Vertices.pV);
-            free(Vertices.pU);
-
-            // Read header structure
-            fread(&Header, sizeof(Header_t), 1, pFile);
-
-            // Convert the ECEF center point of this tile to LLA
-            ecefToLLA((double *)&Header, CenterLla);
-
-            // Set up constants for degrees-to-meters Taylor series expansion
-            static const double m1 = 111132.92, m2 = -559.82, m3 = 1.175, m4 = -0.0023;
-            static const double p1 = 111412.84, p2 = -93.5,   p3 = 0.118;
-
-            // Read in the vertex count
-            fread(&Vertices.Count, sizeof(uint32_t), 1, pFile);
-
-            // Print the tile dimensions in meters, along with the number of points
-            DEBUG_PRINT(" Tile width   = %.1fm\n", rad2deg(Scale) * (p1 * cos(CenterLla[LAT])) + (p2 * cos(3 * CenterLla[LAT])) + (p3 * cos(5 * CenterLla[LAT])));
-            DEBUG_PRINT(" Tile height  = %.1fm\n", rad2deg(Scale) * (m1 + (m2 * cos(2 * CenterLla[LAT])) + (m3 * cos(4 * CenterLla[LAT])) + (m4 * cos(6 * CenterLla[LAT]))));
-            DEBUG_PRINT(" Points       = %d\n", Vertices.Count);
-
-            // Allocate space for vertex data (U/V/H as well as LLA)
-            Vertices.pU = (uint16_t *)malloc(Vertices.Count * sizeof(uint16_t));
-            Vertices.pV = (uint16_t *)malloc(Vertices.Count * sizeof(uint16_t));
-            Vertices.pH = (uint16_t *)malloc(Vertices.Count * sizeof(uint16_t));
-            Vertices.pLla = (double *)malloc(Vertices.Count * 3 * sizeof(double));
-
-            // Now read the U/V/H data from the file
-            fread(Vertices.pU, sizeof(uint16_t) * Vertices.Count, 1, pFile);
-            fread(Vertices.pV, sizeof(uint16_t) * Vertices.Count, 1, pFile);
-            fread(Vertices.pH, sizeof(uint16_t) * Vertices.Count, 1, pFile);
-
-            // For each vertex read from the file
-            for (int i = 0; i < Vertices.Count; i++)
-            {
-                // Decode the zigzag data and add the delta to the running raw U/V/H trackers
-                U += (Vertices.pU[i] >> 1) ^ (-(Vertices.pU[i] & 1));
-                V += (Vertices.pV[i] >> 1) ^ (-(Vertices.pV[i] & 1));
-                H += (Vertices.pH[i] >> 1) ^ (-(Vertices.pH[i] & 1));
-
-                // Compute and store the LLA position of this point
-                Vertices.pLla[i * NLLA + LAT] = CenterLla[LAT] + (V / 32767.0f - 0.5f) * Scale;
-                Vertices.pLla[i * NLLA + LON] = CenterLla[LON] + (U / 32767.0f - 0.5f) * Scale;
-                Vertices.pLla[i * NLLA + ALT] = H * (Header.MaxHeight - Header.MinHeight) / 32767.0f + Header.MinHeight;
-            }
-
-            // Now read the number of triangles that follow
-            fread(&Triangles.Count, sizeof(uint32_t), 1, pFile);
-
-            // Allocate space for and read in the triangles' vertex data
-            Triangles.pIndices = (uint16_t *)malloc(Triangles.Count * 3 * sizeof(uint16_t));
-            fread(Triangles.pIndices, sizeof(uint16_t) * Triangles.Count * 3, 1, pFile);
-
-            // Close the terrain file now that we've gotten all we need from it
-            fclose(pFile);
-
-            // For each vertex in each triangle
-            for (int i = 0, MaxIndex = 0; i < Triangles.Count * 3; i++)
-            {
-                // Decode the "high-water-mark" encoded index of this vertex
-                if (Triangles.pIndices[i] == 0)
-                    Triangles.pIndices[i] = MaxIndex++;
-                else
-                    Triangles.pIndices[i] = MaxIndex - Triangles.pIndices[i];
-            }
-
-            // Save the current tile information
-            CurrentTile = *pTile;
-
-            // Tell the caller that we got the tile
-            return 1;
-        }
+        if (pTileInfo->Level != Tiles[i].Info.Level)
+            continue;
+        else if (pTileInfo->X != Tiles[i].Info.X)
+            continue;
+        else if (pTileInfo->Y != Tiles[i].Info.Y)
+            continue;
         else
+            return i;
+    }
+
+    // Pull the appropriate tile from the server and construct the file name string
+    sprintf(Cmd, "./get_tile.sh %d %d %d", pTileInfo->Level, pTileInfo->X, pTileInfo->Y);
+    system(Cmd);
+    sprintf(File, "cache/%d/%d/%d.terrain", pTileInfo->Level, pTileInfo->X, pTileInfo->Y);
+
+    // Open the terrain file
+    pFile = fopen(File, "rb");
+
+    // If the file opens successfully
+    if (pFile != NULL)
+    {
+        Tile_t *pTile = &Tiles[TileIndex % TILE_CACHE];
+        double CenterLla[NLLA], Scale = PId / (1 << pTileInfo->Level);
+        int16_t U = 0, V = 0, H = 0;
+        Header_t Header;
+
+        // Delete all heap-allocated storage
+        free(pTile->Triangles.pIndices);
+        free(pTile->Vertices.pLla);
+        free(pTile->Vertices.pH);
+        free(pTile->Vertices.pV);
+        free(pTile->Vertices.pU);
+
+        // Read header structure
+        fread(&Header, sizeof(Header_t), 1, pFile);
+
+        // Convert the ECEF center point of this tile to LLA
+        ecefToLLA((double *)&Header, CenterLla);
+
+        // Set up constants for degrees-to-meters Taylor series expansion
+        static const double m1 = 111132.92, m2 = -559.82, m3 = 1.175, m4 = -0.0023;
+        static const double p1 = 111412.84, p2 = -93.5,   p3 = 0.118;
+
+        // Read in the vertex count
+        fread(&pTile->Vertices.Count, sizeof(uint32_t), 1, pFile);
+
+        // Print the tile dimensions in meters, along with the number of points
+        DEBUG_PRINT(" Tile width   = %.1fm\n", rad2deg(Scale) * (p1 * cos(CenterLla[LAT])) + (p2 * cos(3 * CenterLla[LAT])) + (p3 * cos(5 * CenterLla[LAT])));
+        DEBUG_PRINT(" Tile height  = %.1fm\n", rad2deg(Scale) * (m1 + (m2 * cos(2 * CenterLla[LAT])) + (m3 * cos(4 * CenterLla[LAT])) + (m4 * cos(6 * CenterLla[LAT]))));
+        DEBUG_PRINT(" Points       = %d\n", pTile->Vertices.Count);
+
+        // Allocate space for vertex data (U/V/H as well as LLA)
+        pTile->Vertices.pU = (uint16_t *)malloc(pTile->Vertices.Count * sizeof(uint16_t));
+        pTile->Vertices.pV = (uint16_t *)malloc(pTile->Vertices.Count * sizeof(uint16_t));
+        pTile->Vertices.pH = (uint16_t *)malloc(pTile->Vertices.Count * sizeof(uint16_t));
+        pTile->Vertices.pLla = (double *)malloc(pTile->Vertices.Count * 3 * sizeof(double));
+
+        // Now read the U/V/H data from the file
+        fread(pTile->Vertices.pU, sizeof(uint16_t) * pTile->Vertices.Count, 1, pFile);
+        fread(pTile->Vertices.pV, sizeof(uint16_t) * pTile->Vertices.Count, 1, pFile);
+        fread(pTile->Vertices.pH, sizeof(uint16_t) * pTile->Vertices.Count, 1, pFile);
+
+        // For each vertex read from the file
+        for (int i = 0; i < pTile->Vertices.Count; i++)
         {
-            // Invalidate the current tile
-            CurrentTile.Level = -1;
-            CurrentTile.X = -1;
-            CurrentTile.Y = -1;
+            // Decode the zigzag data and add the delta to the running raw U/V/H trackers
+            U += (pTile->Vertices.pU[i] >> 1) ^ (-(pTile->Vertices.pU[i] & 1));
+            V += (pTile->Vertices.pV[i] >> 1) ^ (-(pTile->Vertices.pV[i] & 1));
+            H += (pTile->Vertices.pH[i] >> 1) ^ (-(pTile->Vertices.pH[i] & 1));
+
+            // Compute and store the LLA position of this point
+            pTile->Vertices.pLla[i * NLLA + LAT] = CenterLla[LAT] + (V / 32767.0f - 0.5f) * Scale;
+            pTile->Vertices.pLla[i * NLLA + LON] = CenterLla[LON] + (U / 32767.0f - 0.5f) * Scale;
+            pTile->Vertices.pLla[i * NLLA + ALT] = H * (Header.MaxHeight - Header.MinHeight) / 32767.0f + Header.MinHeight;
         }
+
+        // Now read the number of triangles that follow
+        fread(&pTile->Triangles.Count, sizeof(uint32_t), 1, pFile);
+
+        // Allocate space for and read in the triangles' vertex data
+        pTile->Triangles.pIndices = (uint16_t *)malloc(pTile->Triangles.Count * 3 * sizeof(uint16_t));
+        fread(pTile->Triangles.pIndices, sizeof(uint16_t) * pTile->Triangles.Count * 3, 1, pFile);
+
+        // Close the terrain file now that we've gotten all we need from it
+        fclose(pFile);
+
+        // For each vertex in each triangle
+        for (int i = 0, MaxIndex = 0; i < pTile->Triangles.Count * 3; i++)
+        {
+            // Decode the "high-water-mark" encoded index of this vertex
+            if (pTile->Triangles.pIndices[i] == 0)
+                pTile->Triangles.pIndices[i] = MaxIndex++;
+            else
+                pTile->Triangles.pIndices[i] = MaxIndex - pTile->Triangles.pIndices[i];
+        }
+
+        pTile->Info = *pTileInfo;
+
+        // Tell the caller that we got the tile
+        return (TileIndex++ % TILE_CACHE);
     }
 
     // No data available... or something
-    return 0;
+    return -1;
 
 }// GetTile
 
@@ -293,23 +291,28 @@ static float GetElevation(double TargetLat, double TargetLon)
     double TargetLla[NLLA] = { TargetLat, TargetLon, -10000.0 };
     double Scale = PId / (1 << TileLevel);
     int Result = 0;
-    Tile_t Tile;
+    TileInfo_t TileInfo;
+    int Index;
 
     // Load up the tile description structure with
-    Tile.Level = TileLevel;
-    Tile.X = (TargetLon + PId * 1.0f) / Scale;
-    Tile.Y = (TargetLat + PId * 0.5f) / Scale;
+    TileInfo.Level = TileLevel;
+    TileInfo.X = (TargetLon + PId * 1.0f) / Scale;
+    TileInfo.Y = (TargetLat + PId * 0.5f) / Scale;
+
+    Index = GetTile(&TileInfo);
 
     // If we can get the elevation tile containing this lat/lon
-    if (GetTile(&Tile))
+    if (Index > 0)
     {
+        Tile_t *pTile = &Tiles[Index];
+
         // For each triangle in the list
-        for (int i = 0; i < Triangles.Count; i++)
+        for (int i = 0; i < pTile->Triangles.Count; i++)
         {
             // Get pointers to the LLA data of the three vertices in this triangle
-            double *pA = &Vertices.pLla[Triangles.pIndices[i * 3 + 0] * NLLA];
-            double *pB = &Vertices.pLla[Triangles.pIndices[i * 3 + 1] * NLLA];
-            double *pC = &Vertices.pLla[Triangles.pIndices[i * 3 + 2] * NLLA];
+            double *pA = &pTile->Vertices.pLla[pTile->Triangles.pIndices[i * 3 + 0] * NLLA];
+            double *pB = &pTile->Vertices.pLla[pTile->Triangles.pIndices[i * 3 + 1] * NLLA];
+            double *pC = &pTile->Vertices.pLla[pTile->Triangles.pIndices[i * 3 + 2] * NLLA];
 
             // If the point we're looking for is contained within this triangle
             if (TriangleContainsPoint(pA, pB, pC, TargetLla))

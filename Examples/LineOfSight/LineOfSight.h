@@ -55,6 +55,13 @@ typedef struct
 
     // Y index
     int Y;
+} TileInfo_t;
+
+typedef struct
+{
+    TileInfo_t Info;
+    Vertices_t Vertices;
+    Triangles_t Triangles;
 } Tile_t;
 
 #endif // LINEOFSIGHT_H
