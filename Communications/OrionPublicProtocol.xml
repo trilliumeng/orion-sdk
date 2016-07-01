@@ -419,8 +419,16 @@ See TrilliumPacket.c for details.
 	        <Value name="sourcePayload" comment="The debug packet came from the payload board software"/>
 	    </Enum>
 
+        <Enum name="debugPriority" comment="Priority level of a debug message">
+            <Value name="debugLevelLog" comment="Logging information only, lowest priority" />
+            <Value name="debugLevelInfo" comment="Informational message" />
+            <Value name="debugLevelWarn" comment="Warning message" />
+            <Value name="debugLevelError" comment="Describes a recoverable error" />
+            <Value name="debugLevelFatal" comment="Describes an unrecoverable error, highest priority" />
+        </Enum>
+
         <Data name="source" enum="debugSource" encodedType="unsigned8" comment="Identifier to determine which board sent the debug packet"/>
-        <Data name="priority" inMemoryType="unsigned8" comment="The importance of the debug message (to be defined)"/>
+        <Data name="priority" enum="debugPriority" encodedType="unsigned8" comment="The importance of the debug message"/>
         <Data name="reserved1" inMemoryType="unsigned8"/>
         <Data name="reserved2" inMemoryType="unsigned8"/>
         <Data name="description" inMemoryType="signed8" array="128" encodedType="string" comment="human readable description of the debug problem"/>
