@@ -153,7 +153,8 @@ See TrilliumPacket.c for details.
     </Enum>
 
     <Enum name="OrionMode_t" comment="The mode of operation of the gimbal.">
-        <Value name="ORION_MODE_DISABLED" value="0" comment="disable motor output"/>
+        <Value name="ORION_MODE_DISABLED" value="0x00" comment="disable motor output"/>
+        <Value name="ORION_MODE_FAULT" value="0x01" comment="Gimbal has experienced a fault and motors have been disabled"/>
         <Value name="ORION_MODE_RATE" value="0x10" comment="Commands give the line of sight angular rate of the camera"/>
         <Value name="ORION_MODE_FFC" value="0x20" comment="Commands the gimbal to perform a flat field correction, pan and tilt will drive the IR camera to look at the black body"/>
         <Value name="ORION_MODE_SCENE" value="0x30" comment="Commands give the angular rate of the image produced by the camera"/>
