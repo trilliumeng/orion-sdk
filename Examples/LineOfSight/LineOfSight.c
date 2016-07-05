@@ -144,7 +144,7 @@ static void ProcessArgs(int argc, char **argv, int *pLevel)
 
 }// ProcessArgs
 
-static int TriangleContainsPoint(const double A[NLLA], const double B[NLLA], const double C[NLLA], double P[NLLA])
+static inline int TriangleContainsPoint(const double A[NLLA], const double B[NLLA], const double C[NLLA], double P[NLLA])
 {
     // Compute dot products
     double Dot00 = (C[0] - A[0]) * (C[0] - A[0]) + (C[1] - A[1]) * (C[1] - A[1]); // dot(AC, AC)
@@ -154,15 +154,15 @@ static int TriangleContainsPoint(const double A[NLLA], const double B[NLLA], con
     double Dot12 = (B[0] - A[0]) * (P[0] - A[0]) + (B[1] - A[1]) * (P[1] - A[1]); // dot(AB, AP)
 
     // Compute barycentric coordinates
-    double InvDenom = 1.0 / (Dot00 * Dot11 - Dot01 * Dot01);
-    double u = (Dot11 * Dot02 - Dot01 * Dot12) * InvDenom;
-    double v = (Dot00 * Dot12 - Dot01 * Dot02) * InvDenom;
+    double d = Dot00 * Dot11 - Dot01 * Dot01;
+    double u = Dot11 * Dot02 - Dot01 * Dot12;
+    double v = Dot00 * Dot12 - Dot01 * Dot02;
 
     // If the point is inside this triangle
-    if ((u >= 0) && (v >= 0) && (u + v < 1))
+    if ((u >= 0) && (v >= 0) && (u + v < d))
     {
         // Interpolate the altitude and return true
-        P[ALT] = u * C[ALT] + v * B[ALT] + (1.0f - (u + v)) * A[ALT];
+        P[ALT] = (u * C[ALT] + v * B[ALT] + (d - (u + v)) * A[ALT]) / d;
         return 1;
     }
     // Otherwise return false
