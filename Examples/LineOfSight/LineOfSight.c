@@ -302,7 +302,7 @@ static float GetElevation(double TargetLat, double TargetLon)
     Index = GetTile(&TileInfo);
 
     // If we can get the elevation tile containing this lat/lon
-    if (Index > 0)
+    if (Index >= 0)
     {
         Tile_t *pTile = &Tiles[Index];
 
