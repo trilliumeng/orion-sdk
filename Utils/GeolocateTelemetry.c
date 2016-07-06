@@ -183,7 +183,7 @@ BOOL offsetImageLocation(const GeolocateTelemetry_t *geo, const double imagePosL
  */
 BOOL getTerrainIntersection(const GeolocateTelemetry_t *pGeo, float (*getElevationHAE)(double, double), double PosLLA[NLLA], double *pRange)
 {
-    double UnitNED[NNED], Step, End;
+    double UnitNED[NNED], UnitECEF[NECEF], Step, End;
     float Temp[NNED] = { 1.0f, 0.0f, 0.0f };
 
     // Coarse and fine line of sight ray step distances, in meters
@@ -192,11 +192,14 @@ BOOL getTerrainIntersection(const GeolocateTelemetry_t *pGeo, float (*getElevati
     // Maximum distance to follow a ray before giving up
     static const double MaxDistance = 5000.0;
 
-    // Finally, rotate the unit line of sight vector by the camera DCM to get a 1-meter NED look vector
+    // Rotate a unit line of sight vector by the camera DCM to get a 1-meter NED look vector
     dcmApplyRotation(&pGeo->cameraDcm, Temp, Temp);
 
     // Convert the unit vector in Temp[NNED] from single to double precision
     vector3Convertf(Temp, UnitNED);
+
+    // Convert the unit vector to ECEF
+    nedToECEFtrig(UnitNED, UnitECEF, &pGeo->llaTrig);
 
     // Start with a step value of StepCoarse and loop until MaxDistance
     Step = StepCoarse;
@@ -208,10 +211,7 @@ BOOL getTerrainIntersection(const GeolocateTelemetry_t *pGeo, float (*getElevati
         double LineOfSight[NECEF], GroundHeight;
 
         // Scale the unit LOS vector to the appropriate range
-        vector3Scale(UnitNED, LineOfSight, *pRange);
-
-        // Rotate from NED to ECEF
-        nedToECEFtrig(LineOfSight, LineOfSight, &pGeo->llaTrig);
+        vector3Scale(UnitECEF, LineOfSight, *pRange);
 
         // Now add the gimbal position to the line of sight vector to get ECEF position
         vector3Sum(pGeo->posECEF, LineOfSight, LineOfSight);
@@ -269,7 +269,7 @@ void computeDateFromWeekAndItow(uint16_t week, uint32_t itow, uint16_t* pyear, u
         uint8_t   month;
         const uint16_t* month_day;
         uint16_t dayinyear;
-        
+
         // We don't support dates before this year
         uint16_t year = 2012;
 
