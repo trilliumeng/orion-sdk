@@ -110,6 +110,17 @@ The process of finding the image position via terrain intersection with the terr
 
 Running the `LineOfSight` application will cause it to connect to the gimbal and continuously print its image position to the terminal. It will also uplink the computed slant range to the gimbal for its own internal use.
 
+### `PathTrack`
+
+The `PathTrack` example demonstrates the use of the gimbal's path tracking mode. It will send up to 15 points, as saved in a file called `path.csv`, to the gimbal for tracking along with some optional configuration parameters. The application takes several optional arguments, which are ordered and have defaults as follows:
+
+* __Serial Port__: Serial port connected to gimbal, or omit to connect via Ethernet.
+* __StepAngle__: Angle, in degrees, to step along the path, or omit to disable step-stare mode.
+* __CrossSteps__: Number of steps across the path to make when operating in step-stare mode, or omit to disable cross-track stepping.
+* __CrossStepRatio__: Fraction of the step angle to use as a cross-track stepping angle.
+
+When the application is run, it will connect to the gimbal, send the path command and continuously print the regularly downlinked path status from the `GeolocateTelemetryCore` message.
+
 ### `UserData`
 
 The use of user data passthrough packets is demonstrated in the `UserData` example. The application acts as both a sender and receiver, so two instances can be run to communicate with each other through the gimbal. There are two optional arguments:
