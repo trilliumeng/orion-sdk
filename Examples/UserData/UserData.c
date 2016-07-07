@@ -1,5 +1,8 @@
 #include "OrionPublicPacket.h"
-#include "LinuxComm.h"
+#include "OrionComm.h"
+
+#include <stdlib.h>
+#include <stdio.h>
 
 // Incoming and outgoing packet structures. Inco0ming structure *MUST* be persistent
 //  between calls to ProcessData.
@@ -10,7 +13,7 @@ static void KillProcess(const char *pMessage, int Value);
 static void ProcessArgs(int argc, char **argv, OrionUserData_t *pUser);
 static BOOL ProcessData(void);
 static int ProcessKeyboard(void);
-static int CommHandle = -1;
+static BOOL CommHandle = FALSE;
 
 int main(int argc, char **argv)
 {
@@ -20,14 +23,14 @@ int main(int argc, char **argv)
     ProcessArgs(argc, argv, &UserOut);
 
     // If we don't have a valid handle yet (i.e. no serial port)
-    if (CommHandle < 0)
+    if (CommHandle == FALSE)
     {
         // Try to find the gimbal on the network
-        CommHandle = LinuxCommOpenNetwork();
+        CommHandle = OrionCommOpenNetwork();
     }
 
     // If we STILL don't have a valid handle
-    if (CommHandle < 0)
+    if (CommHandle == FALSE)
     {
         // Kill the whole app right now
         KillProcess("Failed to connect to gimbal", -1);
@@ -48,7 +51,7 @@ int main(int argc, char **argv)
         {
             // Encode and send the packet
             encodeOrionUserDataPacketStructure(&PktOut, &UserOut);
-            LinuxCommSend(CommHandle, &PktOut);
+            OrionCommSend(&PktOut);
 
             // Tell the user how many bytes got sent out
             printf("\nSending packet %d: %d byte%s...\n", UserOut.id, UserOut.size, (UserOut.size == 1) ? "" : "s");
@@ -59,7 +62,7 @@ int main(int argc, char **argv)
         }
 
         // Look for any incoming gimbal packets
-        while (LinuxCommReceive(CommHandle, &PktIn))
+        while (OrionCommReceive(&PktIn))
         {
             // If we find a user data packet
             if (decodeOrionUserDataPacketStructure(&PktIn, &UserIn))
@@ -90,7 +93,7 @@ static void KillProcess(const char *pMessage, int Value)
     fflush(stdout);
 
     // Close down the active file descriptors
-    LinuxCommClose(CommHandle);
+    OrionCommClose();
 
     // Finally exit with the proper return value
     exit(Value);
@@ -103,7 +106,7 @@ static void ProcessArgs(int argc, char **argv, OrionUserData_t *pUser)
     if ((argc >= 2) && (argv[1][0] == '/'))
     {
         // Try opening the specified serial port
-        CommHandle = LinuxCommOpenSerial(argv[1]);
+        CommHandle = OrionCommOpenSerial(argv[1]);
 
         // Now decrement the number of arguments and push the pointer up one arg
         argc--;
@@ -123,10 +126,12 @@ static void ProcessArgs(int argc, char **argv, OrionUserData_t *pUser)
 
 }// ProcessArgs
 
+#define _DEBUG
+
 // Look for a keypress from the user
 static int ProcessKeyboard(void)
 {
-    struct termios Old, New;
+//    struct termios Old, New;
     char c = 0;
 
 #ifndef _DEBUG

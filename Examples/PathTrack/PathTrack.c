@@ -7,14 +7,14 @@
 #include "OrionPublicPacket.h"
 #include "linearalgebra.h"
 #include "earthposition.h"
-#include "LinuxComm.h"
+#include "OrionComm.h"
 
 static int GetPathData(OrionPath_t *pPath);
 static void KillProcess(const char *pMessage, int Value);
 static void ProcessArgs(int argc, char **argv, OrionPath_t *pPath);
 
 static OrionPkt_t PktIn, PktOut;
-static int CommHandle = -1;
+static BOOL CommOpen = FALSE;
 
 int main(int argc, char **argv)
 {
@@ -24,14 +24,14 @@ int main(int argc, char **argv)
     ProcessArgs(argc, argv, &Path);
 
     // If we don't have a valid handle yet (i.e. no serial port)
-    if (CommHandle < 0)
+    if (CommOpen == FALSE)
     {
         // Try to find the gimbal on the network
-        CommHandle = LinuxCommOpenNetwork();
+        CommOpen = OrionCommOpenNetwork();
     }
 
     // If we STILL don't have a valid handle
-    if (CommHandle < 0)
+    if (CommOpen == FALSE)
     {
         // Kill the whole app right now
         KillProcess("Failed to connect to gimbal", -1);
@@ -42,13 +42,13 @@ int main(int argc, char **argv)
     {
         // Now encode and send the path to the gimbal
         encodeOrionPathPacketStructure(&PktOut, &Path);
-        LinuxCommSend(CommHandle, &PktOut);
+        OrionCommSend(&PktOut);
 
         // Now just loop forever, looking for packets
         while (1)
         {
             // Pull any pending packets off the comm port
-            while (LinuxCommReceive(CommHandle, &PktIn))
+            while (OrionCommReceive(&PktIn))
             {
                 GeolocateTelemetryCore_t Geo;
 
@@ -82,7 +82,7 @@ static void KillProcess(const char *pMessage, int Value)
     fflush(stdout);
 
     // Close down the active file descriptors
-    LinuxCommClose(CommHandle);
+    OrionCommClose();
 
     // Finally exit with the proper return value
     exit(Value);
@@ -97,7 +97,7 @@ static void ProcessArgs(int argc, char **argv, OrionPath_t *pPath)
     if ((argc >= 2) && (argv[1][0] == '/'))
     {
         // Try opening the specified serial port
-        CommHandle = LinuxCommOpenSerial(argv[1]);
+        CommOpen = OrionCommOpenSerial(argv[1]);
 
         // Now decrement the number of arguments and push the pointer up one arg
         argc--;

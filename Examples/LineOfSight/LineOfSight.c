@@ -6,7 +6,7 @@
 
 #include "LineOfSight.h"
 #include "GeolocateTelemetry.h"
-#include "LinuxComm.h"
+#include "OrionComm.h"
 
 #define TILE_CACHE 25
 // #define DEBUG
@@ -26,7 +26,7 @@ static void ProcessArgs(int argc, char **argv, int *pLevel);
 static OrionPkt_t PktIn, PktOut;
 static Tile_t Tiles[TILE_CACHE];
 static int TileIndex = 0;
-static int CommHandle = -1;
+static BOOL CommOpen = FALSE;
 
 // Elevation tile level of detail - defaults to 12
 static int TileLevel = 12;
@@ -37,14 +37,14 @@ int main(int argc, char **argv)
     ProcessArgs(argc, argv, &TileLevel);
 
     // If we don't have a valid handle yet (i.e. no serial port)
-    if (CommHandle < 0)
+    if (CommOpen == FALSE)
     {
         // Try to find the gimbal on the network
-        CommHandle = LinuxCommOpenNetwork();
+        CommOpen = OrionCommOpenNetwork();
     }
 
     // If we STILL don't have a valid handle
-    if (CommHandle < 0)
+    if (CommOpen == FALSE)
     {
         // Kill the whole app right now
         KillProcess("Failed to connect to gimbal", -1);
@@ -56,7 +56,7 @@ int main(int argc, char **argv)
         GeolocateTelemetry_t Geo;
 
         // Pull all queued up packets off the comm interface
-        while (LinuxCommReceive(CommHandle, &PktIn))
+        while (OrionCommReceive(&PktIn))
         {
             // If this packet is a geolocate telemetry packet
             if (DecodeGeolocateTelemetry(&PktIn, &Geo))
@@ -76,7 +76,7 @@ int main(int argc, char **argv)
 
                     // Send the computed slant range data to the gimbal
                     encodeOrionRangeDataPacket(&PktOut, Range, 1000, RANGE_SRC_OTHER);
-                    LinuxCommSend(CommHandle, &PktOut);
+                    OrionCommSend(&PktOut);
                 }
                 // Otherwise, tell the user that the lookup failed for some reason
                 else
@@ -101,7 +101,7 @@ static void KillProcess(const char *pMessage, int Value)
     fflush(stdout);
 
     // Close down the active file descriptors
-    LinuxCommClose(CommHandle);
+    OrionCommClose();
 
     // Finally exit with the proper return value
     exit(Value);
@@ -113,10 +113,10 @@ static void ProcessArgs(int argc, char **argv, int *pLevel)
     char Error[80];
 
     // If there are at least two arguments, and the first looks like a serial port
-    if ((argc >= 2) && (argv[1][0] == '/'))
+    if ((argc >= 2) && ((argv[1][0] == '/') || (argv[1][0] == '\\')))
     {
         // Try opening the specified serial port
-        CommHandle = LinuxCommOpenSerial(argv[1]);
+        CommOpen = OrionCommOpenSerial(argv[1]);
 
         // Now decrement the number of arguments and push the pointer up one arg
         argc--;
@@ -169,7 +169,7 @@ static int GetTile(const TileInfo_t *pTileInfo)
 {
     char Cmd[64], File[64];
     FILE *pFile;
-    int i;
+    int i, MaxIndex;
 
     for (i = 0; i < MIN(TILE_CACHE, TileIndex); i++)
     {
@@ -236,7 +236,7 @@ static int GetTile(const TileInfo_t *pTileInfo)
         fread(pTile->Vertices.pH, sizeof(uint16_t) * pTile->Vertices.Count, 1, pFile);
 
         // For each vertex read from the file
-        for (int i = 0; i < pTile->Vertices.Count; i++)
+        for (i = 0; i < pTile->Vertices.Count; i++)
         {
             // Decode the zigzag data and add the delta to the running raw U/V/H trackers
             U += (pTile->Vertices.pU[i] >> 1) ^ (-(pTile->Vertices.pU[i] & 1));
@@ -260,7 +260,7 @@ static int GetTile(const TileInfo_t *pTileInfo)
         fclose(pFile);
 
         // For each vertex in each triangle
-        for (int i = 0, MaxIndex = 0; i < pTile->Triangles.Count * 3; i++)
+        for (i = 0, MaxIndex = 0; i < pTile->Triangles.Count * 3; i++)
         {
             // Decode the "high-water-mark" encoded index of this vertex
             if (pTile->Triangles.pIndices[i] == 0)
@@ -299,9 +299,10 @@ static float GetElevation(double TargetLat, double TargetLon)
     if (Index >= 0)
     {
         Tile_t *pTile = &Tiles[Index];
+        int i;
 
         // For each triangle in the list
-        for (int i = 0; i < pTile->Triangles.Count; i++)
+        for (i = 0; i < pTile->Triangles.Count; i++)
         {
             // Get pointers to the LLA data of the three vertices in this triangle
             double *pA = &pTile->Vertices.pLla[pTile->Triangles.pIndices[i * 3 + 0] * NLLA];

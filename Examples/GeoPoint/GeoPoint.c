@@ -1,6 +1,9 @@
 #include "OrionPublicPacket.h"
 #include "earthposition.h"
-#include "LinuxComm.h"
+#include "OrionComm.h"
+
+#include <stdio.h>
+#include <stdlib.h>
 
 // Incoming and outgoing packet structures. Incoming structure *MUST* be persistent
 //  between calls to ProcessData.
@@ -10,7 +13,7 @@ static OrionPkt_t PktIn, PktOut;
 static void KillProcess(const char *pMessage, int Value);
 static void ProcessArgs(int argc, char **argv, double Pos[3], float Vel[3]);
 static BOOL ProcessData(void);
-static int CommHandle = -1;
+static BOOL CommOpen = FALSE;
 
 int main(int argc, char **argv)
 {
@@ -22,14 +25,14 @@ int main(int argc, char **argv)
     ProcessArgs(argc, argv, TargetPosLla, TargetVelNed);
 
     // If we don't have a valid handle yet (i.e. no serial port)
-    if (CommHandle < 0)
+    if (CommOpen == FALSE)
     {
         // Try to find the gimbal on the network
-        CommHandle = LinuxCommOpenNetwork();
+        CommOpen = OrionCommOpenNetwork();
     }
 
     // If we STILL don't have a valid handle
-    if (CommHandle < 0)
+    if (CommOpen == FALSE)
     {
         // Kill the whole app right now
         KillProcess("Failed to connect to gimbal", -1);
@@ -39,7 +42,7 @@ int main(int argc, char **argv)
     encodeGeopointCmdPacket(&PktOut, TargetPosLla[LAT], TargetPosLla[LON], TargetPosLla[ALT], TargetVelNed);
 
     // Send the packet
-    LinuxCommSend(CommHandle, &PktOut);
+    OrionCommSend(&PktOut);
 
     // Wait for confirmation from the gimbal, or 5 seconds - whichever comes first
     while ((++WaitCount < 50) && (ProcessData() == FALSE)) usleep(100000);
@@ -55,7 +58,7 @@ int main(int argc, char **argv)
 static BOOL ProcessData(void)
 {
     // Loop through any new incoming packets
-    while (LinuxCommReceive(CommHandle, &PktIn))
+    while (OrionCommReceive(&PktIn))
     {
         // If this is a response to the command we just sent, return TRUE
         if (PktIn.ID == ORION_PKT_GEOPOINT_CMD)
@@ -74,7 +77,7 @@ static void KillProcess(const char *pMessage, int Value)
     fflush(stdout);
 
     // Close down the active file descriptors
-    LinuxCommClose(CommHandle);
+    OrionCommClose();
 
     // Finally exit with the proper return value
     exit(Value);
@@ -89,7 +92,7 @@ static void ProcessArgs(int argc, char **argv, double Pos[3], float Vel[3])
     if ((argc >= 2) && (argv[1][0] == '/'))
     {
         // Try opening the specified serial port
-        CommHandle = LinuxCommOpenSerial(argv[1]);
+        CommOpen = OrionCommOpenSerial(argv[1]);
 
         // Now decrement the number of arguments and push the pointer up one arg
         argc--;

@@ -1,13 +1,28 @@
-#include "LinuxComm.h"
+#include "OrionComm.h"
 
+#ifdef __linux__
+
+#include <sys/socket.h>
+#include <sys/types.h>
+#include <sys/fcntl.h>
+#include <string.h>
+#include <stdio.h>
+#include <stdlib.h>
+#include <netinet/in.h>
+#include <termios.h>
+#include <errno.h>
+#include <unistd.h>
+#include <signal.h>
 #include <arpa/inet.h>
 
 static struct sockaddr *GetSockAddr(uint32_t Address, unsigned short port);
 
-int LinuxCommOpenSerial(const char *pPath)
+static int Handle = -1;
+
+BOOL OrionCommOpenSerial(const char *pPath)
 {
     // Open a file descriptor for the serial port
-    int Handle = open(pPath, O_RDWR | O_NOCTTY | O_NDELAY);
+    Handle = open(pPath, O_RDWR | O_NOCTTY | O_NDELAY);
 
     // If we actually managed to open something
     if (Handle >= 0)
@@ -40,14 +55,14 @@ int LinuxCommOpenSerial(const char *pPath)
     }
 
     // Return the file descriptor
-    return Handle;
+    return Handle != -1;
 
-}// LinuxCommOpenSerial
+}// OrionCommOpenSerial
 
-int LinuxCommOpenNetwork(void)
+BOOL OrionCommOpenNetwork(void)
 {
     // Open a new UDP socket for auto-discovery
-    int TcpHandle = -1, UdpHandle = socket(AF_INET, SOCK_DGRAM, 0);
+    int UdpHandle = socket(AF_INET, SOCK_DGRAM, 0);
 
     // If the socket looks good
     if (UdpHandle >= 0)
@@ -85,16 +100,16 @@ int LinuxCommOpenNetwork(void)
                 char IpString[INET_ADDRSTRLEN];
 
                 // Open a file descriptor for the TCP comm socket
-                TcpHandle = socket(AF_INET, SOCK_STREAM, 0);
+                Handle = socket(AF_INET, SOCK_STREAM, 0);
 
                 // Bind to the right incoming port
-                bind(TcpHandle, GetSockAddr(INADDR_ANY, TCP_PORT), sizeof(struct sockaddr_in));
+                bind(Handle, GetSockAddr(INADDR_ANY, TCP_PORT), sizeof(struct sockaddr_in));
 
                 // Connect to the gimbal's server socket (note this is a blocking call)
-                connect(TcpHandle, GetSockAddr(Address, TCP_PORT), sizeof(struct sockaddr_in));
+                connect(Handle, GetSockAddr(Address, TCP_PORT), sizeof(struct sockaddr_in));
 
                 // Now make the socket non-blocking for future reads/writes
-                fcntl(TcpHandle, F_SETFL, O_NONBLOCK);
+                fcntl(Handle, F_SETFL, O_NONBLOCK);
 
                 // Convert the IP address to network byte order
                 Address = htonl(Address);
@@ -113,25 +128,25 @@ int LinuxCommOpenNetwork(void)
     }
 
     // Return a possibly valid handle to this socket
-    return TcpHandle;
+    return Handle != -1;
 
-}// LinuxCommOpenNetwork
+}// OrionCommOpenNetwork
 
-void LinuxCommClose(int Handle)
+void OrionCommClose(void)
 {
     // Easy enough, just close the file descriptor
     close(Handle);
 
-}// LinuxCommClose
+}// OrionCommClose
 
-void LinuxCommSend(int Handle, const OrionPkt_t *pPkt)
+BOOL OrionCommSend(const OrionPkt_t *pPkt)
 {
     // Write the packet, including header data, to the file descriptor
-    write(Handle, (char *)pPkt, pPkt->Length + ORION_PKT_OVERHEAD);
+    return write(Handle, (char *)pPkt, pPkt->Length + ORION_PKT_OVERHEAD) > 0;
 
-}// LinuxCommSend
+}// OrionCommSend
 
-BOOL LinuxCommReceive(int Handle, OrionPkt_t *pPkt)
+BOOL OrionCommReceive(OrionPkt_t *pPkt)
 {
     static OrionPkt_t Pkt = { 0 };
     UInt8 Buffer;
@@ -151,7 +166,7 @@ BOOL LinuxCommReceive(int Handle, OrionPkt_t *pPkt)
     // Nope, no packets yet
     return FALSE;
 
-}// LinuxCommReceive
+}// OrionCommReceive
 
 // Quickly and easily constructs a sockaddr pointer for a bunch of different functions.
 //   Call this function with Address == Port == 0 to access the pointer, or pass in
@@ -174,3 +189,4 @@ static struct sockaddr *GetSockAddr(uint32_t Address, unsigned short Port)
     return (struct sockaddr *)&SockAddr;
 
 }// GetSockAddr
+#endif // __linux__

@@ -1,15 +1,18 @@
-#include "WindowsComm.h"
+#include "OrionComm.h"
+
+#ifdef _WIN32
+
 #include <winsock2.h>
 #include <windows.h>
 #include <stdio.h>
-#include <Ws2tcpip.h>
+#include <ws2tcpip.h>
 
 static HANDLE SerialHandle = INVALID_HANDLE_VALUE;
 static SOCKET TcpSocket = INVALID_SOCKET;
 
 static struct sockaddr *GetSockAddr(uint32_t Address, unsigned short Port);
 
-BOOL WindowsCommOpenSerial(const char *pPath)
+BOOL OrionCommOpenSerial(const char *pPath)
 {
 	// Declare variables and structures
     SerialHandle = CreateFileA(pPath, GENERIC_READ | GENERIC_WRITE, 0, NULL,
@@ -68,9 +71,9 @@ BOOL WindowsCommOpenSerial(const char *pPath)
     // Return false
     return SerialHandle != INVALID_HANDLE_VALUE;
 
-}// WindowsCommOpenSerial
+}// OrionCommOpenSerial
 
-BOOL WindowsCommOpenNetwork(void)
+BOOL OrionCommOpenNetwork(void)
 {
     WSADATA WsaData;
     WSAStartup(MAKEWORD(2, 0), &WsaData);
@@ -141,17 +144,17 @@ BOOL WindowsCommOpenNetwork(void)
     // Return a possibly valid handle to this socket
     return TcpSocket != INVALID_SOCKET;
 
-}// WindowsCommOpenNetwork
+}// OrionCommOpenNetwork
 
-void WindowsCommClose(void)
+void OrionCommClose(void)
 {
     // Easy enough, just close the file descriptor
     CloseHandle(SerialHandle);
     closesocket(TcpSocket);
 
-}// WindowsCommClose
+}// OrionCommClose
 
-BOOL WindowsCommSend(const OrionPkt_t *pPkt)
+BOOL OrionCommSend(const OrionPkt_t *pPkt)
 {
     // Write the packet, including header data, to the file descriptor
     if (SerialHandle != INVALID_HANDLE_VALUE)
@@ -159,9 +162,9 @@ BOOL WindowsCommSend(const OrionPkt_t *pPkt)
     else
         return send(TcpSocket, (char *)pPkt, pPkt->Length + ORION_PKT_OVERHEAD, 0) != SOCKET_ERROR;
 
-}// WindowsCommSend
+}// OrionCommSend
 
-BOOL WindowsCommReceive(OrionPkt_t *pPkt)
+BOOL OrionCommReceive(OrionPkt_t *pPkt)
 {
     static OrionPkt_t Pkt = { 0 };
     DWORD BytesRead;
@@ -199,7 +202,7 @@ BOOL WindowsCommReceive(OrionPkt_t *pPkt)
     // Nope, no packets yet
     return FALSE;
 
-}// WindowsCommReceive
+}// OrionCommReceive
 
 // Quickly and easily constructs a sockaddr pointer for a bunch of different functions.
 //   Call this function with Address == Port == 0 to access the pointer, or pass in
@@ -222,3 +225,4 @@ static struct sockaddr *GetSockAddr(uint32_t Address, unsigned short Port)
     return (struct sockaddr *)&SockAddr;
 
 }// GetSockAddr
+#endif // _WIN32

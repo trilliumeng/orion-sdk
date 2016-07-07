@@ -1,7 +1,9 @@
 #ifndef WINDOWSCOMM_H
 #define WINDOWSCOMM_H
 
-#include <Windows.h>
+#ifdef _WIN32
+#include <windows.h>
+#endif // _WIN32
 
 #include "OrionPublicPacketShim.h"
 
@@ -14,11 +16,11 @@ extern "C"
 {
 #endif
 
-BOOL WindowsCommOpenSerial(const char *pPath);
-BOOL WindowsCommOpenNetwork(void);
-void WindowsCommClose(void);
-BOOL WindowsCommSend(const OrionPkt_t *pPkt);
-BOOL WindowsCommReceive(OrionPkt_t *pPkt);
+BOOL OrionCommOpenSerial(const char *pPath);
+BOOL OrionCommOpenNetwork(void);
+void OrionCommClose(void);
+BOOL OrionCommSend(const OrionPkt_t *pPkt);
+BOOL OrionCommReceive(OrionPkt_t *pPkt);
 
 #ifdef __cplusplus
 }

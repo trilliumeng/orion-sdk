@@ -7,7 +7,7 @@ OBJ = $(SRC:.c=.o)
 
 build: $(LIB)
 $(LIB): $(OBJ)
-	@ar rcs $(LIB) $(OBJ)
+	@$(AR) rcs $(LIB) $(OBJ)
 	@rm *.zip 2>/dev/null || true
 
 clean:

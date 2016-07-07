@@ -1,4 +1,4 @@
-DIRS = EncodeDecode LinuxComm LineOfSight GeoPoint GpsAndHeading PathTrack UserData
+DIRS = EncodeDecode LineOfSight GeoPoint GpsAndHeading PathTrack UserData
 
 build:
 	@for x in $(DIRS); do make -C $$x; done
