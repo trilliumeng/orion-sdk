@@ -55,23 +55,22 @@ int main(int argc, char **argv)
     {
         GeolocateTelemetry_t Geo;
 
-        // If we get a geolocate telemetry packet from the gimbal
-        if (LinuxCommReceive(CommHandle, &PktIn) && DecodeGeolocateTelemetry(&PktIn, &Geo))
+        // Pull all queued up packets off the comm interface
+        while (LinuxCommReceive(CommHandle, &PktIn))
         {
-            double TargetLla[NLLA], Range;
-            static uint32_t LastTime = 0;
-
-            // Throttle lookups back to once every second
-            if (Geo.base.systemTime > LastTime + 1000)
+            // If this packet is a geolocate telemetry packet
+            if (DecodeGeolocateTelemetry(&PktIn, &Geo))
             {
+                double TargetLla[NLLA], Range;
+
                 // Try finding an intersection with the WGS-84 ellipsoid
                 if (getTerrainIntersection(&Geo, GetElevation, TargetLla, &Range))
                 {
-                    // If we got a valid intersection, print it out
+                    // If we got a valid intersection, print it out (note that we convert altitude to MSL)
                     printf("TARGET LLA: %10.6lf %11.6lf %6.1lf, RANGE: %5.0lf, %3d TILES LOADED\r",
                            degrees(TargetLla[LAT]),
                            degrees(TargetLla[LON]),
-                           TargetLla[ALT],
+                           TargetLla[ALT] - Geo.base.geoidUndulation,
                            Range,
                            TileIndex);
 
@@ -82,16 +81,11 @@ int main(int argc, char **argv)
                 // Otherwise, tell the user that the lookup failed for some reason
                 else
                     printf("TARGET LLA: %-44s\r", "INVALID");
-
-                // Keep track of the current system time for the next iteration
-                LastTime = Geo.base.systemTime;
             }
-
-            // Flush the stdout buffers to the terminal
-            fflush(stdout);
         }
 
         // Sleep for 20 ms so as not to hog the entire CPU
+        fflush(stdout);
         usleep(20000);
     }
 
