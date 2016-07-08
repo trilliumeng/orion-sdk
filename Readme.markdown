@@ -21,7 +21,12 @@ The root directory contains the scripts necessary to generate the SDK code with 
 
 ### Communications
 
-This directory contains the ProtoGen XML file and the Makefile/project necessary to build the SDK as a static library. Once the XML file has been processed, the directory will also contain all of the source code for the SDK.
+This directory contains the ProtoGen XML file and the Makefile/project necessary to build the SDK as a static library. Once the XML file has been processed, the directory will also contain all of the source code for the SDK. It also contains the low-level code for connecting to the gimbal over the Ethernet and/or serial port interfaces. To initiate a connection with a gimbal, one of the following functions must be used:
+
+* `OrionCommOpenSerial`
+* `OrionCommOpenNetwork`
+
+Both functions will return `TRUE` upon a successful connection, then `OrionCommSend` and `OrionCommReceive` may be used to send and receive Orion SDK packets. `OrionCommClose` is used to close down the connection and release all the relevant resources.
 
 ### Examples
 
@@ -58,15 +63,6 @@ The `Examples` directory contains some applications which demonstrate both the u
 ### `EncodeDecode`
 
 The `EncodeDecode` application is the simplest of the examples and does not require a gimbal to run. It only demonstrates the use of the packet parsing routines by encoding and decoding packets from a static byte buffer.
-
-### `LinuxComm`
-
-All other example applications besides `EncodeDecode` depend on this library, which provides a API to connect to a gimbal and communicate with it over either Ethernet or a serial port. To initiate a connection with a gimbal, one of the following functions must be used:
-
-* `LinuxCommOpenSerial`
-* `LinuxCommOpenNetwork`
-
-Both functions return a file descriptor which can then be used with `LinuxCommSend` and `LinuxCommReceive` to send and receive Orion SDK packets. `LinuxCommClose` is used to close down the file descriptor and release all the relevant resources.
 
 ### `GpsAndHeading`
 
@@ -115,11 +111,24 @@ Running the `LineOfSight` application will cause it to connect to the gimbal and
 The `PathTrack` example demonstrates the use of the gimbal's path tracking mode. It will send up to 15 points, as saved in a file called `path.csv`, to the gimbal for tracking along with some optional configuration parameters. The application takes several optional arguments, which are ordered and have defaults as follows:
 
 * __Serial Port__: Serial port connected to gimbal, or omit to connect via Ethernet.
-* __StepAngle__: Angle, in degrees, to step along the path, or omit to disable step-stare mode.
-* __CrossSteps__: Number of steps across the path to make when operating in step-stare mode, or omit to disable cross-track stepping.
-* __CrossStepRatio__: Fraction of the step angle to use as a cross-track stepping angle.
+* __Step Angle__: Angle, in degrees, to step along the path, or omit to disable step-stare mode.
+* __Cross Steps__: Number of steps across the path to make when operating in step-stare mode, or omit to disable cross-track stepping.
+* __Cross Step Ratio__: Fraction of the step angle to use as a cross-track stepping angle.
 
 When the application is run, it will connect to the gimbal, send the path command and continuously print the regularly downlinked path status from the `GeolocateTelemetryCore` message.
+
+### `SendCommand`
+
+The `SendCommand` example shows the use of the `OrionCmd` packet, which sets the operational mode of the gimbal. The application takes several optional arguments, which are ordered and have defaults as follows:
+
+* __Serial Port__: Serial port connected to gimbal, or omit to connect via Ethernet.
+* __Pan Target__: Pan target position or rate, depending on mode, default is 0 deg/s.
+* __Tilt Target__: Tilt target position or rate, depending on mode, default is 0 deg/s.
+* __Mode__: Operational mode: `R` for rate, `P` for position, or `D` for disabled, default is rate.
+* __Stabilized__: Set to 1 to enable inertial stabilization, default is disabled.
+* __Impulse Time__: Time in seconds to run the command (rate only) before zeroing, or set to 0 for a continuous command. Default is 0.
+
+When the application is run, it will connect to the gimbal, send the command, wait for a response, then exit.
 
 ### `UserData`
 

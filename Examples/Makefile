@@ -1,4 +1,4 @@
-DIRS = EncodeDecode LineOfSight GeoPoint GpsAndHeading PathTrack UserData
+DIRS = EncodeDecode LineOfSight GeoPoint GpsAndHeading PathTrack SendCommand UserData
 
 build:
 	@for x in $(DIRS); do make -C $$x; done
