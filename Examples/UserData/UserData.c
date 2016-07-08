@@ -128,6 +128,8 @@ static void ProcessArgs(int argc, char **argv, OrionUserData_t *pUser)
 
 #ifdef _WIN32
 # include <conio.h>
+#else
+# include <termios.h>
 #endif // _WIN32
 
 // Look for a keypress from the user
