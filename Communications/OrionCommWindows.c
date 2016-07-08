@@ -101,8 +101,8 @@ BOOL OrionCommOpenNetwork(void)
         // Build a version request packet (note that it doesn't matter what you send...)
         MakeOrionPacket(&Pkt, ORION_PKT_CROWN_VERSION, 0);
 
-        // Wait for up to 10 iterations
-        while (WaitCount++ < 10)
+        // Wait for up to 50 iterations
+        while (WaitCount++ < 50)
         {
             int Size = sizeof(struct sockaddr_in);
 
