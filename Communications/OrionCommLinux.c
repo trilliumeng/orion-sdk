@@ -122,8 +122,8 @@ BOOL OrionCommOpenNetwork(void)
                 break;
             }
 
-            // Sleep for half a second
-            usleep(500000);
+            // Sleep for 1/10th of a second
+            usleep(100000);
         }
     }
 
