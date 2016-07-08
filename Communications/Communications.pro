@@ -31,6 +31,12 @@ HEADERS += bitfieldspecial.h \
 
 INCLUDEPATH += ../Utils
 
+CONFIG(debug, debug|release) {
+    DESTDIR = debug
+} else {
+    DESTDIR = release
+}
+
 unix {
     target.path = /usr/lib
     INSTALLS += target

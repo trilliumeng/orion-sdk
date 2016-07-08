@@ -34,6 +34,12 @@ HEADERS += dcm.h \
 
 INCLUDEPATH += ../Communications
 
+CONFIG(debug, debug|release) {
+    DESTDIR = debug
+} else {
+    DESTDIR = release
+}
+
 unix {
     target.path = /usr/lib
     INSTALLS += target
