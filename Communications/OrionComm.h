@@ -2,7 +2,11 @@
 #define WINDOWSCOMM_H
 
 #ifdef _WIN32
+#define WIN32_LEAN_AND_MEAN
 #include <windows.h>
+#define usleep(x) Sleep(x/1000)
+#else
+#include <unistd.h>
 #endif // _WIN32
 
 #include "OrionPublicPacketShim.h"

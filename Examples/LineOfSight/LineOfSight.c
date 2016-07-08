@@ -3,7 +3,6 @@
 #include <math.h>
 #include <stdlib.h>
 #include <string.h>
-#include <unistd.h>
 
 #include "LineOfSight.h"
 #include "GeolocateTelemetry.h"
@@ -139,7 +138,7 @@ static void ProcessArgs(int argc, char **argv, int *pLevel)
 
 }// ProcessArgs
 
-static inline int TriangleContainsPoint(const double A[NLLA], const double B[NLLA], const double C[NLLA], double P[NLLA])
+static __inline int TriangleContainsPoint(const double A[NLLA], const double B[NLLA], const double C[NLLA], double P[NLLA])
 {
     // Compute dot products
     double Dot00 = (C[0] - A[0]) * (C[0] - A[0]) + (C[1] - A[1]) * (C[1] - A[1]); // dot(AC, AC)

@@ -4,7 +4,6 @@
 
 #include <stdio.h>
 #include <stdlib.h>
-#include <unistd.h>
 
 // Incoming and outgoing packet structures. Incoming structure *MUST* be persistent
 //  between calls to ProcessData.
@@ -18,7 +17,7 @@ static BOOL CommOpen = FALSE;
 
 int main(int argc, char **argv)
 {
-    OrionCmd_t Cmd = { };
+    OrionCmd_t Cmd = { 0 };
     int WaitCount = 0;
 
     // Process the command line arguments

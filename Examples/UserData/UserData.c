@@ -3,7 +3,6 @@
 
 #include <stdlib.h>
 #include <stdio.h>
-#include <unistd.h>
 
 // Incoming and outgoing packet structures. Inco0ming structure *MUST* be persistent
 //  between calls to ProcessData.
@@ -127,15 +126,19 @@ static void ProcessArgs(int argc, char **argv, OrionUserData_t *pUser)
 
 }// ProcessArgs
 
-#define _DEBUG
+#ifdef _WIN32
+# include <conio.h>
+#endif // _WIN32
 
 // Look for a keypress from the user
 static int ProcessKeyboard(void)
 {
-//    struct termios Old, New;
+#ifdef _WIN32
+	return (_kbhit() == 0) ? 0 : _getch();
+#else
+    struct termios Old, New;
     char c = 0;
 
-#ifndef _DEBUG
     // If we can get the current attributes for stdin
     if (tcgetattr(fileno(stdin), &Old) >= 0)
     {
@@ -160,9 +163,9 @@ static int ProcessKeyboard(void)
         // Finally, revert the stdin settings to what they were before we were called
         tcsetattr(fileno(stdin), TCSANOW, &Old);
     }
-#endif // !_DEBUG
 
     // And last but not least, return the character we read from stdin (or NULL for nothing)
     return c;
+#endif // _WIN32
 
 }// ProcessKeyboard

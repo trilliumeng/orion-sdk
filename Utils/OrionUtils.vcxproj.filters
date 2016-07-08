@@ -1,0 +1,85 @@
+<?xml version="1.0" encoding="utf-8"?>
+<Project ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <ItemGroup>
+    <Filter Include="Header Files">
+      <UniqueIdentifier>{93995380-89BD-4b04-88EB-625FBE52EBFB}</UniqueIdentifier>
+      <Extensions>h;hpp;hxx;hm;inl;inc;xsd</Extensions>
+    </Filter>
+    <Filter Include="Header Files">
+      <UniqueIdentifier>{93995380-89BD-4b04-88EB-625FBE52EBFB}</UniqueIdentifier>
+      <Extensions>h;hpp;hxx;hm;inl;inc;xsd</Extensions>
+    </Filter>
+    <Filter Include="Source Files">
+      <UniqueIdentifier>{4FC737F1-C7A5-4376-A066-2A32D752A2FF}</UniqueIdentifier>
+      <Extensions>cpp;c;cxx;def;odl;idl;hpj;bat;asm;asmx</Extensions>
+    </Filter>
+    <Filter Include="Source Files">
+      <UniqueIdentifier>{4FC737F1-C7A5-4376-A066-2A32D752A2FF}</UniqueIdentifier>
+      <Extensions>cpp;c;cxx;def;odl;idl;hpj;bat;asm;asmx</Extensions>
+    </Filter>
+  </ItemGroup>
+  <ItemGroup>
+    <ClCompile Include="GeolocateTelemetry.c">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="OrionPublicPacketShim.c">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="TrilliumPacket.c">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="WGS84.c">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="dcm.c">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="earthposition.c">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="earthrotation.c">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="linearalgebra.c">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="mathutilities.c">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="quaternion.c">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+  </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="GeolocateTelemetry.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="OrionPublicPacketShim.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="TrilliumPacket.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="WGS84.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="dcm.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="earthposition.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="earthrotation.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="linearalgebra.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="mathutilities.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="quaternion.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+  </ItemGroup>
+</Project>
