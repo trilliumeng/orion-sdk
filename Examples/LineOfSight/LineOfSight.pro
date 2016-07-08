@@ -8,8 +8,11 @@ SOURCES += LineOfSight.c
 INCLUDEPATH += ../../Communications \
     ../../Utils
 
-Debug:LIBS += -L../../Communications/debug -L../../Utils/debug
-Release:LIBS += -L../../Communications/release -L../../Utils/release
+CONFIG(debug, debug|release) {
+    LIBS += -L../../Communications/debug -L../../Utils/debug
+} else {
+    LIBS += -L../../Communications/release -L../../Utils/release
+}
 
 LIBS += -lOrionComm -lOrionUtils
 
