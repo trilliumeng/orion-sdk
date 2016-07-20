@@ -303,17 +303,27 @@ See TrilliumPacket.c (in the Orion SDK) for details.
 	<Packet name="StareStart" ID="ORION_PKT_STARE_START"
             comment="This packet is transmitted by the gimbal during step-stare operations to indicate
                      that the gimbal is staring and a step-stare image should be acquired. The
-                     position data mark the desired location that the gimbal is trying to stare at.
+                     position data mark the *desired* location that the gimbal is trying to stare at. 
+                     The *actual* position can be computed by using the gimbal position, quaternion, 
+                     and pan and tilt angles to project the camera line of sight until to the terrain model.
                      Once the image has been acquired send a ORION_PKT_STARE_ACK packet to tell the gimbal it can move to the next stare point.">
         <Data name="systemTime" inMemoryType="unsigned32" comment="Milliseconds since system bootup. This value should be echoed in the ORION_PKT_STARE_ACK respone."/>
         <Data name="maxStareTime" inMemoryType="float32" encodedType="unsigned8" max="2.55" comment="Seconds remaining before the stare is finished. Send ORION_PKT_STARE_ACK to terminate the stare early."/>
         <Data name="alongTrackStare" inMemoryType="bitfield1" comment="If set then this is the start of an along track stare, not a cross track track stare"/>
-        <Data name="prevStareTerminatedByTime" inMemoryType="bitfield1" comment="If aset then the previous stare operation was terminated by timeout rather than an ORION_PKT_STARE_ACK packet"/>
+        <Data name="prevStareTerminatedByTime" inMemoryType="bitfield1" comment="If set then the previous stare operation was terminated by timeout rather than an ORION_PKT_STARE_ACK packet"/>
+        <Data name="stareStartedByTime" inMemoryType="bitfield1" comment="If set then the stare operation was initiated by timeout rather than by achieving the pan and tilt angles necessary to look at the desired location. In this instance it is possible that the actual stare location is significantly different from the desired stare location"/>
+        <Data name="gimbalDataValid" inMemoryType="bitfield1" comment="If set then the gimbal position and attitude data are valid. If not set then only the desired stare position is valid"/>
         <Data name="prevStareTime" inMemoryType="float32" encodedType="unsigned8" max="2.55" comment="Seconds of time elapsed between the previous stare start and stare end. If this number approaches stareTime the image-acquisition system is in danger of not keeping up."/>
         <Data name="stareLoad" inMemoryType="float32" encodedType="unsigned8" max="1" comment="Amount of time spent stepping and staring, as a ratio to the time between stare starts. As the frequency of stare events goes up this number will go towards 1.0, indicating the system has reached maximum utilization."/>
-        <Data name="posLat" inMemoryType="float64" encodedType="signed32" scaler="180*10000000/pi" comment="Geodetic latitude of the stare point in radians, positive North"/>
-        <Data name="posLon" inMemoryType="float64" encodedType="signed32" scaler="180*10000000/pi" comment="Longitude of the stare point in radians, positive East"/>
-        <Data name="posAlt" inMemoryType="float64" encodedType="signed32" scaler="10000" comment="Altitude of the stare point in meters above the WGS-84 ellipsoid"/>
+        <Data name="posLat" inMemoryType="float64" encodedType="signed32" scaler="180*10000000/pi" comment="Geodetic latitude of the desired stare point in radians, positive North"/>
+        <Data name="posLon" inMemoryType="float64" encodedType="signed32" scaler="180*10000000/pi" comment="Longitude of the desired stare point in radians, positive East"/>
+        <Data name="posAlt" inMemoryType="float64" encodedType="signed32" scaler="10000" comment="Altitude of the desired stare point in meters above the WGS-84 ellipsoid"/>
+        <Data name="gimbalPosLat" inMemoryType="float64" default="0" encodedType="signed32" scaler="180*10000000/pi" comment="Geodetic latitude of the gimbal in radians, positive North"/>
+        <Data name="gimbalPosLon" inMemoryType="float64" default="0" encodedType="signed32" scaler="180*10000000/pi" comment="Longitude of the gimbal in radians, positive East"/>
+        <Data name="gimbalPosAlt" inMemoryType="float64" default="0" encodedType="signed32" scaler="10000" comment="Altitude of the gimbal in meters above the WGS-84 ellipsoid"/>
+        <Data name="gimbalQuat" inMemoryType="float32" default="0" array="4" encodedType="signed16" max="1" comment="Gimbal quaternion describing the rotation from the gimbal mount frame to the North, East, Down navigation frame"/>
+        <Data name="pan" inMemoryType="float32" default="0" encodedType="signed16" max="pi" comment="Gimbal pan angle in radians from -pi to pi"/>
+        <Data name="tilt" inMemoryType="float32" default="0" encodedType="signed16" max="pi" comment="Gimbal tilt angle in radians from -pi to pi"/>
     </Packet>
 
 	<Packet name="OrionResetSource" ID="ORION_PKT_RESET_SOURCE" parameterInterface="true" comment="Reset information for a processor in the Orion Gimbal. This packet is transmitted by each processor in the gimbal following its bootup">
