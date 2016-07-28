@@ -150,4 +150,4 @@ For further assistance, please contact Trillium directly through one of the foll
 
 ## Licensing
 
-The Orion SDK is released under the MIT License. For more licensing options, please contact Trillium at <sales@trilliumeng.com>.
+The publicly available version of the Orion SDK is licensed under a Creative Commons Attribution-NonCommercial-NoDerivatives 4.0 International License. For commercial licensing options, please contact Trillium at <sales@trilliumeng.com>.
