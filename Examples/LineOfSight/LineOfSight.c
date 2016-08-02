@@ -84,7 +84,7 @@ int main(int argc, char **argv)
                 else if (getTerrainIntersection(&Geo, GetElevation, TargetLla, &Range))
                 {
                     // Send the computed slant range data to the gimbal
-                    encodeOrionRangeDataPacket(&PktOut, Range, 10000, RANGE_SRC_OTHER);
+                    encodeOrionRangeDataPacket(&PktOut, Range, 1000, RANGE_SRC_OTHER);
                     OrionCommSend(&PktOut);
                 }
 
