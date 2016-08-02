@@ -61,7 +61,7 @@ int main(int argc, char **argv)
             // If this packet is a geolocate telemetry packet
             if (DecodeGeolocateTelemetry(&PktIn, &Geo))
             {
-                double TargetLla[NLLA], Range = -1;
+                double TargetLla[NLLA], Range;
 
                 // If we got a valid target position from the gimbal
                 if (Geo.slantRange > 0)
@@ -87,20 +87,20 @@ int main(int argc, char **argv)
                     encodeOrionRangeDataPacket(&PktOut, Range, 1000, RANGE_SRC_OTHER);
                     OrionCommSend(&PktOut);
                 }
-
-                // If there's good data, print it; otherwise, tell the user that the image position is invalid
-                if (Range > 0)
-                {
-                    // If we got a valid intersection, print it out (note that we convert altitude to MSL)
-                    printf("TARGET LLA: %10.6lf %11.6lf %6.1lf, RANGE: %5.0lf\r",
-                           degrees(TargetLla[LAT]),
-                           degrees(TargetLla[LON]),
-                           TargetLla[ALT] - Geo.base.geoidUndulation,
-                           Range);
-
-                }
+                // If both methods fail
                 else
+                {
+                    // Let the user know that we didn't come up with a valid image location and move on
                     printf("TARGET LLA: %-44s\r", "INVALID");
+                    continue;
+                }
+
+                // If we got a valid intersection, print it out (note that we convert altitude to MSL)
+                printf("TARGET LLA: %10.6lf %11.6lf %6.1lf, RANGE: %6.0lf\r",
+                       degrees(TargetLla[LAT]),
+                       degrees(TargetLla[LON]),
+                       TargetLla[ALT] - Geo.base.geoidUndulation,
+                       Range);
             }
         }
 
