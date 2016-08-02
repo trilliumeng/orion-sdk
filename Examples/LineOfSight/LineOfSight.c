@@ -61,24 +61,44 @@ int main(int argc, char **argv)
             // If this packet is a geolocate telemetry packet
             if (DecodeGeolocateTelemetry(&PktIn, &Geo))
             {
-                double TargetLla[NLLA], Range;
+                double TargetLla[NLLA], Range = -1;
 
-                // Try finding an intersection with the WGS-84 ellipsoid
-                if (getTerrainIntersection(&Geo, GetElevation, TargetLla, &Range))
+                // If we got a valid target position from the gimbal
+                if (Geo.slantRange > 0)
+                {
+                    double TargetEcef[NECEF], LosEcef[NECEF];
+
+                    // Convert the 32-bit line of sight vector to double precision
+                    vector3Convertf(Geo.base.losECEF, LosEcef);
+
+                    // Add the line of sight vector to the gimbal position, both are in the ECEF coordinate frame
+                    vector3Sum(Geo.posECEF, LosEcef, TargetEcef);
+
+                    // Convert the target position from ECEF to LLA
+                    ecefToLLA(TargetEcef, TargetLla);
+
+                    // Grab the slant range for printing
+                    Range = Geo.slantRange;
+                }
+                // As a fallback, try finding an intersection with the WGS-84 ellipsoid
+                else if (getTerrainIntersection(&Geo, GetElevation, TargetLla, &Range))
+                {
+                    // Send the computed slant range data to the gimbal
+                    encodeOrionRangeDataPacket(&PktOut, Range, 10000, RANGE_SRC_OTHER);
+                    OrionCommSend(&PktOut);
+                }
+
+                // If there's good data, print it; otherwise, tell the user that the image position is invalid
+                if (Range > 0)
                 {
                     // If we got a valid intersection, print it out (note that we convert altitude to MSL)
-                    printf("TARGET LLA: %10.6lf %11.6lf %6.1lf, RANGE: %5.0lf, %3d TILES LOADED\r",
+                    printf("TARGET LLA: %10.6lf %11.6lf %6.1lf, RANGE: %5.0lf\r",
                            degrees(TargetLla[LAT]),
                            degrees(TargetLla[LON]),
                            TargetLla[ALT] - Geo.base.geoidUndulation,
-                           Range,
-                           TileIndex);
+                           Range);
 
-                    // Send the computed slant range data to the gimbal
-                    encodeOrionRangeDataPacket(&PktOut, Range, 1000, RANGE_SRC_OTHER);
-                    OrionCommSend(&PktOut);
                 }
-                // Otherwise, tell the user that the lookup failed for some reason
                 else
                     printf("TARGET LLA: %-44s\r", "INVALID");
             }
