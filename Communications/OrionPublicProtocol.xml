@@ -189,6 +189,14 @@ See TrilliumPacket.c (in the Orion SDK) for details.
         <Data name="day" inMemoryType="bitfield5" comment="Day of the month, from 1 to 31"/>
     </Structure>
 
+    <Enum name="RangeDataSrc_t" comment="Sources of ranging information.">
+        <Value name="RANGE_SRC_NONE" comment="No ranging information"/>
+        <Value name="RANGE_SRC_SKYLINK" comment="Range information from skylink terrrain lookup"/>
+        <Value name="RANGE_SRC_LASER" comment="Range information from laser rangefinder"/>
+        <Value name="RANGE_SRC_OTHER" comment="Other source of range data"/>
+        <Value name="RANGE_SRC_INTERNAL" comment="Range information is being estimated internally by the gimbal. Note that estimates are not guaranteed be accurate and should only be used as a fallback option."/>
+    </Enum>
+
 	<Documentation comment="---"/>
     <Documentation name="Packets sent regularly by the gimbal" paragraph="1" comment="These packets are sent by the gimbal automatically, depending on the operational mode of the gimbal."/>
 
@@ -225,6 +233,7 @@ See TrilliumPacket.c (in the Orion SDK) for details.
         <Data name="imageShiftDeltaTime" inMemoryType="float32" encodedType="unsigned16" scaler="1000" default="0" comment="The amount of time in seconds over which these shifts apply. If no new shift data has arrived since this packet was last transmitted then this will be 0"/>
         <Data name="imageShiftConfidence" inMemoryType="float32" encodedType="unsigned8" max="1" default="0" comment="Registration solution confidence, from 0 (no confidence) to 1 (full confidence)."/>
         <Data name="outputShifts" inMemoryType="float32" array="NUM_GIMBAL_AXES" encodedType="signed16" max="pi" default="0" comment="X (horizontal) and Y (vertical) image shifts in radians, as displayed in the video stream"/>
+        <Data name="rangeSource" enum="RangeDataSrc_t" encodedType="unsigned8" default="RANGE_SRC_SKYLINK" comment="Range data source used in line of sight calculation"/>
     </Packet>
 
     <Packet name="OrionPerformance" ID="ORION_PKT_PERFORMANCE" parameterInterface="true" comment="Measurements related to stabilization performance. This packet is sent by the gimbal 4 times per second.">
@@ -697,15 +706,6 @@ See TrilliumPacket.c (in the Orion SDK) for details.
     <Packet name="OrionRangeData" ID="ORION_PKT_RANGE_DATA" parameterInterface="true" comment=
     	"Ranging information from the gimbal to its target. The gimbal will use this information to compute the target 
     	location and populate that informtaion in its telemetry output.">
-
-        <Enum name="RangeDataSrc_t" comment="Sources of ranging information.">
-	        <Value name="RANGE_SRC_NONE" comment="No ranging information"/>
-	        <Value name="RANGE_SRC_SKYLINK" comment="Range information from skylink terrrain lookup"/>
-	        <Value name="RANGE_SRC_LASER" comment="Range information from laser rangefinder"/>
-	        <Value name="RANGE_SRC_OTHER" comment="Other source of range data"/>
-            <Value name="RANGE_SRC_INTERNAL" comment="Range information is being estimated internally by the gimbal. Note that estimates are not guaranteed be accurate and should only be used as a fallback option."/>
-	    </Enum>
-
         <Data name="range" inMemoryType="float32" encodedType="unsigned32" scaler="100" comment="Range to target in meters"/>
         <Data name="maxAgeMs" inMemoryType="unsigned16" comment="Maximum data age before expiration in milliseconds"/>
         <Data name="source" enum="RangeDataSrc_t" encodedType="unsigned8" comment="Source of range information"/>
