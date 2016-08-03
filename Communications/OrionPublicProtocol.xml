@@ -703,6 +703,7 @@ See TrilliumPacket.c (in the Orion SDK) for details.
 	        <Value name="RANGE_SRC_SKYLINK" comment="Range information from skylink terrrain lookup"/>
 	        <Value name="RANGE_SRC_LASER" comment="Range information from laser rangefinder"/>
 	        <Value name="RANGE_SRC_OTHER" comment="Other source of range data"/>
+            <Value name="RANGE_SRC_INTERNAL" comment="Range information is being estimated internally by the gimbal. Note that estimates are not guaranteed be accurate and should only be used as a fallback option."/>
 	    </Enum>
 
         <Data name="range" inMemoryType="float32" encodedType="unsigned32" scaler="100" comment="Range to target in meters"/>
