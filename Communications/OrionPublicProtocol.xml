@@ -4,8 +4,8 @@
 "The *OrionPublic* protocol is the packet description for the public interface of the Orion gimbal from [Trillium Engineering](http://w3.trilliumeng.com/).
 The Orion gimbal communicates to users with packets of data transported over asyncrhonous serial, or transported by TCP/IP over ethernet.">
 
-	<Documentation name="Packet format" paragraph="2" comment=
-	"The general packet format is given in OrionPublicPacketShim.h and TrilliumPacket.h (in the Orion SDK), and has this form:
+    <Documentation name="Packet format" paragraph="2" comment=
+    "The general packet format is given in OrionPublicPacketShim.h and TrilliumPacket.h (in the Orion SDK), and has this form:
 
 \verbatim
 
@@ -43,7 +43,7 @@ See TrilliumPacket.c (in the Orion SDK) for details.
     }// UpdateChecksum \verbatim"/>
 
     <Documentation comment="---"/>
-	<Documentation name="Enumerations" paragraph="1" comment="Packets in the protocol refer to these global enumerations."/>
+    <Documentation name="Enumerations" paragraph="1" comment="Packets in the protocol refer to these global enumerations."/>
 
     <Enum name="OrionPktType_t" comment="Identifiers of Orion public packets. The purpose of an Orion packet is determined by its ID field to this list.">
         <Value name="ORION_PKT_INITIALIZE" value="0x00"/>
@@ -197,17 +197,17 @@ See TrilliumPacket.c (in the Orion SDK) for details.
         <Value name="RANGE_SRC_INTERNAL" comment="Range information is being estimated internally by the gimbal. Note that estimates are not guaranteed be accurate and should only be used as a fallback option."/>
     </Enum>
 
-	<Documentation comment="---"/>
+    <Documentation comment="---"/>
     <Documentation name="Packets sent regularly by the gimbal" paragraph="1" comment="These packets are sent by the gimbal automatically, depending on the operational mode of the gimbal."/>
 
-	<Packet name="GeolocateTelemetryCore" ID="ORION_PKT_GEOLOCATE_TELEMETRY" comment=
-    	"This packet is transmitted regularly by the gimbal to communicate the information needed to locate the gimbal
-    	and its imagery, to determine the gimbal mode of operation, and to determine how the video output stream is 
-    	being shifted by the gimbal. This is the primary packet that users should monitor to determine the gimbal 
-    	status and populate user interfaces.
+    <Packet name="GeolocateTelemetryCore" ID="ORION_PKT_GEOLOCATE_TELEMETRY" comment=
+        "This packet is transmitted regularly by the gimbal to communicate the information needed to locate the gimbal
+        and its imagery, to determine the gimbal mode of operation, and to determine how the video output stream is
+        being shifted by the gimbal. This is the primary packet that users should monitor to determine the gimbal
+        status and populate user interfaces.
 
-    	For users connected via asyncrhonous serial this packet is sent by the gimbal 10 times per second. For users
-    	connected via TCP/IP this packet is sent by the gimbal 30 times per second.">
+        For users connected via asyncrhonous serial this packet is sent by the gimbal 10 times per second. For users
+        connected via TCP/IP this packet is sent by the gimbal 30 times per second.">
         <Data name="systemTime" inMemoryType="unsigned32" comment="Milliseconds since system bootup"/>
         <Data name="gpsITOW" inMemoryType="unsigned32" comment="GPS time of week in milliseconds"/>
         <Data name="gpsWeek" inMemoryType="unsigned16" comment="GPS week number since Jan 6 1980"/>
@@ -244,7 +244,7 @@ See TrilliumPacket.c (in the Orion SDK) for details.
         <Data name="Iout" inMemoryType="float32" array="NUM_GIMBAL_AXES" encodedType="unsigned16" scaler="1000" comment="Output current"/>
     </Packet>
 
-	<Packet name="OrionDiagnostics" ID="ORION_PKT_DIAGNOSTICS" comment="Electrical diagnostic data for the Orion gimbal. This packet is sent by the gimbal every 3 seconds.">
+    <Packet name="OrionDiagnostics" ID="ORION_PKT_DIAGNOSTICS" comment="Electrical diagnostic data for the Orion gimbal. This packet is sent by the gimbal every 3 seconds.">
         <Data name="Voltage24" inMemoryType="float32" encodedType="unsigned16" scaler="1000" comment="Voltage of the 24-volt rail"/>
         <Data name="Voltage12" inMemoryType="float32" encodedType="unsigned16" scaler="1000" comment="Voltage of the 12-volt rail"/>
         <Data name="Voltage3v3" inMemoryType="float32" encodedType="unsigned16" scaler="1000" comment="Voltage of the 3.3-volt rail"/>
@@ -309,11 +309,11 @@ See TrilliumPacket.c (in the Orion SDK) for details.
         <Data name="Flags" inMemoryType="unsigned16" comment="GPIO status information flags"/>
     </Packet>
 
-	<Packet name="StareStart" ID="ORION_PKT_STARE_START"
+    <Packet name="StareStart" ID="ORION_PKT_STARE_START"
             comment="This packet is transmitted by the gimbal during step-stare operations to indicate
                      that the gimbal is staring and a step-stare image should be acquired. The
-                     position data mark the *desired* location that the gimbal is trying to stare at. 
-                     The *actual* position can be computed by using the gimbal position, quaternion, 
+                     position data mark the *desired* location that the gimbal is trying to stare at.
+                     The *actual* position can be computed by using the gimbal position, quaternion,
                      and pan and tilt angles to project the camera line of sight until to the terrain model.
                      Once the image has been acquired send a ORION_PKT_STARE_ACK packet to tell the gimbal it can move to the next stare point.">
         <Data name="systemTime" inMemoryType="unsigned32" comment="Milliseconds since system bootup. This value should be echoed in the ORION_PKT_STARE_ACK respone."/>
@@ -335,7 +335,7 @@ See TrilliumPacket.c (in the Orion SDK) for details.
         <Data name="tilt" inMemoryType="float32" default="0" encodedType="signed16" max="pi" comment="Gimbal tilt angle in radians from -pi to pi"/>
     </Packet>
 
-	<Packet name="OrionResetSource" ID="ORION_PKT_RESET_SOURCE" parameterInterface="true" comment="Reset information for a processor in the Orion Gimbal. This packet is transmitted by each processor in the gimbal following its bootup">
+    <Packet name="OrionResetSource" ID="ORION_PKT_RESET_SOURCE" parameterInterface="true" comment="Reset information for a processor in the Orion Gimbal. This packet is transmitted by each processor in the gimbal following its bootup">
         <Data name="Vector" inMemoryType="unsigned32" comment="Interrupt vector for the last reset"/>
         <Data name="Address" inMemoryType="unsigned32" comment="Program counter prior to the reset (not yet used)"/>
         <Data name="sourceBoard" enum="OrionBoardEnumeration_t" default="BOARD_CLEVIS" encodedType="unsigned8" comment="Enumeration defining which board in the gimbal generated this message"/>
@@ -350,7 +350,7 @@ See TrilliumPacket.c (in the Orion SDK) for details.
             <Value name="debugLevelError" comment="Describes a recoverable error" />
             <Value name="debugLevelFatal" comment="Describes an unrecoverable error, highest priority" />
         </Enum>
-        
+
         <Data name="source" enum="OrionBoardEnumeration_t" encodedType="unsigned8" comment="Identifier to determine which board sent the debug packet"/>
         <Data name="priority" enum="debugPriority" encodedType="unsigned8" comment="The importance of the debug message"/>
         <Data name="reserved1" inMemoryType="unsigned8"/>
@@ -359,11 +359,11 @@ See TrilliumPacket.c (in the Orion SDK) for details.
 
     </Packet>
 
-	<Packet name="GpsData" ID="ORION_PKT_GPS_DATA" comment=
-		"Raw GPS data. This packet is normally sent by the gimbal once per second, unless the 
+    <Packet name="GpsData" ID="ORION_PKT_GPS_DATA" comment=
+        "Raw GPS data. This packet is normally sent by the gimbal once per second, unless the
         gimbal is in INS debug mode, in which case this packet is sent for every GPS report.
         This packet can also be sent to the gimbal in order to provide GPS information. Sending
-        this packet to the gimbal will override any internal GPS. The ideal rate to send this 
+        this packet to the gimbal will override any internal GPS. The ideal rate to send this
         packet to the gimbal is 4Hz.
 
         Note that the position information of this packet is *not* the definitive
@@ -379,7 +379,7 @@ See TrilliumPacket.c (in the Orion SDK) for details.
             <Value name="piccoloSource" comment="Piccolo host GPS data" />
             <Value name="numGpsSources" comment="Number of possible GPS sources"/>
         </Enum>
-        
+
         <Enum name="ubloxFixType_t" comment="Enumeration for types of GPS solutions, derived from uBlox specification.">
             <Value name="noFix" comment="No solution"/>
             <Value name="deadReckoningOnly" comment="Dead reckoning only"/>
@@ -459,21 +459,21 @@ See TrilliumPacket.c (in the Orion SDK) for details.
         <Data name="gravityBias" dependsOn="hasGravityBias" inMemoryType="float32" encodedType="unsigned16" scaler="30000" comment="Gravity bias estimate in m/s/s"/>
     </Packet>
 
-	<Documentation comment="---"/>
+    <Documentation comment="---"/>
     <Documentation name="Packets for gimbal control" paragraph="1" comment="These packets are sent by the user to control the gimbal."/>
 
     <Packet name="OrionCmd" ID="ORION_PKT_CMD" comment=
-    	"Basic commands for control of gimbal pan and tilt. Send this packet to the gimbal to effect basic pan and tilt control. 
-    	The gimbal will echo the packet as confirmation of receiving it. Note that this packet cannot be used to command the Geopoint 
-    	or Path modes; those modes need to be commanded through their respective packets. If the gimbal is in Geopoint or Path mode
-    	receiving this packet will cancel those modes.">
+        "Basic commands for control of gimbal pan and tilt. Send this packet to the gimbal to effect basic pan and tilt control.
+        The gimbal will echo the packet as confirmation of receiving it. Note that this packet cannot be used to command the Geopoint
+        or Path modes; those modes need to be commanded through their respective packets. If the gimbal is in Geopoint or Path mode
+        receiving this packet will cancel those modes.">
         <Data name="Target" inMemoryType="float32" array="NUM_GIMBAL_AXES" encodedType="signed16" scaler="1000.0" comment="Pan and tilt commands in radians or radians per second. Interpretation depends on Mode."/>
         <Data name="Mode" enum="OrionMode_t" encodedType="unsigned8" comment="Operational mode of the gimbal. Note that not all modes can be directly commanded."/>
         <Data name="Stabilized" inMemoryType="unsigned8" comment="Non-zero to enable inertial stabilization. If zero then Target is with respect to the gimbal mount, otherwise Target is with respect to the inertial or image space."/>
         <Data name="ImpulseTime" inMemoryType="float32" encodedType="unsigned8" scaler="10.0" comment="Amount of time in seconds for changing the gimbal position"/>
     </Packet>
 
-	<Packet name="GeopointCmd" ID="ORION_PKT_GEOPOINT_CMD" parameterInterface="true"
+    <Packet name="GeopointCmd" ID="ORION_PKT_GEOPOINT_CMD" parameterInterface="true"
             comment="Send this packet to command the gimbal to go to Geopoint mode. In geopoint the gimbal looks at a target as given by a
                      latitude, longitude, altitude position. The geopoint command can include a target velocity, which will cause the gimbal
                      to smoothly move its stare point as it propagates the target position. Geopoint mode is canceled by sending a normal OrionCmd packet.">
@@ -483,13 +483,13 @@ See TrilliumPacket.c (in the Orion SDK) for details.
         <Data name="targetVelNED" inMemoryType="float32" array="3" encodedType="signed16" scaler="100" comment="Velocity of the target in North, East, Down meters per second"/>
     </Packet>
 
-	<Packet name="OrionPath" ID="ORION_PKT_PATH" comment=
-		"The path packet contains a series of waypoints that define a path in 3D space. Sending this packet enables the path
-		 track logic, which will cause the gimbal to look at the nearest point on the path; or look directly downward. Path mode
-		  is canceled by sending a normal OrionCmd packet.">
+    <Packet name="OrionPath" ID="ORION_PKT_PATH" comment=
+        "The path packet contains a series of waypoints that define a path in 3D space. Sending this packet enables the path
+         track logic, which will cause the gimbal to look at the nearest point on the path; or look directly downward. Path mode
+          is canceled by sending a normal OrionCmd packet.">
         <Enum name="maxPathPoints" comment="Maximum number of points in a path.">
-	        <Value name="MAX_PATH_POINTS" value="15" comment="Maximum number of points in a path"/>
-	    </Enum>
+            <Value name="MAX_PATH_POINTS" value="15" comment="Maximum number of points in a path"/>
+        </Enum>
 
         <Data name="numPoints" inMemoryType="unsigned8" comment="Number of points in the path"/>
         <Data name="pointDown" inMemoryType="bitfield1" comment="If numPoints is zero, and this is set, then the gimbal will point downwards"/>
@@ -502,11 +502,11 @@ See TrilliumPacket.c (in the Orion SDK) for details.
         <Data name="crossTrackStepRatio" inMemoryType="float32" encodedType="unsigned8" max="2.55" default="0" comment="Ratio of cross track step angle to along track step angle. Set to zero for no cross track stepping."/>
     </Packet>
 
-	<Packet name="StareAck" ID="ORION_PKT_STARE_ACK" parameterInterface="true" comment="This packet tells the gimbal that the step-stare image has been acquired and the gimbal can move to the next step stare point.">
+    <Packet name="StareAck" ID="ORION_PKT_STARE_ACK" parameterInterface="true" comment="This packet tells the gimbal that the step-stare image has been acquired and the gimbal can move to the next step stare point.">
         <Data name="echoSystemTime" inMemoryType="unsigned32" comment="Milliseconds since system bootup received from ORION_PKT_STARE_START. If this value matches the value sent in ORION_PKT_STARE_START then the gimbal will terminate the stare operation early."/>
     </Packet>
 
-	<Packet name="OrionCameraSwitch" ID="ORION_PKT_CAMERA_SWITCH" parameterInterface="true" comment="Command the gimbal to swtich cameras.">
+    <Packet name="OrionCameraSwitch" ID="ORION_PKT_CAMERA_SWITCH" parameterInterface="true" comment="Command the gimbal to swtich cameras.">
         <Data name="Index" inMemoryType="unsigned8" comment="The index of the camera to switch to, counting from 0"/>
     </Packet>
 
@@ -516,7 +516,7 @@ See TrilliumPacket.c (in the Orion SDK) for details.
         <Data name="Index" inMemoryType="unsigned8" default="0" comment="The index of the camera to command"/>
     </Packet>
 
-	<Packet name="OrionFlirSettings" ID="ORION_PKT_FLIR_SETTINGS" comment="FLIR-specific camera settings.">
+    <Packet name="OrionFlirSettings" ID="ORION_PKT_FLIR_SETTINGS" comment="FLIR-specific camera settings.">
         <Data name="Index" inMemoryType="unsigned8" comment="Index of the camera that these settings should apply to. Use 0xFF to apply to any connected FLIR camera."/>
         <Data name="BlackHot" inMemoryType="unsigned8" comment="Image polarity setting - set to 0 for white hot or 1 for black hot"/>
         <Data name="MaxAgcGain" inMemoryType="unsigned8" comment="Maximum AGC output gain"/>
@@ -562,7 +562,7 @@ See TrilliumPacket.c (in the Orion SDK) for details.
         <Data name="Cmd" enum="OrionRetractCmd_t" encodedType="unsigned8" comment="The retraction mechanism command"/>
         <Data name="Reserved" inMemoryType="null" encodedType="unsigned8" constant="0" comment="Reserved for future use"/>
     </Packet>
-    
+
     <Packet name="OrionUserData" ID="ORION_PKT_USER_DATA" comment="This packet can be used to transfer user-defined data payloads between communication ports on the gimbal.">
         <Data name="port" inMemoryType="unsigned8" comment="Destination crown board communication port identifier"/>
         <Data name="size" inMemoryType="unsigned8" comment="User data array size in bytes"/>
@@ -571,7 +571,7 @@ See TrilliumPacket.c (in the Orion SDK) for details.
     </Packet>
 
     <Packet name="OrionLaserCommand" ID="ORION_PKT_LASER_CMD" comment="Command to fire the laser (if installed).">
-	    <Data name="Reserved" inMemoryType="null" encodedType="unsigned16" constant="0" comment="Deprecated parameter - set to zero" />
+        <Data name="Reserved" inMemoryType="null" encodedType="unsigned16" constant="0" comment="Deprecated parameter - set to zero" />
         <Data name="Index" inMemoryType="unsigned8" comment="Index of the laser to apply this command to" />
         <Data name="Password" inMemoryType="signed8" array="16" encodedType="string" comment="Password, if required by the laser. If a password is required, it must be provided in order to change any aspect of the laser's state (e.g., enable/disable, arm/disarm, fire/deactivate" />
         <Data name="Enable" inMemoryType="unsigned8" comment="Set to zero to disable the laser, or non-zero to enable it" />
@@ -582,7 +582,7 @@ See TrilliumPacket.c (in the Orion SDK) for details.
         <Data name="PrfCode" inMemoryType="unsigned16" default="0" comment="Laser PRF code, if applicable" />
         <Data name="SafetyBypass" inMemoryType="unsigned8" default="0" comment="Set to a non-zero value to bypass all laser safety checks" />
     </Packet>
-    
+
     <Structure name="OrionLaserState" comment="Per-laser state information.">
         <Data name="Type" enum="OrionLaserType_t" encodedType="unsigned8" comment="The type of this laser" />
         <Data name="Enabled" inMemoryType="bitfield1" comment="Set to 1 if the laser is enabled, otherwise 0" />
@@ -604,13 +604,13 @@ See TrilliumPacket.c (in the Orion SDK) for details.
         <Data name="State" struct="OrionLaserState" array="MAX_LASERS" variableArray="NumLasers" />
     </Packet>
 
-	<Documentation comment="---"/>
+    <Documentation comment="---"/>
     <Documentation name="Packets used for gimbal configuration" paragraph="1" comment=
-		"These packets are sent by the user to configure the gimbal. To request a configuration packet send the packet with zero length. Configuration information is stored onboard the gimbal and does not need to be re-sent if the gimbal is restarted."/>
+        "These packets are sent by the user to configure the gimbal. To request a configuration packet send the packet with zero length. Configuration information is stored onboard the gimbal and does not need to be re-sent if the gimbal is restarted."/>
 
     <Packet name="OrionLimitsData" ID="ORION_PKT_LIMITS" comment=
-    	"Gimbal limits of operation. This includes the max and min pan and tilt angles, as well as the angular rate and the maximum current consumption.">
-	    <Data name="MinPos"  inMemoryType="float32" array="NUM_GIMBAL_AXES" encodedType="signed16" scaler="1000.0" comment="Minimum position in radians"/>
+        "Gimbal limits of operation. This includes the max and min pan and tilt angles, as well as the angular rate and the maximum current consumption.">
+        <Data name="MinPos"  inMemoryType="float32" array="NUM_GIMBAL_AXES" encodedType="signed16" scaler="1000.0" comment="Minimum position in radians"/>
         <Data name="MaxPos"  inMemoryType="float32" array="NUM_GIMBAL_AXES" encodedType="signed16" scaler="1000.0" comment="Maximum position in radians"/>
         <Data name="MaxVel"  inMemoryType="float32" array="NUM_GIMBAL_AXES" encodedType="unsigned16" scaler="1000.0" comment="Maximum velocity in radians per second"/>
         <Data name="MaxAccel"  inMemoryType="float32" array="NUM_GIMBAL_AXES" encodedType="unsigned16" scaler="1.0" comment="Maximum acceleration in radians per second per second"/>
@@ -621,7 +621,7 @@ See TrilliumPacket.c (in the Orion SDK) for details.
         <Data name="MaxPower" inMemoryType="float32" array="NUM_GIMBAL_AXES" encodedType="unsigned8" default="0" comment="Maximum motor output power, in watts. Set to zero for no limit"/>
     </Packet>
 
-	<Packet name="InsOptions" ID="ORION_PKT_INS_OPTIONS"
+    <Packet name="InsOptions" ID="ORION_PKT_INS_OPTIONS"
             comment="INS options give configuration options for the inertial navigation system (INS) in the gunbal.
                      Changing the INS options will cause the INS to be restarted if the platform rotation changes. When using platform rotation note the order:
                      First yaw about the gimbal's z-axis to create an intermediate axis. Then pitch about the intermediate y-axis to
@@ -643,24 +643,24 @@ See TrilliumPacket.c (in the Orion SDK) for details.
         <Data name="reserved" inMemoryType="null" array="3" encodedType="unsigned8" comment="reserved space for future expansion"/>
         <Data name="gimbalToPlatformEuler" inMemoryType="float32" array="NUM_AXES" encodedType="signed16" max="pi" comment="Roll, Pitch, Yaw angles in radians from -pi to pi. The angles give the Euler rotation (yaw first, then pitch, then roll) that rotates a vector in the gimbal reference frame into the platform reference frame"/>
         <Data name="initialHeading" inMemoryType="float32" encodedType="signed16" max="pi" comment="Initial heading angle in radians for the INS"/>
-        <Data name="gpsLeverArm" inMemoryType="float32" array="3" encodedType="signed16" scaler="1000" default="0" comment="X, Y, Z meters from GPS antenna to IMU in the gimbal reference frame, or the platform reference frame if enablePlatformRotation is on"/>   
+        <Data name="gpsLeverArm" inMemoryType="float32" array="3" encodedType="signed16" scaler="1000" default="0" comment="X, Y, Z meters from GPS antenna to IMU in the gimbal reference frame, or the platform reference frame if enablePlatformRotation is on"/>
     </Packet>
 
-	<Packet name="OrionNetworkSettings" ID="ORION_PKT_NETWORK_SETTINGS" comment="Change the IP network settings in the gimbal.">
+    <Packet name="OrionNetworkSettings" ID="ORION_PKT_NETWORK_SETTINGS" comment="Change the IP network settings in the gimbal.">
         <Data name="Ip" inMemoryType="unsigned32" comment="IPv4 address"/>
         <Data name="Mask" inMemoryType="unsigned32" comment="IPv4 network mask"/>
         <Data name="Gateway" inMemoryType="unsigned32" comment="IPv4 gateway address"/>
         <Data name="LowDelay" inMemoryType="unsigned8" default="0" comment="Set to 1 to use low-delay TCP mode (i.e. disable Nagle's Algorithm)."/>
     </Packet>
 
-	<Packet name="OrionNetworkVideo" ID="ORION_PKT_NETWORK_VIDEO" parameterInterface="true" comment="Change the IP settings for video delivery.">
+    <Packet name="OrionNetworkVideo" ID="ORION_PKT_NETWORK_VIDEO" parameterInterface="true" comment="Change the IP settings for video delivery.">
         <Data name="DestIp" inMemoryType="unsigned32" comment="destination IPv4 address"/>
         <Data name="Port" inMemoryType="unsigned16" comment="desitnation port"/>
         <Data name="Bitrate" inMemoryType="unsigned32" default="0" comment="Video encoding target bitrate, in bits per second"/>
         <Data name="Ttl" inMemoryType="signed8" default="-1" comment="TTL value for UDP video packets. Values less than or equal to zero will use default values of 64 for unicast and 1 for multicast." />
     </Packet>
 
-	<Documentation name="Packets used to determine manufacturing and software information about the gimbal" paragraph="1" comment="These informational packets are sent by the gimbal in response to user request. To request a specific packet, send that packet to the gimbal with zero length."/>
+    <Documentation name="Packets used to determine manufacturing and software information about the gimbal" paragraph="1" comment="These informational packets are sent by the gimbal in response to user request. To request a specific packet, send that packet to the gimbal with zero length."/>
 
     <Packet name="OrionClevisVersion" ID="ORION_PKT_CLEVIS_VERSION" parameterInterface="true" comment="Software version for the clevis board in the Orion gimbal.">
         <Data name="Version" inMemoryType="unsigned8" array="16" encodedType="fixedstring" comment="Version of the clevis board software"/>
@@ -676,7 +676,7 @@ See TrilliumPacket.c (in the Orion SDK) for details.
         <Data name="Version" inMemoryType="unsigned8" array="24" encodedType="fixedstring" comment="Version of the payload board software"/>
         <Data name="PartNumber" inMemoryType="unsigned8" array="16" encodedType="fixedstring" comment="Hardware details of the payload board"/>
     </Packet>
-    
+
     <Packet name="OrionBoard" ID="ORION_PKT_BOARD" comment="Information for a specific board in the gimbal.">
         <Data name="boardSN" inMemoryType="unsigned32" comment="Serial number of this board"/>
         <Data name="assemblySN" inMemoryType="unsigned32" comment="Serial number of the whole assembly"/>
@@ -686,7 +686,7 @@ See TrilliumPacket.c (in the Orion SDK) for details.
         <Data name="manufactureDate" struct="Date" comment="Date the board was manufactured"/>
         <Data name="calibrationDate" struct="Date" comment="Date the board was calibrated"/>
     </Packet>
-   
+
     <Documentation name="Packets for external sensor inputs" paragraph="1" comment="These optional packets can be sent to the gimbal to provide external sensor information."/>
 
     <Packet name="OrionAutopilotData" ID="ORION_PKT_AUTOPILOT_DATA" comment="Autopilot state data. The gimbal will use this information to limit certain operations, for example some lasers will not fire unless the autopilot is flying with sufficient altitude above ground.">
@@ -704,11 +704,11 @@ See TrilliumPacket.c (in the Orion SDK) for details.
     </Packet>
 
     <Packet name="OrionRangeData" ID="ORION_PKT_RANGE_DATA" parameterInterface="true" comment=
-    	"Ranging information from the gimbal to its target. The gimbal will use this information to compute the target 
-    	location and populate that informtaion in its telemetry output.">
+        "Ranging information from the gimbal to its target. The gimbal will use this information to compute the target
+        location and populate that informtaion in its telemetry output.">
         <Data name="range" inMemoryType="float32" encodedType="unsigned32" scaler="100" comment="Range to target in meters"/>
         <Data name="maxAgeMs" inMemoryType="unsigned16" comment="Maximum data age before expiration in milliseconds"/>
         <Data name="source" enum="RangeDataSrc_t" encodedType="unsigned8" comment="Source of range information"/>
     </Packet>
-    
+
 </Protocol>
