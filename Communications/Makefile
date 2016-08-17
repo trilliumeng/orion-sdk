@@ -6,7 +6,7 @@ OBJ = $(SRC:.c=.o)
 %.o:%.c
 	@$(CC) -c $(CFLAGS) $< -o $@ -I../Utils -I../Communications $(QOUT)
 
-build: $(LIB)
+build: autogen.mk $(LIB)
 $(LIB): $(OBJ)
 	@$(AR) rcs $(LIB) $(OBJ)
 
