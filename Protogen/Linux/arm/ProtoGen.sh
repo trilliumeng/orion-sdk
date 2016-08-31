@@ -1,4 +1,4 @@
-#!/bin/sh
+#!/bin/bash
 appname=`basename $0 | sed s,\.sh$,,`
 
 dirname=`dirname $0`
