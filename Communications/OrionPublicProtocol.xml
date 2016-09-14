@@ -235,10 +235,11 @@ See TrilliumPacket.c (in the Orion SDK) for details.
         <Data name="imageShiftConfidence" inMemoryType="float32" encodedType="unsigned8" max="1" default="0" comment="Registration solution confidence, from 0 (no confidence) to 1 (full confidence)."/>
         <Data name="outputShifts" inMemoryType="float32" array="NUM_GIMBAL_AXES" encodedType="signed16" max="pi" default="0" comment="X (horizontal) and Y (vertical) image shifts in radians, as displayed in the video stream"/>
         <Data name="rangeSource" enum="RangeDataSrc_t" encodedType="unsigned8" default="RANGE_SRC_SKYLINK" comment="Range data source used in line of sight calculation"/>
+        <Data name="leapSeconds" default="17" inMemoryType="unsigned8" comment="Leap seconds to subtract from GPS time to compute UTC time"/>
     </Packet>
 
     <Packet name="OrionPerformance" ID="ORION_PKT_PERFORMANCE" parameterInterface="true" comment="Measurements related to stabilization performance. This packet is sent by the gimbal 4 times per second.">
-        <Data name="RmsQuad"inMemoryType="float32" array="NUM_GIMBAL_AXES" encodedType="unsigned16" scaler="1000000" comment="Quad rms errors"/>
+        <Data name="RmsQuad" inMemoryType="float32" array="NUM_GIMBAL_AXES" encodedType="unsigned16" scaler="1000000" comment="Quad rms errors"/>
         <Data name="RmsDir" inMemoryType="float32" array="NUM_GIMBAL_AXES" encodedType="unsigned16" scaler="1000000" comment="Dir rms errors"/>
         <Data name="RmsVel" inMemoryType="float32" array="NUM_GIMBAL_AXES" encodedType="unsigned16" scaler="1000" comment="Vel rms errors"/>
         <Data name="RmsPos" inMemoryType="float32" array="NUM_GIMBAL_AXES" encodedType="unsigned16" scaler="1000000" comment="Pos rms errors"/>
@@ -407,6 +408,7 @@ See TrilliumPacket.c (in the Orion SDK) for details.
         <Data name="GeoidUndulation" inMemoryType="float32" encodedType="signed16" scaler="100" comment="Height of the mean seal level geoid with respect to the WGS-84 ellipsoid, in meters"/>
         <Data name="source" enum="gpsSource_t" default="ubloxSource" encodedType="unsigned8" comment="The source of the GPS data"/>
         <Data name="verticalVelocityValid" default="1" inMemoryType="unsigned8" comment="0 if vertical velocity data are not valid"/>
+        <Data name="leapSeconds" default="17" inMemoryType="unsigned8" comment="Leap seconds to subtract from GPS time to compute UTC time"/>
         <Data name="Year" inMemoryType="unsigned16" encodedType="null" comment="Year of the date"/>
         <Data name="Month" inMemoryType="unsigned8" encodedType="null" comment="Month of the year from 1 to 12"/>
         <Data name="Day" inMemoryType="unsigned8" encodedType="null" comment="Day of the month from 1 to 31"/>

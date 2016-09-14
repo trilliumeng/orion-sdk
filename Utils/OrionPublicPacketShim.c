@@ -9,6 +9,7 @@
 #include "linearalgebra.h"
 #include "earthposition.h"
 #include "GeolocateTelemetry.h"
+#include "mathutilities.h"
 #include <math.h>
 
 
@@ -180,10 +181,7 @@ BOOL DecodeOrionGpsData(const OrionPkt_t *pPkt, GpsData_t *pGps)
         pGps->GroundHeading = atan2(pGps->VelNED[EAST], pGps->VelNED[NORTH]);
 
         // Use GPS time information to compute the Gregorian calendar date.
-        computeDateFromWeekAndItow(pGps->Week, pGps->ITOW, &pGps->Year, &pGps->Month, &pGps->Day);
-
-        // And the time of day
-        computeTimeFromItow(pGps->ITOW, &pGps->Hour, &pGps->Minute, &pGps->Second);
+        computeDateAndTimeFromWeekAndItow(pGps->Week, pGps->ITOW, pGps->leapSeconds, &pGps->Year, &pGps->Month, &pGps->Day, &pGps->Hour, &pGps->Minute, &pGps->Second);
 
         if(pGps->Week != 0)
             pGps->TimeValid = 1;
