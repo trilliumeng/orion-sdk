@@ -44,9 +44,7 @@ BOOL DecodeGeolocateTelemetry(const OrionPkt_t *pPkt, GeolocateTelemetry_t *pGeo
 
         // Date and time
         computeDateFromWeekAndItow(pGeo->base.gpsWeek, pGeo->base.gpsITOW, &pGeo->Year, &pGeo->Month, &pGeo->Day);
-        pGeo->Hour   = (pGeo->base.gpsITOW % (24*60*60*1000))/(60*60*1000);
-        pGeo->Minute = (pGeo->base.gpsITOW %    (60*60*1000))/(60*1000);
-        pGeo->Second = (pGeo->base.gpsITOW %       (60*1000))/(1000);
+        computeTimeFromItow(pGeo->base.gpsITOW, &pGeo->Hour, &pGeo->Minute, &pGeo->Second);
 
 		// convert tilt from -180 to 180 into -270 to 90
         if(pGeo->base.tilt > deg2radf(90))
