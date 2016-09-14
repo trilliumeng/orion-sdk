@@ -96,6 +96,9 @@ BOOL getTerrainIntersection(const GeolocateTelemetry_t *pGeo, float (*getElevati
 //! Use GPS time information to compute the Gregorian calendar date.
 void computeDateFromWeekAndItow(uint16_t week, uint32_t itow, uint16_t* pyear, uint8_t* pmonth, uint8_t* pday);
 
+//! Compute hours, minutes, and seconds from GPS time of week
+void computeTimeFromItow(uint32_t itow, uint8_t* hour, uint8_t* min, uint8_t* second);
+
 //! Use Gregorian date information to compute GPS style time information.
 void computeWeekAndItow(uint16_t year, uint8_t month, uint8_t day, uint8_t hours, uint8_t minutes, uint8_t seconds, int16_t milliseconds, uint16_t* pweek, uint32_t* pitow);
 

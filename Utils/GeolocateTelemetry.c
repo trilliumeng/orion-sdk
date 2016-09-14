@@ -342,6 +342,36 @@ void computeDateFromWeekAndItow(uint16_t week, uint32_t itow, uint16_t* pyear, u
 
 
 /*!
+ * Compute hours, minutes, and seconds from GPS time of week
+ * \param itow is the GPS time of week in milliseconds
+ * \param hour receives the hour of the day from 0 to 23
+ * \param min receives the minute of the hour from 0 to 59
+ * \param second receives the seconds of the minute from 0 to 59
+ */
+void computeTimeFromItow(uint32_t itow, uint8_t* hour, uint8_t* min, uint8_t* second)
+{
+	// Milliseconds of the day
+	itow = itow % 86400000;
+
+	// Compute hours of the day
+	(*hour) = (uint8_t)(itow / (60*60*1000));
+
+	// Subtract off hours
+	itow -= (*hour)*60*60*1000;
+
+	// Compute minutes of the hour
+	(*min)  = (uint8_t)(itow / (60*1000));
+
+	// Subtract off minutes
+	itow -= (*min)*60*1000;
+
+	// Compute seconds of the minute
+	(*second)  = (uint8_t)(itow / (1000));
+
+}
+
+
+/*!
  * Determine if a year is a leap year in the Gregorian calendar.
  * \param year is the year number.
  * \return 0 for a common year (365 days), 1 for a leap year (366 days)

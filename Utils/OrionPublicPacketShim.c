@@ -182,6 +182,9 @@ BOOL DecodeOrionGpsData(const OrionPkt_t *pPkt, GpsData_t *pGps)
         // Use GPS time information to compute the Gregorian calendar date.
         computeDateFromWeekAndItow(pGps->Week, pGps->ITOW, &pGps->Year, &pGps->Month, &pGps->Day);
 
+        // And the time of day
+        computeTimeFromItow(pGps->ITOW, &pGps->Hour, &pGps->Minute, &pGps->Second);
+
         if(pGps->Week != 0)
             pGps->TimeValid = 1;
         else
