@@ -344,19 +344,19 @@ void computeTimeFromItow(uint32_t itow, uint8_t* hour, uint8_t* min, uint8_t* se
 	itow = itow % 86400000;
 
 	// Compute hours of the day
-	(*hour) = (uint8_t)(itow / (60*60*1000));
+	(*hour) = (uint8_t)(itow / (60UL * 60UL * 1000UL));
 
 	// Subtract off hours
 	itow -= (*hour)*60*60*1000;
 
 	// Compute minutes of the hour
-	(*min)  = (uint8_t)(itow / (60*1000));
+	(*min)  = (uint8_t)(itow / (60UL * 1000UL));
 
 	// Subtract off minutes
 	itow -= (*min)*60*1000;
 
 	// Compute seconds of the minute
-	(*second)  = (uint8_t)(itow / (1000));
+	(*second)  = (uint8_t)(itow / (1000UL));
 
 }// computeTimeFromItow
 
@@ -486,7 +486,7 @@ int testDateConversion(void)
 		return 0;
 	else if(week != 1887)
 		return 0;
-	else if(itow != (((6*24 + 9)*60 + 10)*60 + 11)*1000 + 250)
+	else if(itow != (((6UL * 24UL + 9UL) * 60UL + 10UL) * 60UL + 11UL) * 1000UL + 250UL)
 		return 0;
 	else
 		return 1;
