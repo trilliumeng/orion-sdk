@@ -91,6 +91,7 @@ See TrilliumPacket.c (in the Orion SDK) for details.
         <Value name="ORION_PKT_PRIVATE_B0" value="0xB0" comment="Reserved packet identifier" hidden="true"/>
         <Value name="ORION_PKT_DEBUG_STRING" comment="A human readable text string which is typically used for debugging purposes"/>
         <Value name="ORION_PKT_USER_DATA" comment="Packet for sending user data to a serial port in the gimbal" />
+        <Value name="ORION_PKT_KLV_USER_DATA" comment="KLV user-specified field settings"/>
         <Value name="ORION_PKT_PRIVATE_C0" value="0xC0" comment="Reserved packet identifier" hidden="true"/>
         <Value name="ORION_PKT_PRIVATE_C1" comment="Reserved packet identifier" hidden="true"/>
         <Value name="ORION_PKT_PRIVATE_C2" comment="Reserved packet identifier" hidden="true"/>
@@ -359,6 +360,13 @@ See TrilliumPacket.c (in the Orion SDK) for details.
         <Data name="reserved2" inMemoryType="unsigned8"/>
         <Data name="description" inMemoryType="signed8" array="128" encodedType="string" comment="human readable description of the debug problem"/>
 
+    </Packet>
+
+    <Packet name="KlvUserData" ID="ORION_PKT_KLV_USER_DATA" parameterInterface="true" comment="This packet is used to set and query the values of user-configurable KLV tags">
+        <Data name="Key" inMemoryType="unsigned8" comment="UAS Local Set key" />
+        <Data name="SubKey" inMemoryType="unsigned8" comment="UAS Local Set sub-key, if applicable (e.g., security metadata)"/>
+        <Data name="Length" inMemoryType="unsigned8" comment="Data length, in bytes" />
+        <Data name="Value" inMemoryType="unsigned8" array="127" variableArray="Length" comment="Variable-length value string"/>
     </Packet>
 
     <Packet name="GpsData" ID="ORION_PKT_GPS_DATA" comment=
