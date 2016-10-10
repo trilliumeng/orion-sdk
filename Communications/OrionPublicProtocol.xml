@@ -183,6 +183,7 @@ See TrilliumPacket.c (in the Orion SDK) for details.
         <Value name="LASER_TYPE_NONE" comment="No laser installed" />
         <Value name="LASER_TYPE_POINTER" comment="Laser pointer" />
         <Value name="LASER_TYPE_10MJ_MARKER" comment="Laser marker" />
+        <Value name="LASER_TYPE_LIGHTWARE" comment="LightWare LRF" />
     </Enum>
 
     <Structure name="Date" comment="Compresssed date format.">
