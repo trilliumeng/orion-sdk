@@ -337,6 +337,8 @@ See TrilliumPacket.c (in the Orion SDK) for details.
         <Data name="gimbalQuat" inMemoryType="float32" default="0" array="4" encodedType="signed16" max="1" comment="Gimbal quaternion describing the rotation from the gimbal mount frame to the North, East, Down navigation frame"/>
         <Data name="pan" inMemoryType="float32" default="0" encodedType="signed16" max="pi" comment="Gimbal pan angle in radians from -pi to pi"/>
         <Data name="tilt" inMemoryType="float32" default="0" encodedType="signed16" max="pi" comment="Gimbal tilt angle in radians from -pi to pi"/>
+        <Data name="rangeSource" enum="RangeDataSrc_t" encodedType="unsigned8" default="RANGE_SRC_NONE" comment="Target range data source" />
+        <Data name="slantRange" inMemoryType="float32" encodedType="unsigned24" scaler="100" default="0" comment="Slant range to target, if available (see rangeSource)" />
     </Packet>
 
     <Packet name="OrionResetSource" ID="ORION_PKT_RESET_SOURCE" parameterInterface="true" comment="Reset information for a processor in the Orion Gimbal. This packet is transmitted by each processor in the gimbal following its bootup">
