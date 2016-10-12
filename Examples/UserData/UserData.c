@@ -117,7 +117,7 @@ static void ProcessArgs(int argc, char **argv, OrionUserData_t *pUser)
     if (argc > 1)
     {
         // Pull it off the argument list
-        pUser->port = atoi(argv[1]);
+        pUser->port = (UserDataPort_t)atoi(argv[1]);
     }
 
     // Print the passed-in geopoint command info

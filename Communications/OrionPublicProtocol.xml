@@ -580,7 +580,16 @@ See TrilliumPacket.c (in the Orion SDK) for details.
     </Packet>
 
     <Packet name="OrionUserData" ID="ORION_PKT_USER_DATA" comment="This packet can be used to transfer user-defined data payloads between communication ports on the gimbal.">
-        <Data name="port" inMemoryType="unsigned8" comment="Destination crown board communication port identifier"/>
+        <Enum name="UserDataPort_t" comment="Destination port identifiers" >
+            <Value name="USER_DATA_PORT_ETHERNET" value="0" comment="Payload Ethernet connection" />
+            <Value name="USER_DATA_PORT_PRIMARY" value="2" comment="Primary front-panel RS-232 serial port" />
+            <Value name="USER_DATA_PORT_FP2" comment="Front panel FP1 RS-232 serial port" />
+            <Value name="USER_DATA_PORT_FP1" comment="Front panel FP2 RS-232 serial port" />
+            <Value name="USER_DATA_PORT_SPARE3" value="8" comment="Front panel SPARE3 TTL serial port" />
+            <Value name="USER_DATA_PORT_FP4" comment="Front panel SPARE3 TTL serial port" />
+        </Enum>
+
+        <Data name="port" enum="UserDataPort_t" encodedType="unsigned8" comment="Destination crown board communication port identifier"/>
         <Data name="size" inMemoryType="unsigned8" comment="User data array size in bytes"/>
         <Data name="id" inMemoryType="unsigned32" comment="User-defined unique identifier or sequence number for this data block"/>
         <Data name="data" inMemoryType="unsigned8" array="128" variableArray="size" comment="User data byte array"/>
