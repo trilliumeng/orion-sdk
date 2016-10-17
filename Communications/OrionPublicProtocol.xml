@@ -283,7 +283,8 @@ See TrilliumPacket.c (in the Orion SDK) for details.
                 <Data name="heapLoad" inMemoryType="float32" encodedType="unsigned8" max="100" comment="Heap memory utilization of this thread as a percentage, 0 if no heap is present"/>
                 <Data name="stackLoad" inMemoryType="float32" encodedType="unsigned8" max="100" comment="Stack memory utilization of this thread as a percentage, 100 if stack overflow occurs"/>
                 <Data name="watchdogLeft" inMemoryType="float32" encodedType="unsigned8" max="100" comment="Worst case amount of watchdog time remaining in this reporting period for this thread, 0 if watchdog has timed out"/>
-                <Data name="reserved" inMemoryType="null" encodedType="unsigned16" comment="Reserved space for future expansion"/>
+                <Data name="numIterations" inMemoryType="unsigned16" encodedType="unsigned8" scaler="0.1" comment="Number of times this thread iterated during the reporting period"/>
+                <Data name="worstcase" inMemoryType="float32" encodedType="unsigned8" max="25.5" comment="Worst case thread run time as a ratio with the average thread run time during the reporting period"/>
             </Structure>
         </Structure>
     </Packet>
@@ -451,7 +452,8 @@ See TrilliumPacket.c (in the Orion SDK) for details.
 
         <Data name="systemTime" inMemoryType="unsigned32" comment="Milliseconds since system bootup"/>
         <Data name="gpsSource" enum="gpsSource_t" comment="The source of GPS data"/>
-        <Data name="reserved" inMemoryType="null" encodedType="unsigned8" comment="Reserved packet space"/>
+        <Data name="reserved" inMemoryType="null" encodedType="bitfield7" comment="Reserved packet space"/>
+        <Data name="externalIMU" inMemoryType="bitfield1" comment="Set if the IMU data are external, else the IMU data are coming from the native internal IMU"/>
         <Data name="insMode" enum="insMode_t" comment="The operational mode of the INS"/>
         <Data name="hasGyroBias" inMemoryType="bitfield1" comment="1 if the INS is computing and reporting gyro bias states"/>
         <Data name="hasGravityBias" inMemoryType="bitfield1" comment="1 if the INS is computing and reporting a gravity bias state"/>
