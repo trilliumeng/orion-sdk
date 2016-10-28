@@ -695,7 +695,8 @@ See TrilliumPacket.c (in the Orion SDK) for details.
         <Data name="Port" inMemoryType="unsigned16" comment="desitnation port"/>
         <Data name="Bitrate" inMemoryType="unsigned32" default="0" comment="Video encoding target bitrate, in bits per second"/>
         <Data name="Ttl" inMemoryType="signed8" default="-1" comment="TTL value for UDP video packets. Values less than or equal to zero will use default values of 64 for unicast and 1 for multicast." />
-        <Data name="StreamType" enum="StreamType_t" default="STREAM_TYPE_H264" comment="Output stream format specifier" />
+        <Data name="StreamType" enum="StreamType_t" encodedType="unsigned8" default="STREAM_TYPE_H264" comment="Output stream format specifier" />
+        <Data name="MjpegQuality" inMemoryType="unsigned8" default="30" comment="MJPEG quality value, from 10 to 95" />
     </Packet>
 
     <Documentation name="Packets used to determine manufacturing and software information about the gimbal" paragraph="1" comment="These informational packets are sent by the gimbal in response to user request. To request a specific packet, send that packet to the gimbal with zero length."/>
