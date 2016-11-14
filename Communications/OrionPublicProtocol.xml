@@ -92,6 +92,7 @@ See TrilliumPacket.c (in the Orion SDK) for details.
         <Value name="ORION_PKT_DEBUG_STRING" comment="A human readable text string which is typically used for debugging purposes"/>
         <Value name="ORION_PKT_USER_DATA" comment="Packet for sending user data to a serial port in the gimbal" />
         <Value name="ORION_PKT_KLV_USER_DATA" comment="KLV user-specified field settings"/>
+        <Value name="ORION_PKT_PRIVATE_B4" comment="Reserved packet identifier" hidden="true"/>
         <Value name="ORION_PKT_PRIVATE_C0" value="0xC0" comment="Reserved packet identifier" hidden="true"/>
         <Value name="ORION_PKT_PRIVATE_C1" comment="Reserved packet identifier" hidden="true"/>
         <Value name="ORION_PKT_PRIVATE_C2" comment="Reserved packet identifier" hidden="true"/>
@@ -555,6 +556,7 @@ See TrilliumPacket.c (in the Orion SDK) for details.
         <Data name="Contrast" inMemoryType="float32" encodedType="signed8" max="1" comment="Contrast adjustment"/>
         <Data name="Saturation" inMemoryType="float32" encodedType="signed8" max="1" comment="Saturation adjustment"/>
         <Data name="Sharpness" inMemoryType="float32" encodedType="unsigned8" max="5" comment="Sharpening filter strength" />
+        <Data name="DebugEnable" inMemoryType="bitfield1" default="0" comment="Set to 1 to enable AGC debugging information" />
     </Packet>
 
     <Packet name="OrionZafiroSettings" ID="ORION_PKT_ZAFIRO_SETTINGS" comment="Zafiro-specific camera settings.">
