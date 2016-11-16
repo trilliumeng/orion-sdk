@@ -258,9 +258,9 @@ See TrilliumPacket.c (in the Orion SDK) for details.
         <Data name="Current24" inMemoryType="float32" encodedType="unsigned16" scaler="1000" comment="Current in Amps of the 24-volt rail"/>
         <Data name="Current12" inMemoryType="float32" encodedType="unsigned16" scaler="1000" comment="Current in Amps of the 12-volt rail"/>
         <Data name="Current3v3" inMemoryType="float32" encodedType="unsigned16" scaler="1000" comment="Current in Amps of the 3.3-volt rail"/>
-        <Data name="CrownTemp" inMemoryType="float32" encodedType="signed8" comment="Temperature of the crown board in degrees Celsius"/>
-        <Data name="SlaTemp" inMemoryType="float32" encodedType="signed8" comment="Temperature of the SLA-1500 board (if applicable) in degrees Celsius"/>
-        <Data name="GyroTemp" inMemoryType="float32" encodedType="signed8" comment="Stabilization gyro ADC temperature in degrees Celsius"/>
+        <Data name="CrownTemp" inMemoryType="float32" encodedType="signed8" scaler="1.0" comment="Temperature of the crown board in degrees Celsius"/>
+        <Data name="SlaTemp" inMemoryType="float32" encodedType="signed8" scaler="1.0" comment="Temperature of the SLA-1500 board (if applicable) in degrees Celsius"/>
+        <Data name="GyroTemp" inMemoryType="float32" encodedType="signed8" scaler="1.0" comment="Stabilization gyro ADC temperature in degrees Celsius"/>
         <Data name="reserved" inMemoryType="null" encodedType="unsigned8" constant="0" comment="Reserved space for future expansion"/>
         <Data name="Voltage24Var" inMemoryType="float32" encodedType="unsigned16" scaler="100000" comment="Voltage variance of the 24-volt rail"/>
         <Data name="Voltage12Var" inMemoryType="float32" encodedType="unsigned16" scaler="100000" comment="Voltage variance of the 12-volt rail"/>
@@ -365,7 +365,7 @@ See TrilliumPacket.c (in the Orion SDK) for details.
         <Data name="priority" enum="debugPriority" encodedType="unsigned8" comment="The importance of the debug message"/>
         <Data name="reserved1" inMemoryType="unsigned8"/>
         <Data name="reserved2" inMemoryType="unsigned8"/>
-        <Data name="description" inMemoryType="signed8" array="128" encodedType="string" comment="human readable description of the debug problem"/>
+        <Data name="description" inMemoryType="string" array="128" comment="human readable description of the debug problem"/>
 
     </Packet>
 
@@ -605,7 +605,7 @@ See TrilliumPacket.c (in the Orion SDK) for details.
     <Packet name="OrionLaserCommand" ID="ORION_PKT_LASER_CMD" comment="Command to fire the laser (if installed).">
         <Data name="Reserved" inMemoryType="null" encodedType="unsigned16" constant="0" comment="Deprecated parameter - set to zero" />
         <Data name="Index" inMemoryType="unsigned8" comment="Index of the laser to apply this command to" />
-        <Data name="Password" inMemoryType="signed8" array="16" encodedType="string" comment="Password, if required by the laser. If a password is required, it must be provided in order to change any aspect of the laser's state (e.g., enable/disable, arm/disarm, fire/deactivate" />
+        <Data name="Password" inMemoryType="string" array="16" comment="Password, if required by the laser. If a password is required, it must be provided in order to change any aspect of the laser's state (e.g., enable/disable, arm/disarm, fire/deactivate" />
         <Data name="Enable" inMemoryType="unsigned8" comment="Set to zero to disable the laser, or non-zero to enable it" />
         <Data name="Arm" inMemoryType="unsigned8" comment="Set to zero to disarm the laser, or non-zero to arm" />
         <Data name="Fire" inMemoryType="unsigned8" comment="Set to zero to deactivate the laser, or non-zero to activate it" />
@@ -650,7 +650,7 @@ See TrilliumPacket.c (in the Orion SDK) for details.
         <Data name="PeakCur"  inMemoryType="float32" array="NUM_GIMBAL_AXES" encodedType="unsigned16" scaler="1000.0" comment="Maximum peak current in Amps"/>
         <Data name="PeakCurTime"  inMemoryType="float32" array="NUM_GIMBAL_AXES" encodedType="unsigned16" scaler="1000.0" comment="Peak current time in seconds"/>
         <Data name="InitCur"  inMemoryType="float32" array="NUM_GIMBAL_AXES" encodedType="unsigned16" scaler="1000.0" comment="Initialization current in Amps"/>
-        <Data name="MaxPower" inMemoryType="float32" array="NUM_GIMBAL_AXES" encodedType="unsigned8" default="0" comment="Maximum motor output power, in watts. Set to zero for no limit"/>
+        <Data name="MaxPower" inMemoryType="float32" array="NUM_GIMBAL_AXES" encodedType="unsigned8" scaler="1.0" default="0" comment="Maximum motor output power, in watts. Set to zero for no limit"/>
     </Packet>
 
     <Packet name="InsOptions" ID="ORION_PKT_INS_OPTIONS"
@@ -706,23 +706,23 @@ See TrilliumPacket.c (in the Orion SDK) for details.
     <Documentation name="Packets used to determine manufacturing and software information about the gimbal" paragraph="1" comment="These informational packets are sent by the gimbal in response to user request. To request a specific packet, send that packet to the gimbal with zero length."/>
 
     <Packet name="OrionClevisVersion" ID="ORION_PKT_CLEVIS_VERSION" parameterInterface="true" comment="Software version for the clevis board in the Orion gimbal.">
-        <Data name="Version" inMemoryType="unsigned8" array="16" encodedType="fixedstring" comment="Version of the clevis board software"/>
-        <Data name="PartNumber" inMemoryType="unsigned8" array="16" encodedType="fixedstring" comment="Hardware details of the clevis board"/>
+        <Data name="Version" inMemoryType="fixedstring" array="16" comment="Version of the clevis board software"/>
+        <Data name="PartNumber" inMemoryType="fixedstring" array="16" comment="Hardware details of the clevis board"/>
     </Packet>
 
     <Packet name="OrionCrownVersion" ID="ORION_PKT_CROWN_VERSION" parameterInterface="true" comment="Software version for the crown board in the Orion gimbal.">
-        <Data name="Version" inMemoryType="unsigned8" array="16" encodedType="fixedstring" comment="Version of the crown board software"/>
-        <Data name="PartNumber" inMemoryType="unsigned8" array="16" encodedType="fixedstring" comment="Hardware details of the crown board"/>
+        <Data name="Version" inMemoryType="fixedstring" array="16" comment="Version of the crown board software"/>
+        <Data name="PartNumber" inMemoryType="fixedstring" array="16" comment="Hardware details of the crown board"/>
     </Packet>
 
     <Packet name="OrionPayloadVersion" ID="ORION_PKT_PAYLOAD_VERSION" parameterInterface="true" comment="Software version for the payload board in the Orion gimbal.">
-        <Data name="Version" inMemoryType="unsigned8" array="24" encodedType="fixedstring" comment="Version of the payload board software"/>
-        <Data name="PartNumber" inMemoryType="unsigned8" array="16" encodedType="fixedstring" comment="Hardware details of the payload board"/>
+        <Data name="Version" inMemoryType="fixedstring" array="24" comment="Version of the payload board software"/>
+        <Data name="PartNumber" inMemoryType="fixedstring" array="16" comment="Hardware details of the payload board"/>
     </Packet>
 
     <Packet name="OrionTrackerVersion" ID="ORION_PKT_TRACKER_VERSION" parameterInterface="true" comment="Software version for the tracker board in the Orion Gimbal (if applicable)">
-        <Data name="Version" inMemoryType="unsigned8" array="16" encodedType="fixedstring" comment="Version of the tracker board software"/>
-        <Data name="PartNumber" inMemoryType="unsigned8" array="16" encodedType="fixedstring" comment="Hardware details of the tracker board"/>
+        <Data name="Version" inMemoryType="fixedstring" array="16" comment="Version of the tracker board software"/>
+        <Data name="PartNumber" inMemoryType="fixedstring" array="16" comment="Hardware details of the tracker board"/>
     </Packet>
 
     <Packet name="OrionBoard" ID="ORION_PKT_BOARD" comment="Information for a specific board in the gimbal.">
