@@ -592,7 +592,7 @@ See TrilliumPacket.c (in the Orion SDK) for details.
         <Value name="USER_DATA_PORT_FP1" comment="Front panel FP2 RS-232 serial port" />
         <Value name="USER_DATA_PORT_FP3" value="8" comment="Front panel FP3 TTL serial port" />
         <Value name="USER_DATA_PORT_FP4" comment="Front panel FP4 TTL serial port" />
-        <Value name="USER_DATA_PORT_AUTO" value="255" comment="The port referenced is whatever port delivered this packet"/>
+        <Value name="USER_DATA_PORT_CURRENT" value="255" comment="The port referenced is whatever port delivered this packet"/>
     </Enum>
 
     <Packet name="OrionUserData" ID="ORION_PKT_USER_DATA" comment="This packet can be used to transfer user-defined data payloads between communication ports on the gimbal.">
