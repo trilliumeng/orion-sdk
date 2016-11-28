@@ -124,6 +124,7 @@ See TrilliumPacket.c (in the Orion SDK) for details.
         <Value name="ORION_PKT_PRIVATE_F4" comment="Reserved packet identifier" hidden="true"/>
         <Value name="ORION_PKT_PRIVATE_F5" comment="Reserved packet identifier" hidden="true"/>
         <Value name="ORION_PKT_PRIVATE_F6" comment="Reserved packet identifier" hidden="true"/>
+        <Value name="ORION_PKT_PRIVATE_F7" comment="Reserved packet identifier" hidden="true"/>
     </Enum>
 
     <Enum name="GimbalAxis_t" comment="Enumeration of gimbal pan and tilt axes.">
