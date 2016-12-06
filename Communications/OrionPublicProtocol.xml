@@ -73,6 +73,7 @@ See TrilliumPacket.c (in the Orion SDK) for details.
         <Value name="ORION_PKT_PERFORMANCE" comment="Measurements related to stabilization performance"/>
         <Value name="ORION_PKT_SOFTWARE_DIAGNOSTICS" comment="Diagnostic information related to software performance for a processor"/>
         <Value name="ORION_PKT_VIBRATION" comment="Platform vibration statistics"/>
+        <Value name="ORION_PKT_NETWORK_DIAGNOSTICS" comment="Network diagnostics"/>
         <Value name="ORION_PKT_CAMERA_SWITCH" value="0x60" comment="Command the gimbal to swtich cameras"/>
         <Value name="ORION_PKT_CAMERA_STATE" comment="Command a camera in the gimbal"/>
         <Value name="ORION_PKT_NETWORK_VIDEO" comment="Command the IP settings for video delivery"/>
@@ -301,6 +302,23 @@ See TrilliumPacket.c (in the Orion SDK) for details.
             <Data name="Accel" inMemoryType="float32" encodedType="unsigned8" max="1" array="NUM_AXES" comment="Acceleration magnitude, expressed as a percentage of MaxAccel"/>
             <Data name="Gyro" inMemoryType="float32" encodedType="unsigned8" max="1" array="NUM_AXES" comment="Angular rate magnitude, expressed as a percentage of MaxGyro"/>
         </Structure>
+    </Packet>
+
+    <Packet name="NetworkDiagnostics" ID="ORION_PKT_NETWORK_DIAGNOSTICS" comment="Ethernet network diagnostic information">
+        <Data name="Flags" inMemoryType="unsigned16" comment="Ethernet interface configuration flags" />
+        <Data name="RxBytes" inMemoryType="unsigned32" comment="Ethernet bytes received" />
+        <Data name="TxBytes" inMemoryType="unsigned32" comment="Ethernet bytes transmitted" />
+        <Data name="RxPackets" inMemoryType="unsigned32" comment="Ethernet packets received" />
+        <Data name="TxPackets" inMemoryType="unsigned32" comment="Ethernet packets transmitted" />
+        <Data name="RxErrors" inMemoryType="unsigned16" comment="Number of receive errors" />
+        <Data name="TxErrors" inMemoryType="unsigned16" comment="Number of transmit errors" />
+        <Data name="RxDrops" inMemoryType="unsigned16" comment="Number of receive packets dropped by the Ethernet driver" />
+        <Data name="TxDrops" inMemoryType="unsigned16" comment="Number of transmit packets dropped by the Ethernet driver" />
+        <Data name="RxFifoErrors" inMemoryType="unsigned16" comment="Number of receive FIFO errors" />
+        <Data name="TxFifoErrors" inMemoryType="unsigned16" comment="Number of transmit FIFO errors" />
+        <Data name="FrameErrors" inMemoryType="unsigned16" comment="Framing error count" />
+        <Data name="Collisions" inMemoryType="unsigned16" comment="Hardware interface collision count" />
+        <Data name="CarrierErrors" inMemoryType="unsigned16" comment="Number of carrier loss events" />
     </Packet>
 
     <Packet name="OrionRetractStatus" ID="ORION_PKT_RETRACT_STATUS" parameterInterface="true" comment="Current gimbal retraction mechanism status. This is sent by the gimbal regularly only if a retract system is installed.">
