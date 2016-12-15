@@ -11,9 +11,15 @@
 #define SQRT_3          1.7320508f
 
 #define SQR(x)          ((x) * (x))
-#define MIN(x,y)        (((x) < (y)) ? (x) : (y))
-#define MAX(x,y)        (((x) > (y)) ? (x) : (y))
 #define SGN(x)          (((x) < 0) ? -1 : 1)
+
+#ifndef MIN
+# define MIN(x,y)       (((x) < (y)) ? (x) : (y))
+#endif
+
+#ifndef MAX
+# define MAX(x,y)       (((x) > (y)) ? (x) : (y))
+#endif
 
 /*!
  * Bound a value to be >= a minimum and <= a maximum
