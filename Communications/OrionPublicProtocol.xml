@@ -725,19 +725,22 @@ See TrilliumPacket.c (in the Orion SDK) for details.
 
     <Documentation name="Packets used to determine manufacturing and software information about the gimbal" paragraph="1" comment="These informational packets are sent by the gimbal in response to user request. To request a specific packet, send that packet to the gimbal with zero length."/>
 
-    <Packet name="OrionClevisVersion" ID="ORION_PKT_CLEVIS_VERSION" parameterInterface="true" comment="Software version for the clevis board in the Orion gimbal.">
+    <Packet name="OrionClevisVersion" ID="ORION_PKT_CLEVIS_VERSION" comment="Software version for the clevis board in the Orion gimbal.">
         <Data name="Version" inMemoryType="fixedstring" array="16" comment="Version of the clevis board software"/>
         <Data name="PartNumber" inMemoryType="fixedstring" array="16" comment="Hardware details of the clevis board"/>
+        <Data name="OnTime" inMemoryType="unsigned32" default="0" comment="Board on time in minutes"/>
     </Packet>
 
-    <Packet name="OrionCrownVersion" ID="ORION_PKT_CROWN_VERSION" parameterInterface="true" comment="Software version for the crown board in the Orion gimbal.">
+    <Packet name="OrionCrownVersion" ID="ORION_PKT_CROWN_VERSION" comment="Software version for the crown board in the Orion gimbal.">
         <Data name="Version" inMemoryType="fixedstring" array="16" comment="Version of the crown board software"/>
         <Data name="PartNumber" inMemoryType="fixedstring" array="16" comment="Hardware details of the crown board"/>
+        <Data name="OnTime" inMemoryType="unsigned32" default="0" comment="Board on time in minutes"/>
     </Packet>
 
-    <Packet name="OrionPayloadVersion" ID="ORION_PKT_PAYLOAD_VERSION" parameterInterface="true" comment="Software version for the payload board in the Orion gimbal.">
+    <Packet name="OrionPayloadVersion" ID="ORION_PKT_PAYLOAD_VERSION" comment="Software version for the payload board in the Orion gimbal.">
         <Data name="Version" inMemoryType="fixedstring" array="24" comment="Version of the payload board software"/>
         <Data name="PartNumber" inMemoryType="fixedstring" array="16" comment="Hardware details of the payload board"/>
+        <Data name="OnTime" inMemoryType="unsigned32" default="0" comment="Board on time in minutes"/>
     </Packet>
 
     <Packet name="OrionTrackerVersion" ID="ORION_PKT_TRACKER_VERSION" parameterInterface="true" comment="Software version for the tracker board in the Orion Gimbal (if applicable)">

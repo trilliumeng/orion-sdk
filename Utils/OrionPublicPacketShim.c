@@ -57,42 +57,6 @@ BOOL DecodeOrionCommand(const OrionPkt_t *pPkt, OrionCmd_t *pCmd)
 
 }// DecodeOrionCommand
 
-void FormOrionClevisVersion(OrionPkt_t *pPkt, const char Version[16], const char PartNumber[16])
-{
-    encodeOrionClevisVersionPacket(pPkt, Version, PartNumber);
-
-}// FormOrionVersion
-
-BOOL DecodeOrionClevisVersion(const OrionPkt_t *pPkt, char Version[16], char PartNumber[16])
-{
-    return decodeOrionClevisVersionPacket(pPkt, Version, PartNumber);
-
-}// DecodeOrionVersion
-
-void FormOrionCrownVersion(OrionPkt_t *pPkt, const char Version[16], const char PartNumber[16])
-{
-    encodeOrionCrownVersionPacket(pPkt, Version, PartNumber);
-
-}// FormOrionCrownVersion
-
-BOOL DecodeOrionCrownVersion(const OrionPkt_t *pPkt, char Version[16], char PartNumber[16])
-{
-    return decodeOrionCrownVersionPacket(pPkt, Version, PartNumber);
-
-}// DecodeOrionCrownVersion
-
-void FormOrionPayloadVersion(OrionPkt_t *pPkt, const char Version[24], const char PartNumber[24])
-{
-    encodeOrionPayloadVersionPacket(pPkt, Version, PartNumber);
-
-}// FormOrionPayloadVersion
-
-BOOL DecodeOrionPayloadVersion(const OrionPkt_t *pPkt, char Version[24], char PartNumber[24])
-{
-    return decodeOrionPayloadVersionPacket(pPkt, Version, PartNumber);
-
-}// DecodeOrionPayloadVersion
-
 void FormOrionResetSource(OrionPkt_t *pPkt, UInt32 Vector, UInt32 Address, OrionBoardEnumeration_t sourceBoard)
 {
     encodeOrionResetSourcePacket(pPkt, Vector, Address, sourceBoard);

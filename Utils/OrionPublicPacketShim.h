@@ -28,15 +28,6 @@ typedef TrilliumPkt_t OrionPkt_t;
 void FormOrionCommand(OrionPkt_t *pPkt, const OrionCmd_t *pCmd);
 BOOL DecodeOrionCommand(const OrionPkt_t *pPkt, OrionCmd_t *pCmd);
 
-void FormOrionClevisVersion(OrionPkt_t *pPkt, const char Version[16], const char PartNumber[16]);
-BOOL DecodeOrionClevisVersion(const OrionPkt_t *pPkt, char Version[16], char PartNumber[16]);
-
-void FormOrionCrownVersion(OrionPkt_t *pPkt, const char Version[16], const char PartNumber[16]);
-BOOL DecodeOrionCrownVersion(const OrionPkt_t *pPkt, char Version[16], char PartNumber[16]);
-
-void FormOrionPayloadVersion(OrionPkt_t *pPkt, const char Version[24], const char PartNumber[24]);
-BOOL DecodeOrionPayloadVersion(const OrionPkt_t *pPkt, char Version[24], char PartNumber[24]);
-
 void FormOrionResetSource(OrionPkt_t *pPkt, UInt32 Vector, UInt32 Address, OrionBoardEnumeration_t sourceBoard);
 BOOL DecodeOrionResetSource(const OrionPkt_t *pPkt, UInt32 *pVector, UInt32 *pAddress, OrionBoardEnumeration_t* pSourceBoard);
 
