@@ -11,7 +11,7 @@ elif [ "$PLATFORM" == "x86_64" ]; then
 elif [ "$MACH" != "${MACH/arm/}" ]; then
     ARCH=Linux/arm
 elif [ "`uname`" == "Darwin" ]; then
-    ARCH=Mac
+    ARCH=Mac/ProtoGen.app/Contents/MacOS
 else
     echo "Unrecognized platform $PLATFORM"
     exit 1
