@@ -67,6 +67,7 @@ See TrilliumPacket.c (in the Orion SDK) for details.
         <Value name="ORION_PKT_PRIVATE_2A" comment="Reserved packet identifier" hidden="true"/>
         <Value name="ORION_PKT_PRIVATE_2B" comment="Reserved packet identifier" hidden="true"/>
         <Value name="ORION_PKT_TRACKER_VERSION" comment="Software version for the tracker board (if present)"/>
+        <Value name="ORION_PKT_PRIVATE_2D" comment="Reserved packet identifier" hidden="true"/>
         <Value name="ORION_PKT_PRIVATE_40" value="0x40" comment="Reserved packet identifier" hidden="true"/>
         <Value name="ORION_PKT_DIAGNOSTICS" comment="Electrical diagnostic data"/>
         <Value name="ORION_PKT_FAULTS"/>
