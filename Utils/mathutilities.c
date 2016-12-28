@@ -62,12 +62,12 @@ double wrapAngle(double angle)
  */
 double wrapAngle90(double angle)
 {
-	if(angle > PId/2)
-		angle -= 2*PId;
-	else if(angle <= -3*PId/2)
-		angle += 2*PId;
+    if(angle > PId/2)
+        angle -= 2*PId;
+    else if(angle <= -3*PId/2)
+        angle += 2*PId;
 
-	return angle;
+    return angle;
 }
 
 
@@ -135,12 +135,12 @@ float wrapAnglef(float angle)
  */
 float wrapAngle90f(float angle)
 {
-	if(angle > PIf/2)
-		angle -= 2*PIf;
-	else if(angle <= -3*PIf/2)
-		angle += 2*PIf;
+    if(angle > PIf/2)
+        angle -= 2*PIf;
+    else if(angle <= -3*PIf/2)
+        angle += 2*PIf;
 
-	return angle;
+    return angle;
 }
 
 
@@ -152,11 +152,57 @@ float wrapAngle90f(float angle)
  */
 float wrapAngle360f(float angle)
 {
-	if(angle < 0)
-		angle += 2*PIf;
+    if(angle < 0)
+        angle += 2*PIf;
 
-	return angle;
+    return angle;
 }
+
+
+/*!
+ * Compute a fast approximation to the sine of an angle
+ * \param angle is the angle to compute the sine of, in radians
+ * \return the approximate sine of angle
+ */
+float fastSin(float angle)
+{
+    // Quasi-Taylor expansion coefficients
+    static const float A[] = { 1 / 6.0f, 1 / 20.0f, 1 / 42.0f, 1 / 72.0f };
+    float X;
+
+    // Wrap to +/-pi
+    angle = wrapAnglef(angle);
+
+    // Pre-compute angle^2
+    X = angle * angle;
+
+    // Return a simplified version of the Taylor expansion of sin(x)
+    return angle * (1 - A[0]*X * (1 - A[1]*X * (1 - A[2]*X * (1 - A[3]*X))));
+
+}// fastSin
+
+
+/*!
+ * Compute a fast approximation to the cosine of an angle
+ * \param angle is the angle to compute the cosine of, in radians
+ * \return the approximate cosine of angle
+ */
+float fastCos(float angle)
+{
+    // Quasi-Taylor expansion coefficients
+    static const float A[] = { 1 / 2.0f, 1 / 12.0f, 1 / 30.0f, 1 / 56.0f, 1 / 90.0f };
+    float X;
+
+    // Wrap to +/-pi
+    angle = wrapAnglef(angle);
+
+    // Pre-compute angle^2
+    X = angle * angle;
+
+    // Return a simplified version of the Taylor expansion of cos(x)
+    return 1 - A[0]*X * (1 - A[1]*X * (1 - A[2]*X * (1 - A[3]*X * (1 - A[4]*X))));
+
+}// fastCos
 
 
 /*!
@@ -184,25 +230,25 @@ float firstOrderFilterf(float prev, float sig, float tau, float sampleTime)
  */
 float rateOfChangeLimitf(float prev, float value, float limit, float sampleTime)
 {
-	float delta;
+    float delta;
 
-	// the maximum amount of change allowed
-	float maxDelta = sampleTime*limit;
+    // the maximum amount of change allowed
+    float maxDelta = sampleTime*limit;
 
-	// Which must be positive non-zero to make sense
-	if(maxDelta <= 0)
-		return value;
+    // Which must be positive non-zero to make sense
+    if(maxDelta <= 0)
+        return value;
 
-	// The actual proposed changed
-	delta = value-prev;
+    // The actual proposed changed
+    delta = value-prev;
 
-	// Return the limited value if needed
-	if(delta > maxDelta)
-		return prev + maxDelta;
-	else if(delta < -maxDelta)
-		return prev - maxDelta;
-	else
-		return value;
+    // Return the limited value if needed
+    if(delta > maxDelta)
+        return prev + maxDelta;
+    else if(delta < -maxDelta)
+        return prev - maxDelta;
+    else
+        return value;
 
 }
 
@@ -225,8 +271,8 @@ void computeDateAndTimeFromWeekAndItow(uint16_t week, uint32_t itow, uint8_t lea
     // Watch for wrap when we subtract the leap seconds
     if(itow < leapsecs*1000)
     {
-    	week--;
-    	itow += 86400000*7;
+        week--;
+        itow += 86400000*7;
     }
 
     // Account for leap seconds, this converts the GPS time to UTC time
@@ -340,23 +386,23 @@ void computeDateFromWeekAndItow(uint16_t week, uint32_t itow, uint16_t* pyear, u
  */
 void computeTimeFromItow(uint32_t itow, uint8_t* hour, uint8_t* min, uint8_t* second)
 {
-	// Milliseconds of the day
-	itow = itow % 86400000;
+    // Milliseconds of the day
+    itow = itow % 86400000;
 
-	// Compute hours of the day
-	(*hour) = (uint8_t)(itow / (60UL * 60UL * 1000UL));
+    // Compute hours of the day
+    (*hour) = (uint8_t)(itow / (60UL * 60UL * 1000UL));
 
-	// Subtract off hours
-	itow -= (*hour)*60*60*1000;
+    // Subtract off hours
+    itow -= (*hour)*60*60*1000;
 
-	// Compute minutes of the hour
-	(*min)  = (uint8_t)(itow / (60UL * 1000UL));
+    // Compute minutes of the hour
+    (*min)  = (uint8_t)(itow / (60UL * 1000UL));
 
-	// Subtract off minutes
-	itow -= (*min)*60*1000;
+    // Subtract off minutes
+    itow -= (*min)*60*1000;
 
-	// Compute seconds of the minute
-	(*second)  = (uint8_t)(itow / (1000UL));
+    // Compute seconds of the minute
+    (*second)  = (uint8_t)(itow / (1000UL));
 
 }// computeTimeFromItow
 
@@ -368,30 +414,30 @@ void computeTimeFromItow(uint32_t itow, uint8_t* hour, uint8_t* min, uint8_t* se
  */
 int isLeapYear(uint16_t year)
 {
-	// Leap year rules:
-	// 1) every 4th year is a leap year unless:
-	// 2) the year is modulo 100 its not a leap year, unless:
-	// 3) the year is module 400 it is a leap year. So:
-	// 1896 is leap year,
-	// 1900 is not (modulo 100),
-	// 1904 is
-	// 1996 is
-	// 2000 is (modulo 400)
-	// 2004 is
-	// 2100 is not (module 100)
-	// 2400 is (modulo 400)
+    // Leap year rules:
+    // 1) every 4th year is a leap year unless:
+    // 2) the year is modulo 100 its not a leap year, unless:
+    // 3) the year is module 400 it is a leap year. So:
+    // 1896 is leap year,
+    // 1900 is not (modulo 100),
+    // 1904 is
+    // 1996 is
+    // 2000 is (modulo 400)
+    // 2004 is
+    // 2100 is not (module 100)
+    // 2400 is (modulo 400)
 
-	if(year & 0x03)
-		return 0;	// not modulo 4, not a leap year
-	else
-	{
-		if((year % 100) != 0)
-			return 1;	// modulo 4, but not modulo 100, leap year
-		else if((year % 400) != 0)
-			return 0;	// modul0 100, but not modulo 400, not a leap year
-		else
-			return 1;	// modulo 400, leap year
-	}
+    if(year & 0x03)
+        return 0;    // not modulo 4, not a leap year
+    else
+    {
+        if((year % 100) != 0)
+            return 1;    // modulo 4, but not modulo 100, leap year
+        else if((year % 400) != 0)
+            return 0;    // modul0 100, but not modulo 400, not a leap year
+        else
+            return 1;    // modulo 400, leap year
+    }
 
 }// isLeapYear
 
@@ -412,52 +458,52 @@ int isLeapYear(uint16_t year)
  */
 void computeWeekAndItow(uint16_t year, uint8_t month, uint8_t day, uint8_t hours, uint8_t minutes, uint8_t seconds, int16_t milliseconds, uint16_t* pweek, uint32_t* pitow)
 {
-	// Number of days between Jan 6 1980 and Jan 1 2012
-	uint32_t days = JAN12012;
-	uint32_t week;
-	uint32_t itow;
+    // Number of days between Jan 6 1980 and Jan 1 2012
+    uint32_t days = JAN12012;
+    uint32_t week;
+    uint32_t itow;
 
-	// 0 based month
-	month--;
+    // 0 based month
+    month--;
 
-	// 0 based day
-	day--;
+    // 0 based day
+    day--;
 
-	// Days of the months already in this year
-	days += month_day_norm[month];
+    // Days of the months already in this year
+    days += month_day_norm[month];
 
-	// Add in day of the month
-	days += day;
+    // Add in day of the month
+    days += day;
 
-	// Has leap day happened?, add a day
-	if(isLeapYear(year) && (month>=2))
-		days++;
+    // Has leap day happened?, add a day
+    if(isLeapYear(year) && (month>=2))
+        days++;
 
-	// Now add up all the years prior to this one.
-	// Counting number of days to Jan 1 year 2012
-	while(year > 2012)
-	{
-		year--;
+    // Now add up all the years prior to this one.
+    // Counting number of days to Jan 1 year 2012
+    while(year > 2012)
+    {
+        year--;
 
-		if(isLeapYear(year))
-			days += 366;
-		else
-			days += 365;
+        if(isLeapYear(year))
+            days += 366;
+        else
+            days += 365;
 
-	}// While still years to count down
+    }// While still years to count down
 
-	// Now that we have the number of days we can compute the week number
-	week = days/7;
+    // Now that we have the number of days we can compute the week number
+    week = days/7;
 
-	// subtract off the days that are accounted for in the week
-	days -= week*7;
+    // subtract off the days that are accounted for in the week
+    days -= week*7;
 
-	// convert the times to milliseconds
-	itow = (((days*24 + hours)*60 + minutes)*60 + seconds)*1000 + milliseconds;
+    // convert the times to milliseconds
+    itow = (((days*24 + hours)*60 + minutes)*60 + seconds)*1000 + milliseconds;
 
-	// return the results
-	*pweek = (uint16_t)week;
-	*pitow = itow;
+    // return the results
+    *pweek = (uint16_t)week;
+    *pitow = itow;
 
 }// computeWeekAndItow
 
@@ -468,28 +514,28 @@ void computeWeekAndItow(uint16_t year, uint8_t month, uint8_t day, uint8_t hours
  */
 int testDateConversion(void)
 {
-	uint16_t week;
-	uint32_t itow;
-	uint16_t year;
-	uint8_t month, day;
+    uint16_t week;
+    uint32_t itow;
+    uint16_t year;
+    uint8_t month, day;
 
-	// 2016 is a leap year, and march 12 is after leap day
-	computeWeekAndItow(2016, 3, 12, 9, 10, 11, 250, &week, &itow);
+    // 2016 is a leap year, and march 12 is after leap day
+    computeWeekAndItow(2016, 3, 12, 9, 10, 11, 250, &week, &itow);
 
-	computeDateFromWeekAndItow(week, itow, &year, &month, &day);
+    computeDateFromWeekAndItow(week, itow, &year, &month, &day);
 
-	if(year != 2016)
-		return 0;
-	else if(month != 3)
-		return 0;
-	else if(day != 12)
-		return 0;
-	else if(week != 1887)
-		return 0;
-	else if(itow != (((6UL * 24UL + 9UL) * 60UL + 10UL) * 60UL + 11UL) * 1000UL + 250UL)
-		return 0;
-	else
-		return 1;
+    if(year != 2016)
+        return 0;
+    else if(month != 3)
+        return 0;
+    else if(day != 12)
+        return 0;
+    else if(week != 1887)
+        return 0;
+    else if(itow != (((6UL * 24UL + 9UL) * 60UL + 10UL) * 60UL + 11UL) * 1000UL + 250UL)
+        return 0;
+    else
+        return 1;
 
 }
 
