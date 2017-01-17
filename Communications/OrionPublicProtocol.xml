@@ -191,6 +191,7 @@ See TrilliumPacket.c (in the Orion SDK) for details.
         <Value name="LASER_TYPE_10MJ_MARKER" comment="Laser marker" />
         <Value name="LASER_TYPE_LIGHTWARE" comment="LightWare LRF" />
         <Value name="LASER_TYPE_JENOPTIK_DLEM" comment="Jenoptik DLEM LRF" />
+        <Value name="LASER_TYPE_VECTRONIX" comment="Vectronix LRF" />
     </Enum>
 
     <Structure name="Date" comment="Compresssed date format.">
