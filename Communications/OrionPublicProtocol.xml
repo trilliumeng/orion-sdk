@@ -729,6 +729,8 @@ See TrilliumPacket.c (in the Orion SDK) for details.
             <Value name="STREAM_TYPE_H264" comment="h.264+KLV stream in an MPEG transport stream" />
             <Value name="STREAM_TYPE_MJPEG" comment="MJPEG multipart video stream" />
             <Value name="STREAM_TYPE_RAW" comment="Raw multipart video stream" />
+            <Value name="STREAM_TYPE_YUV" comment="YUV (NV12) multipart video stream" />
+            <Value name="NUM_STREAM_TYPES" comment="Number of video stream type IDs" />
         </Enum>
 
         <Data name="DestIp" inMemoryType="unsigned32" comment="destination IPv4 address"/>
