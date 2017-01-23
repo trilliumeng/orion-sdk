@@ -213,7 +213,7 @@ void setDCMBasedOnPitch(DCM_t* dcm, float pitch)
     set(dcm, 0, 2,  sinPitch);
     set(dcm, 2, 0, -sinPitch);
 
-}// setDCMBasedOnRoll
+}// setDCMBasedOnPitch
 
 
 /*!
@@ -232,7 +232,7 @@ void setDCMBasedOnYaw(DCM_t* dcm, float yaw)
     set(dcm, 0, 1, -sinYaw);
     set(dcm, 1, 0,  sinYaw);
 
-}// setDCMBasedOnRoll
+}// setDCMBasedOnYaw
 
 
 /*!
@@ -646,7 +646,8 @@ void vectorAttitudeIncrement(DCM_t* dcm, const float vector[])
 
 
 /*!
- * Convert a 3 elements to a skew symmetric DCM with 1s on the diagonal
+ * Convert a 3 elements to a skew symmetric DCM with 1s on the diagonal. This
+ * is typically used to propagate a DCM with a new set of delta angles.
  * \param dcm receives the DCM
  * \param x is the first element of the column vector
  * \param y is the second element of the column vector
@@ -659,6 +660,27 @@ void attitudeIncrement(DCM_t* dcm, float x, float y, float z)
 	set(dcm, 2, 0, -y);  set(dcm, 2, 1,  x);  set(dcm, 2, 2, 1.0f);
 
 }// attitudeIncrement
+
+
+/*!
+ * Convert a 3 elements to a skew symmetric DCM with 1s on the diagonal. This
+ * is typically used to propagate a DCM with a new set of delta angles. This
+ * function uses the sin and cosine of the z (yaw) term
+ * \param dcm receives the DCM
+ * \param x is the small rotation in radians about the x axis
+ * \param y is the small rotation in radians about the y axis
+ * \param z is the rotation in radians about the z axis
+ */
+void attitudeIncrementBigYaw(DCM_t* dcm, float x, float y, float z)
+{
+    float sinz = sinf(z);
+    float cosz = cosf(z);
+
+    set(dcm, 0, 0, cosz); set(dcm, 0, 1, -sinz); set(dcm, 0, 2,  y);
+    set(dcm, 1, 0, sinz); set(dcm, 1, 1,  cosz); set(dcm, 1, 2, -x);
+    set(dcm, 2, 0, -y);   set(dcm, 2, 1,  x);    set(dcm, 2, 2, 1.0f);
+
+}// attitudeIncrementBigYaw
 
 
 /*!

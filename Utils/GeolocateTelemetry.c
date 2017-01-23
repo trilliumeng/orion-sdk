@@ -4,6 +4,8 @@
 #include "mathutilities.h"
 #include "WGS84.h"
 
+
+
 /*!
  * Create a GeolocateTelemetry packet
  * \param pPkt receives the formatted packet
@@ -53,8 +55,14 @@ BOOL DecodeGeolocateTelemetry(const OrionPkt_t *pPkt, GeolocateTelemetry_t *pGeo
 		pGeo->gimbalEuler[AXIS_PITCH] = dcmPitch(&pGeo->gimbalDcm);
 		pGeo->gimbalEuler[AXIS_YAW]   = dcmYaw(&pGeo->gimbalDcm);
 
+#ifdef TEST_PANTILT_BIAS
+        // Correct pGeo->base.tilt for tilt bias
+        pGeo->base.tilt -= deg2radf(2.1);
+        pGeo->base.pan -= deg2radf(0.4);
+#endif
         // Offset the pan/tilt angles with the current estab output shifts
         Pan  = pGeo->base.pan  - pGeo->base.outputShifts[GIMBAL_AXIS_PAN];
+        //Tilt = pGeo->base.tilt - pGeo->base.outputShifts[GIMBAL_AXIS_TILT];
         Tilt = pGeo->base.tilt - pGeo->base.outputShifts[GIMBAL_AXIS_TILT];
 
 		// Rotation from camera to gimbal, note that this only works if pan

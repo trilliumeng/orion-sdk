@@ -114,6 +114,7 @@ See TrilliumPacket.c (in the Orion SDK) for details.
         <Value name="ORION_PKT_INS_OPTIONS" comment="Configuration options for the Inertial Navigation System"/>
         <Value name="ORION_PKT_STARE_START" comment="Stare portion of step stare started"/>
         <Value name="ORION_PKT_STARE_ACK" comment="Stare acknowledged, clear to move"/>
+        <Value name="ORION_PKT_PRIVATE_DB" comment="Reserved packet identifier" hidden="true"/>
         <Value name="ORION_PKT_PRIVATE_DE" value="0xDE" comment="Reserved packet identifier" hidden="true"/>
         <Value name="ORION_PKT_PRIVATE_DF" comment="Reserved packet identifier" hidden="true"/>
         <Value name="ORION_PKT_PRIVATE_E0" comment="Reserved packet identifier" hidden="true"/>
@@ -473,6 +474,7 @@ See TrilliumPacket.c (in the Orion SDK) for details.
             <Value name="insModeAHRS" comment="Running without GPS inputs"/>
             <Value name="insModeRunHard" comment="Running with forced GPS inputs"/>
             <Value name="insModeRun" comment="Normal mode of operation"/>
+            <Value name="insModeRunTight" comment="Normal mode of operation with tightly coupled corrections"/>
         </Enum>
 
         <Data name="systemTime" inMemoryType="unsigned32" comment="Milliseconds since system bootup"/>
@@ -483,7 +485,8 @@ See TrilliumPacket.c (in the Orion SDK) for details.
         <Data name="hasGyroBias" inMemoryType="bitfield1" comment="1 if the INS is computing and reporting gyro bias states"/>
         <Data name="hasGravityBias" inMemoryType="bitfield1" comment="1 if the INS is computing and reporting a gravity bias state"/>
         <Data name="hasAccelBias" inMemoryType="bitfield1" comment="1 if the INS is computing and reporting accelerometer bias states"/>
-        <Data name="reservedbits" inMemoryType="bitfield2" comment="Reserved bits in the bitfield"/>
+        <Data name="hasClockBias" inMemoryType="bitfield1" comment="1 if the INS is computing and reporting clock bias and drift states"/>
+        <Data name="reservedbits" inMemoryType="bitfield1" comment="Reserved bits in the bitfield"/>
         <Data name="posRejected" inMemoryType="bitfield1" comment="1 if the INS rejected the last position update because the chi-square value was too large."/>
         <Data name="velRejected" inMemoryType="bitfield1" comment="1 if the INS rejected the last velocity update because the chi-square value was too large."/>
         <Data name="hdgRejected" inMemoryType="bitfield1" comment="1 if the INS rejected the last heading update because the chi-square value was too large."/>
@@ -498,9 +501,17 @@ See TrilliumPacket.c (in the Orion SDK) for details.
         <Data name="gyroConfidence" dependsOn="hasGyroBias" inMemoryType="float32" array="3" encodedType="unsigned16" scaler="100000" comment="Rate gyro bias confidence in radians per second as a body Roll, Pitch, Yaw vector"/>
         <Data name="accelConfidence" dependsOn="hasAccelBias" inMemoryType="float32" array="3" encodedType="unsigned16" scaler="30000" comment="Accelerometer bias confidence in m/s/s as a body X, Y, Z vector"/>
         <Data name="gravityConfidence" dependsOn="hasGravityBias" inMemoryType="float32" encodedType="unsigned16" scaler="30000" comment="Gravity bias confidence in m/s/s"/>
+        <Data name="clockBiasConfidence" dependsOn="hasClockBias" inMemoryType="float32" encodedType="unsigned16" scaler="10" comment="Clock bias confidence (for tightly coupled) in meters"/>
+        <Data name="clockDriftConfidence" dependsOn="hasClockBias" inMemoryType="float32" encodedType="unsigned16" scaler="10" comment="Clock drift confience (for tightly coupled) in meters per second"/>
         <Data name="gyroBias" dependsOn="hasGyroBias" inMemoryType="float32" array="3" encodedType="signed16" scaler="100000" comment="Rate gyro bias estimate in radians per second as a body Roll, Pitch, Yaw vector"/>
         <Data name="accelBias" dependsOn="hasAccelBias" inMemoryType="float32" array="3" encodedType="unsigned16" scaler="30000" comment="Accelerometer bias estimate in m/s/s as a body X, Y, Z vector"/>
         <Data name="gravityBias" dependsOn="hasGravityBias" inMemoryType="float32" encodedType="unsigned16" scaler="30000" comment="Gravity bias estimate in m/s/s"/>
+        <Data name="clockBias" dependsOn="hasClockBias" inMemoryType="float32" encodedType="signed16" scaler="100" comment="Clock bias estimate (for tightly coupled) in meters"/>
+        <Data name="clockDrift" dependsOn="hasClockBias" inMemoryType="float32" encodedType="signed16" scaler="1000" comment="Clock drift estimate (for tightly coupled) in meters per second"/>
+        <Data name="numTightSatPosUpdates" dependsOn="hasClockBias" inMemoryType="unsigned8" comment="Number of satellites that contributed to tightly coupled position updates"/>
+        <Data name="numTightSatVelUpdates" dependsOn="hasClockBias" inMemoryType="unsigned8" comment="Number of satellites that contributed to tightly coupled velocity updates"/>
+        <Data name="numTightPosUpdates" dependsOn="hasClockBias" inMemoryType="unsigned8" comment="Number of signals that contributed to tightly coupled position updates"/>
+        <Data name="numTightVelUpdates" dependsOn="hasClockBias" inMemoryType="unsigned8" comment="Number of signals that contributed to tightly coupled velocity updates"/>
     </Packet>
 
     <Documentation comment="---"/>
@@ -708,7 +719,15 @@ See TrilliumPacket.c (in the Orion SDK) for details.
         <Data name="disableMagnetometer" inMemoryType="bitfield1" comment="If set then the INS will ignore any magnetometer measurements."/>
         <Data name="disableGPS" inMemoryType="bitfield1" comment="If set then the INS will ignore any GPS measurements."/>
         <Data name="resetINS" inMemoryType="bitfield1" comment="If set then the INS will be reset, all other fields of this packet are ignored in that case."/>
-        <Data name="reserved" inMemoryType="null" array="3" encodedType="unsigned8" comment="reserved space for future expansion"/>
+        <Data name="disableGpsClockError" inMemoryType="bitfield1" comment="Set this to disable clock error estimation for tightly coupled INS."/>
+        <Data name="enableAccelBias" inMemoryType="bitfield1" comment="Set this to enable accelerometer bias estimation."/>
+        <Data name="enableTightlyCoupled" inMemoryType="bitfield1" comment="Set this to enable the tightly coupled INS."/>
+        <Data name="usePhaseForVelocity" inMemoryType="bitfield1" comment="If set the INS will use the carrier phase rate for tightly coupled velocity observations. Otherwise the tightly coupled velocity observations come from doppler shifts."/>
+        <Data name="disableL1" inMemoryType="bitfield1" comment="If set the INS will ignore L1 band for tightly coupled observations."/>
+        <Data name="disableL2" inMemoryType="bitfield1" comment="If set the INS will ignore the L2 band for tightly coupled observations."/>
+        <Data name="disableL5" inMemoryType="bitfield1" comment="If set the INS will ignore the L5 band for tightly coupled observations."/>
+        <Data name="elevationMask" inMemoryType="float32" encodedType="bitfield4" min="0" max="5*pi/180" comment="Elevation mask for tightly coupled satellites"/>
+        <Data name="reserved" inMemoryType="null" array="2" encodedType="unsigned8" comment="reserved space for future expansion"/>
         <Data name="gimbalToPlatformEuler" inMemoryType="float32" array="NUM_AXES" encodedType="signed16" max="pi" comment="Roll, Pitch, Yaw angles in radians from -pi to pi. The angles give the Euler rotation (yaw first, then pitch, then roll) that rotates a vector in the gimbal reference frame into the platform reference frame"/>
         <Data name="initialHeading" inMemoryType="float32" encodedType="signed16" max="pi" comment="Initial heading angle in radians for the INS"/>
         <Data name="gpsLeverArm" inMemoryType="float32" array="3" encodedType="signed16" scaler="1000" default="0" comment="X, Y, Z meters from GPS antenna to IMU in the gimbal reference frame, or the platform reference frame if enablePlatformRotation is on"/>

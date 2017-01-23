@@ -160,6 +160,9 @@ void vectorAttitudeIncrement(DCM_t* dcm, const float vector[]);
 //! Convert 3 elements to a skew symmetric DCM with 1s on the diagonal
 void attitudeIncrement(DCM_t* dcm, float x, float y, float z);
 
+//! Convert a 3 elements to a skew symmetric DCM with 1s on the diagonal, allowing the yaw term to be large
+void attitudeIncrementBigYaw(DCM_t* dcm, float x, float y, float z);
+
 //! Test the linear algebra code
 BOOL testLinearAlgebra(void);
 
