@@ -368,6 +368,8 @@ See TrilliumPacket.c (in the Orion SDK) for details.
         <Data name="tilt" inMemoryType="float32" default="0" encodedType="signed16" max="pi" comment="Gimbal tilt angle in radians from -pi to pi"/>
         <Data name="rangeSource" enum="RangeDataSrc_t" encodedType="unsigned8" default="RANGE_SRC_NONE" comment="Target range data source" />
         <Data name="slantRange" inMemoryType="float32" encodedType="unsigned24" scaler="100" default="0" comment="Slant range to target, if available (see rangeSource)" />
+        <Data name="alongStareAngle" inMemoryType="float32" encodedType="signed16" max="pi" default="0" comment="Angle in radians of the view of the path with respect to the perpendicular ideal view. Positive angles indicate looking ahead, negative are looking behind."/>
+        <Data name="crossStareAngle" inMemoryType="float32" encodedType="signed16" max="pi" default="0" comment="Cross track angle in radians of the stare location, which will be zero if cross stepping is not being used. Negative if staring left of the path."/>
     </Packet>
 
     <Packet name="OrionResetSource" ID="ORION_PKT_RESET_SOURCE" parameterInterface="true" comment="Reset information for a processor in the Orion Gimbal. This packet is transmitted by each processor in the gimbal following its bootup">

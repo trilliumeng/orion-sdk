@@ -24,7 +24,7 @@ void ecefToNEDtrig(const double ecef[NECEF], double ned[NNED], const llaTrig_t* 
 //! Convert an NED vector to ECEF
 void nedToECEFf(const float ned[NNED], float ecef[NECEF], const double lla[NLLA]);
 
-//! Convert an NED vector to NED
+//! Convert an ECEF vector to NED
 void ecefToNEDf(const float ecef[NECEF], float ned[NNED], const double lla[NLLA]);
 
 //! Convert an NED vector to ECEF using trig data
