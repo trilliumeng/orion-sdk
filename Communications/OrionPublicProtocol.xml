@@ -610,6 +610,7 @@ See TrilliumPacket.c (in the Orion SDK) for details.
         <Data name="Index" inMemoryType="unsigned8" comment="Index of the camera that these settings should apply to. Use 0xFF to apply to any connected Hitachi camera."/>
         <Data name="IntegrationTime" inMemoryType="signed16" comment="Integration time in microseconds, or negative to disable shutter-priority mode" />
         <Data name="Aperture" inMemoryType="float32" encodedType="signed16" scaler="10" comment="Aperture f-number, or negative to disable aperture-priority mode" />
+        <Data name="Sharpness" inMemoryType="float32" encodedType="unsigned8" max="5" default="1" comment="Sharpening filter strength" />
     </Packet>
 
     <Packet name="OrionSonySettings" ID="ORION_PKT_SONY_SETTINGS" comment="Sony-specific camera settings.">
