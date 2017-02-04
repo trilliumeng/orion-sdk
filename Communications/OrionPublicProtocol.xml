@@ -710,7 +710,8 @@ See TrilliumPacket.c (in the Orion SDK) for details.
             comment="INS options give configuration options for the inertial navigation system (INS) in the gunbal.
                      Changing the INS options will cause the INS to be restarted if the platform rotation changes. When using platform rotation note the order:
                      First yaw about the gimbal's z-axis to create an intermediate axis. Then pitch about the intermediate y-axis to
-                     create a second intermediate axis. Finally roll about the second intermediate x-axis to reach the platform orientation.">
+                     create a second intermediate axis. Finally roll about the second intermediate x-axis to reach the platform orientation.
+                     When using an IMU in the payload ball the platform rotations are used only to manage external observation data, but not to rotate the IMU data. In that case enablePlatformRotation should be off, but the platform angles are still used.">
         <Data name="enablePlatformRotation" inMemoryType="bifield1"
               comment="The INS will be run in the platform reference frame if this is set.
                        The platform reference frame is defined by the rotation from the
@@ -733,7 +734,8 @@ See TrilliumPacket.c (in the Orion SDK) for details.
         <Data name="disableL2" inMemoryType="bitfield1" comment="If set the INS will ignore the L2 band for tightly coupled observations."/>
         <Data name="disableL5" inMemoryType="bitfield1" comment="If set the INS will ignore the L5 band for tightly coupled observations."/>
         <Data name="elevationMask" inMemoryType="float32" encodedType="bitfield4" min="0" max="5*pi/180" comment="Elevation mask for tightly coupled satellites"/>
-        <Data name="reserved" inMemoryType="null" array="2" encodedType="unsigned8" comment="reserved space for future expansion"/>
+        <Data name="enablePayloadIns" inMemoryType="bitfield1" comment="If set the IMU inputs to the INS are coming from the payload ball, not the gimbal crown. Note that enablePlatformRotation is interpreted differently in that case"/>
+        <Data name="reserved" inMemoryType="null" encodedType="bitfield15" comment="reserved space for future expansion"/>
         <Data name="gimbalToPlatformEuler" inMemoryType="float32" array="NUM_AXES" encodedType="signed16" max="pi" comment="Roll, Pitch, Yaw angles in radians from -pi to pi. The angles give the Euler rotation (yaw first, then pitch, then roll) that rotates a vector in the gimbal reference frame into the platform reference frame"/>
         <Data name="initialHeading" inMemoryType="float32" encodedType="signed16" max="pi" comment="Initial heading angle in radians for the INS"/>
         <Data name="gpsLeverArm" inMemoryType="float32" array="3" encodedType="signed16" scaler="1000" default="0" comment="X, Y, Z meters from GPS antenna to IMU in the gimbal reference frame, or the platform reference frame if enablePlatformRotation is on"/>
