@@ -711,7 +711,7 @@ See TrilliumPacket.c (in the Orion SDK) for details.
                      Changing the INS options will cause the INS to be restarted if the platform rotation changes. When using platform rotation note the order:
                      First yaw about the gimbal's z-axis to create an intermediate axis. Then pitch about the intermediate y-axis to
                      create a second intermediate axis. Finally roll about the second intermediate x-axis to reach the platform orientation.
-                     When using an IMU in the payload ball the platform rotations are used only to manage external observation data, but not to rotate the IMU data. In that case enablePlatformRotation should be off, but the platform angles are still used.">
+                     When using an IMU in the payload ball the enablePlatformRotation can still be used, but will only effect heading observations and the GPS lever arm, it will not rotate the IMU data.">
         <Data name="enablePlatformRotation" inMemoryType="bifield1"
               comment="The INS will be run in the platform reference frame if this is set.
                        The platform reference frame is defined by the rotation from the
