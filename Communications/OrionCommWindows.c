@@ -155,9 +155,11 @@ void OrionCommClose(void)
 
 BOOL OrionCommSend(const OrionPkt_t *pPkt)
 {
+    DWORD Bytes;
+
     // Write the packet, including header data, to the file descriptor
     if (SerialHandle != INVALID_HANDLE_VALUE)
-        return WriteFile(SerialHandle, (char *)pPkt, pPkt->Length + ORION_PKT_OVERHEAD, NULL, NULL);
+        return WriteFile(SerialHandle, (char *)pPkt, pPkt->Length + ORION_PKT_OVERHEAD, &Bytes, NULL);
     else
         return send(TcpSocket, (char *)pPkt, pPkt->Length + ORION_PKT_OVERHEAD, 0) != SOCKET_ERROR;
 
