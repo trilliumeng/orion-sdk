@@ -99,6 +99,26 @@ const double* vector3Difference(const double left[NVECTOR3], const double right[
 
 }// vector3Difference
 
+/*!
+ * Multipy one three dimensional vector with another, element-wise.
+ * left, right, and result can point to the same vector in order to do
+ * in-place multiplication
+ * \param left is the left argument of the vector multiplication
+ * \param right is the right argument of the vector multiplication
+ * \param result receives the product vector
+ * \return a const pointer to result.
+ */
+const double* vector3Multiply(const double left[NVECTOR3], const double right[NVECTOR3], double result[NVECTOR3])
+{
+    int i;
+
+    for(i = 0; i < NVECTOR3; i++)
+        result[i] = left[i] * right[i];
+
+    return result;
+
+}// vector3Multiply
+
 
 /*!
  * Take the dot product of two three dimensional vectors. a and b can be the
@@ -1167,6 +1187,26 @@ const float* vector3Differencef(const float left[NVECTOR3], const float right[NV
     return result;
 
 }// vector3Difference
+
+/*!
+ * Multipy one three dimensional vector with another, element-wise.
+ * left, right, and result can point to the same vector in order to do
+ * in-place multiplication
+ * \param left is the left argument of the vector multiplication
+ * \param right is the right argument of the vector multiplication
+ * \param result receives the product vector
+ * \return a const pointer to result.
+ */
+const float* vector3Multiplyf(const float left[NVECTOR3], const float right[NVECTOR3], float result[NVECTOR3])
+{
+    int i;
+
+    for(i = 0; i < NVECTOR3; i++)
+        result[i] = left[i] * right[i];
+
+    return result;
+
+}// vector3Multiplyf
 
 
 /*!

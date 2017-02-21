@@ -32,6 +32,9 @@ const double* vector3Sum(const double a[NVECTOR3], const double b[NVECTOR3], dou
 //! Subtract one three dimensional vector from another.
 const double* vector3Difference(const double left[NVECTOR3], const double right[NVECTOR3], double result[NVECTOR3]);
 
+//! Multiply two vectors together element-wise
+const double* vector3Multiply(const double a[NVECTOR3], const double b[NVECTOR3], double result[NVECTOR3]);
+
 //! Compute the dot product of two three dimensional vectors
 double vector3Dot(const double a[NVECTOR3], const double b[NVECTOR3]);
 
@@ -56,26 +59,14 @@ const double* vector3Unit(const double vector[NVECTOR3], double result[NVECTOR3]
 //! Convert a double-precision vector to single precision
 const float *vector3Convert(const double vector[NVECTOR3], float result[NVECTOR3]);
 
-//! Convert a double-precision vector to single precision
-const double *vector3Convertf(const float vector[NVECTOR3], double result[NVECTOR3]);
-
 //! Compute the absolute value of all three elements in a vector
 const double *vector3Abs(const double vector[NVECTOR3], double result[NVECTOR3]);
-
-//! Compute the absolute value of all three elements in a vector
-const float *vector3Absf(const float vector[NVECTOR3], float result[NVECTOR3]);
 
 //! Get the largest element in a vector
 #define vector3Max(vector)  MAX(vector[VECTOR3X], MAX(vector[VECTOR3Y], vector[VECTOR3Z]))
 
-//! Get the largest element in a vector
-#define vector3Maxf(vector) MAX(vector[VECTOR3X], MAX(vector[VECTOR3Y], vector[VECTOR3Z]))
-
 //! Get the smallest element in a vector
 #define vector3Min(vector)  MIN(vector[VECTOR3X], MIN(vector[VECTOR3Y], vector[VECTOR3Z]))
-
-//! Get the smallest element in a vector
-#define vector3Minf(vector) MIN(vector[VECTOR3X], MIN(vector[VECTOR3Y], vector[VECTOR3Z]))
 
 //! The matrix structure which holds data in row major format
 typedef struct
@@ -211,6 +202,9 @@ const float* vector3Sumf(const float a[NVECTOR3], const float b[NVECTOR3], float
 //! Subtract one three dimensional vector from another.
 const float* vector3Differencef(const float left[NVECTOR3], const float right[NVECTOR3], float result[NVECTOR3]);
 
+//! Multiply two vectors together element-wise
+const float* vector3Multiplyf(const float a[NVECTOR3], const float b[NVECTOR3], float result[NVECTOR3]);
+
 //! Compute the dot product of two three dimensional vectors
 float vector3Dotf(const float a[NVECTOR3], const float b[NVECTOR3]);
 
@@ -231,6 +225,18 @@ const float* vector3Scalef(const float vector[NVECTOR3], float result[NVECTOR3],
 
 //! Scale a three dimensional vector to unit length.
 const float* vector3Unitf(const float vector[NVECTOR3], float result[NVECTOR3]);
+
+//! Convert a double-precision vector to single precision
+const double *vector3Convertf(const float vector[NVECTOR3], double result[NVECTOR3]);
+
+//! Compute the absolute value of all three elements in a vector
+const float *vector3Absf(const float vector[NVECTOR3], float result[NVECTOR3]);
+
+//! Get the largest element in a vector
+#define vector3Maxf(vector) MAX(vector[VECTOR3X], MAX(vector[VECTOR3Y], vector[VECTOR3Z]))
+
+//! Get the smallest element in a vector
+#define vector3Minf(vector) MIN(vector[VECTOR3X], MIN(vector[VECTOR3Y], vector[VECTOR3Z]))
 
 //! The matrix structure which holds data in row major format
 typedef struct
