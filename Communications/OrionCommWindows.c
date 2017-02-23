@@ -168,20 +168,33 @@ BOOL OrionCommSend(const OrionPkt_t *pPkt)
 BOOL OrionCommReceive(OrionPkt_t *pPkt)
 {
     static OrionPkt_t Pkt = { 0 };
-    DWORD BytesRead;
     UInt8 Byte;
 
     if (SerialHandle != INVALID_HANDLE_VALUE)
     {
-        // As long as we keep getting bytes, keep reading them in one by one
-        while (ReadFile(SerialHandle, &Byte, 1, &BytesRead, NULL))
+        COMSTAT Status;
+
+        // As long as there are bytes to be read out of the receive queue
+        while (ClearCommError(SerialHandle, NULL, &Status) && (Status.cbInQue > 0))
         {
+            DWORD BytesRead = 0;
+
+            // Read a byte
+            ReadFile(SerialHandle, &Byte, 1, &BytesRead, NULL);
+
             // If this byte is the end of a valid packet
-            if (LookForOrionPacketInByte(&Pkt, Byte))
+            if ((BytesRead == 1) && (LookForOrionPacketInByte(&Pkt, Byte) == TRUE))
             {
                 // Copy the packet into the passed-in location and return a success
                 *pPkt = Pkt;
                 return TRUE;
+            }
+            // Otherwise, if some sort of error occurred
+            else if (BytesRead != 1)
+            {
+                // Close and invalidate the serial port
+                CloseHandle(SerialHandle);
+                SerialHandle = INVALID_HANDLE_VALUE;
             }
         }
     }
