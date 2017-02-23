@@ -750,6 +750,36 @@ BOOL testLinearAlgebra(void)
     error += fabsf(2.0f - vector[1]);
     error += fabsf(3.0f - vector[2]);
 
+    // DCM that describes pan 90 degrees, tilt 0 degrees
+    setDCMBasedOnPanTilt(&A, deg2radf(90), deg2radf(0));
+
+    // Start with unit vector in camera frame
+    vector[0] = 1;
+    vector[1] = 0;
+    vector[2] = 0;
+
+    // Rotate the same vector to be in crown frame. The vector
+    // should be pointing to the right in the crown frame
+    dcmApplyRotation(&A, vector, vector);
+    error += fabsf(0 - vector[0]);
+    error += fabsf(1 - vector[1]);
+    error += fabsf(0 - vector[2]);
+
+    // DCM that describes pan 0 degrees, tilt -45 degrees
+    setDCMBasedOnPanTilt(&A, deg2radf(0), deg2radf(-45));
+
+    // Start with unit vector in camera frame
+    vector[0] = 1;
+    vector[1] = 0;
+    vector[2] = 0;
+
+    // Rotate the same vector to be in crown frame. The vector
+    // should be pointing forward and down in the crown frame
+    dcmApplyRotation(&A, vector, vector);
+    error += fabsf(0.70710678118654752440084436210485f - vector[0]);
+    error += fabsf(0 - vector[1]);
+    error += fabsf(0.70710678118654752440084436210485f - vector[2]);
+
     if(error < 0.0001f)
         return TRUE;
 
