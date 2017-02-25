@@ -17,7 +17,7 @@ static BOOL CommHandle = FALSE;
 
 int main(int argc, char **argv)
 {
-    OrionUserData_t UserIn = { 0 }, UserOut = { 2 };
+    OrionUserData_t UserIn = { USER_DATA_PORT_ETHERNET }, UserOut = { USER_DATA_PORT_PRIMARY };
 
     // Process the command line arguments
     ProcessArgs(argc, argv, &UserOut);
