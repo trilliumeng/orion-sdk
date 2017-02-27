@@ -48,7 +48,7 @@ See TrilliumPacket.c (in the Orion SDK) for details.
     <Enum name="OrionPktType_t" comment="Identifiers of Orion public packets. The purpose of an Orion packet is determined by its ID field to this list.">
         <Value name="ORION_PKT_INITIALIZE" value="0x00"/>
         <Value name="ORION_PKT_CMD" comment="Basic commands for control of gimbal pan and tilt."/>
-        <Value name="ORION_PKT_PRIVATE_02" comment="Reserved packet identifier" hidden="true"/>
+        <Value name="ORION_PKT_UART_CONFIG" comment="Baud rate and protocol configuration for crown serial ports"/>
         <Value name="ORION_PKT_LASER_CMD" comment="Command to fire the laser"/>
         <Value name="ORION_PKT_RESET" comment="Send this packet to cause the gimbal to reset"/>
         <Value name="ORION_PKT_PRIVATE_05" comment="Reserved packet identifier"  hidden="true"/>
@@ -483,8 +483,9 @@ See TrilliumPacket.c (in the Orion SDK) for details.
 
         <Data name="systemTime" inMemoryType="unsigned32" comment="Milliseconds since system bootup"/>
         <Data name="gpsSource" enum="gpsSource_t" comment="The source of GPS data"/>
-        <Data name="reserved" inMemoryType="null" encodedType="bitfield7" comment="Reserved packet space"/>
-        <Data name="externalIMU" inMemoryType="bitfield1" comment="Set if the IMU data are external, else the IMU data are coming from the native internal IMU"/>
+        <Data name="reserved" inMemoryType="null" encodedType="bitfield6" comment="Reserved packet space"/>
+        <Data name="dmu11IMU" inMemoryType="bitfield1" comment="Set if the IMU data are from the dmu11 IMU, else the data are coming from the native internal IMU or the sensonor IMU"/>
+        <Data name="sensonorIMU" inMemoryType="bitfield1" comment="Set if the IMU data are from the sensonor, else the IMU data are coming from the native internal IMU or the dmu11 IMU"/>
         <Data name="insMode" enum="insMode_t" comment="The operational mode of the INS"/>
         <Data name="hasGyroBias" inMemoryType="bitfield1" comment="1 if the INS is computing and reporting gyro bias states"/>
         <Data name="hasGravityBias" inMemoryType="bitfield1" comment="1 if the INS is computing and reporting a gravity bias state"/>
@@ -647,6 +648,36 @@ See TrilliumPacket.c (in the Orion SDK) for details.
         <Value name="USER_DATA_PORT_FP4" comment="Front panel FP4 TTL serial port" />
         <Value name="USER_DATA_PORT_CURRENT" value="255" comment="The port referenced is whatever port delivered this packet"/>
     </Enum>
+
+    <Packet name="OrionUartConfig" ID="ORION_PKT_UART_CONFIG" 
+        comment="This packet is used to change or request the baud rate and protocol of a UART on the crown board. Send this packet with zero bytes to request the configuration of the port that receives the request, or with 1 byte to request the configuration of a specific port. Not all port configuration options are available, the ethernet port must run the PROTOCOL_ORION protocol at either 115200 or 230400 bits per second. In general users should not change the ethernet port setup. In addition the PROTOCOL_UBLOX_GPS is not supported on any user configurable port, it is included in the protocol list only for completeness.">
+
+        <Enum name="OrionProtocols_t" comment="Protocols understood by the Orion UART configuration">
+            <Value name="PROTOCOL_NO_CHANGE" comment="Do not change the protocol"/>
+            <Value name="PROTOCOL_NONE" comment="Disable the port"/>
+            <Value name="PROTOCOL_DEFAULT" comment="Use the default protocol. This is port dependent"/>
+            <Value name="PROTOCOL_ORION" comment="Orion packet communications protocol"/>
+            <Value name="PROTOCOL_CLEVIS" comment="Orion packet communications protocol specific to the clevis"/>
+            <Value name="PROTOCOL_CLEVIS_RAW" comment="Clevis raw communications mode"/>
+            <Value name="PROTOCOL_NMEA_GPS" comment="GPS input over NMEA"/>
+            <Value name="PROTOCOL_UBLOX_GPS" comment="uBox GPS"/>
+            <Value name="PROTOCOL_NOVATEL_GPS" comment="Novatel GPS"/>
+            <Value name="PROTOCOL_MAVLINK_GPS" comment="Mavlink GPS"/>
+            <Value name="PROTOCOL_UM7_MAG" comment="CH Robotics UM7 magnetometer"/>
+            <Value name="PROTOCOL_SIGHTLINE_VIDEO" comment="Sightline video processing"/>
+            <Value name="PROTOCOL_SENSONOR_IMU" comment="Sensonor IMU"/>
+            <Value name="PROTOCOL_DMU11_IMU" comment="Silicon sensing IMU"/>
+            <Value name="PROTOCOL_DISCOVERY" comment="Discovery protocol that decides between novatel, UM7, and Sightline"/>
+            <Value name="PROTOCOL_AIRROBOT" comment="Air robot protocol"/>
+            <Value name="PROTOCOL_PROPRIETARY1" comment="Proprietary protocol"/>
+            <Value name="PROTOCOL_PROPRIETARY2" comment="Proprietary protocol"/>
+            <Value name="NUM_PROTOCOL"/>
+        </Enum>        
+
+        <Data name="port" enum="UserDataPort_t" encodedType="unsigned8" comment="The port whose configuration should be changed or requested, use USER_DATA_PORT_CURRENT to indicate the port which received this packet"/>
+        <Data name="baud" inMemoryType="unsigned32" encodedType="unsigned24" comment="Baud rate bits per second. Use 0 to select the default baud rate for this port and protocol."/>
+        <Data name="protocol" enum="OrionProtocols_t" encodedType="unsigned8" comment="The protocol to use for this port. If PROTOCOL_DEFAULTOCOL_NO_CHANGE or PROTOCOL_DEFAULT are used the reply to this packet will contain the actual protocol in use"/>
+    </Packet>
 
     <Packet name="OrionUserData" ID="ORION_PKT_USER_DATA" comment="This packet can be used to transfer user-defined data payloads between communication ports on the gimbal.">
         <Data name="port" enum="UserDataPort_t" encodedType="unsigned8" comment="Destination crown board communication port identifier"/>
