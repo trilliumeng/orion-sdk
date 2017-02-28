@@ -16,7 +16,7 @@ BOOL LookForTrilliumPacketInByteEx(TrilliumPkt_t *pPkt, TrilliumPktInfo_t *pInfo
 	// Update the running checksum as necessary
     if (pInfo->State == 0)
         InitChecksum(Byte, &pInfo->Check0, &pInfo->Check1);
-    else if ((pInfo->State < 4) || (pInfo->State < pInfo->MaxState - 2))
+    else if ((pInfo->State < ORION_PKT_HEADER_SIZE) || (pInfo->State < pInfo->MaxState - 2))
         UpdateChecksum(Byte, &pInfo->Check0, &pInfo->Check1);
 
     // Decide what to do based on our handy dandy state tracking variable
@@ -89,7 +89,7 @@ BOOL MakeTrilliumPacket(TrilliumPkt_t *pPkt, UInt16 Sync, UInt8 ID, UInt16 Lengt
     pPkt->Info.Check1 = 0;
 
     // Roll each byte into the running checksum
-    for (i = 0; i < Length + 4; i++)
+    for (i = 0; i < Length + ORION_PKT_HEADER_SIZE; i++)
         UpdateChecksum(pData[i], &pPkt->Info.Check0, &pPkt->Info.Check1);
 
     // Negate the checksum and paste its bytes onto the end of the data payload
