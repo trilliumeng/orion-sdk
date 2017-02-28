@@ -17,10 +17,12 @@ extern "C" {
 
 // Orion packets share a structure with a generic Trillium packet
 typedef TrilliumPkt_t OrionPkt_t;
+typedef TrilliumPktInfo_t OrionPktInfo_t;
 
 // And they share the same basic parsing functions
-#define LookForOrionPacketInByte(a, b)  LookForTrilliumPacketInByte((TrilliumPkt_t *)a, ORION_SYNC, b)
-#define MakeOrionPacket(a, b, c)        MakeTrilliumPacket(a, ORION_SYNC, b, c)
+#define LookForOrionPacketInByte(a, b)      LookForTrilliumPacketInByte((TrilliumPkt_t *)a, ORION_SYNC, b)
+#define LookForOrionPacketInByteEx(a, b, c) LookForTrilliumPacketInByteEx((TrilliumPkt_t *)a, (TrilliumPktInfo_t *)b, ORION_SYNC, c)
+#define MakeOrionPacket(a, b, c)            MakeTrilliumPacket(a, ORION_SYNC, b, c)
 
 // These routines provide legacy API support, for transitioning between the
 // older hand-written communications code and the newer auto-generated code

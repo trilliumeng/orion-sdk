@@ -3,8 +3,17 @@
 
 #include "Types.h"
 
-#define TRILLIUM_PKT_MAX_SIZE 140
-#define TRILLIUM_PKT_OVERHEAD 6
+#define TRILLIUM_PKT_MAX_SIZE       140
+#define TRILLIUM_PKT_HEADER_SIZE    4
+#define TRILLIUM_PKT_OVERHEAD       (TRILLIUM_PKT_HEADER_SIZE + 2)
+
+typedef struct
+{
+    UInt16 State;
+    UInt16 MaxState;
+    UInt16 Check0;
+    UInt16 Check1;
+} TrilliumPktInfo_t;
 
 typedef struct
 {
@@ -15,16 +24,16 @@ typedef struct
     UInt8 Data[TRILLIUM_PKT_MAX_SIZE + 2];
 
     // For packet parsing use only
-    UInt16 Index;
-    UInt16 Check0;
-    UInt16 Check1;
+    TrilliumPktInfo_t Info;
 } TrilliumPkt_t;
 
 #ifdef __cplusplus
 extern "C" {
 #endif // __cplusplus
 
-BOOL LookForTrilliumPacketInByte(TrilliumPkt_t *pPkt, UInt16 Sync, UInt8 Byte);
+BOOL LookForTrilliumPacketInByteEx(TrilliumPkt_t *pPkt, TrilliumPktInfo_t *pInfo, UInt16 Sync, UInt8 Byte);
+#define LookForTrilliumPacketInByte(pPkt, Sync, Byte) LookForTrilliumPacketInByteEx(pPkt, &(pPkt)->Info, Sync, Byte)
+
 BOOL MakeTrilliumPacket(TrilliumPkt_t *pPkt, UInt16 Sync, UInt8 Type, UInt16 Length);
 
 #ifdef __cplusplus
