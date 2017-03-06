@@ -506,8 +506,8 @@ See TrilliumPacket.c (in the Orion SDK) for details.
         <Data name="gyroConfidence" dependsOn="hasGyroBias" inMemoryType="float32" array="3" encodedType="unsigned16" scaler="100000" comment="Rate gyro bias confidence in radians per second as a body Roll, Pitch, Yaw vector"/>
         <Data name="accelConfidence" dependsOn="hasAccelBias" inMemoryType="float32" array="3" encodedType="unsigned16" scaler="30000" comment="Accelerometer bias confidence in m/s/s as a body X, Y, Z vector"/>
         <Data name="gravityConfidence" dependsOn="hasGravityBias" inMemoryType="float32" encodedType="unsigned16" scaler="30000" comment="Gravity bias confidence in m/s/s"/>
-        <Data name="clockBiasConfidence" dependsOn="hasClockBias" inMemoryType="float32" encodedType="unsigned16" scaler="10" comment="Clock bias confidence (for tightly coupled) in meters"/>
-        <Data name="clockDriftConfidence" dependsOn="hasClockBias" inMemoryType="float32" encodedType="unsigned16" scaler="10" comment="Clock drift confience (for tightly coupled) in meters per second"/>
+        <Data name="clockBiasConfidence" dependsOn="hasClockBias" inMemoryType="float32" encodedType="unsigned16" scaler="10000" comment="Clock bias confidence (for tightly coupled) in meters"/>
+        <Data name="clockDriftConfidence" dependsOn="hasClockBias" inMemoryType="float32" encodedType="unsigned16" scaler="10000" comment="Clock drift confience (for tightly coupled) in meters per second"/>
         <Data name="gyroBias" dependsOn="hasGyroBias" inMemoryType="float32" array="3" encodedType="signed16" scaler="100000" comment="Rate gyro bias estimate in radians per second as a body Roll, Pitch, Yaw vector"/>
         <Data name="accelBias" dependsOn="hasAccelBias" inMemoryType="float32" array="3" encodedType="unsigned16" scaler="30000" comment="Accelerometer bias estimate in m/s/s as a body X, Y, Z vector"/>
         <Data name="gravityBias" dependsOn="hasGravityBias" inMemoryType="float32" encodedType="unsigned16" scaler="30000" comment="Gravity bias estimate in m/s/s"/>
