@@ -481,11 +481,16 @@ See TrilliumPacket.c (in the Orion SDK) for details.
             <Value name="insModeRunTight" comment="Normal mode of operation with tightly coupled corrections"/>
         </Enum>
 
+        <Enum name="imuType_t" comment="Enumeration for IMU type">
+            <Value name="imuTypeInternal" comment="Internal Trillium IMU"/>
+            <Value name="imuTypeSensonor" comment="Sensonor IMU"/>
+            <Value name="imuTypeDmu11" comment="DMU-11 IMU"/>
+        </Enum>
+
         <Data name="systemTime" inMemoryType="unsigned32" comment="Milliseconds since system bootup"/>
         <Data name="gpsSource" enum="gpsSource_t" comment="The source of GPS data"/>
         <Data name="reserved" inMemoryType="null" encodedType="bitfield6" comment="Reserved packet space"/>
-        <Data name="dmu11IMU" inMemoryType="bitfield1" comment="Set if the IMU data are from the dmu11 IMU, else the data are coming from the native internal IMU or the sensonor IMU"/>
-        <Data name="sensonorIMU" inMemoryType="bitfield1" comment="Set if the IMU data are from the sensonor, else the IMU data are coming from the native internal IMU or the dmu11 IMU"/>
+        <Data name="imuType" enum="imuType_t" encodedType="bitfield2" comment="IMU type"/>
         <Data name="insMode" enum="insMode_t" comment="The operational mode of the INS"/>
         <Data name="hasGyroBias" inMemoryType="bitfield1" comment="1 if the INS is computing and reporting gyro bias states"/>
         <Data name="hasGravityBias" inMemoryType="bitfield1" comment="1 if the INS is computing and reporting a gravity bias state"/>
