@@ -128,6 +128,12 @@ static void ProcessArgs(int argc, char **argv, OrionCmd_t *pCmd)
         case 'd':
             pCmd->Mode = ORION_MODE_DISABLED;
             break;
+
+        // FFC
+        case 'F':
+        case 'f':
+            pCmd->Mode = ORION_MODE_FFC;
+            break;
         };
     }
     case 3: pCmd->Target[1] = deg2radf(atof(argv[2])); // Tilt target
