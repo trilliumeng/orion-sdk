@@ -56,8 +56,11 @@ BOOL DecodeGeolocateTelemetry(const OrionPkt_t *pPkt, GeolocateTelemetry_t *pGeo
 		pGeo->gimbalEuler[AXIS_YAW]   = dcmYaw(&pGeo->gimbalDcm);
 
         // Offset the pan/tilt angles with the current estab output shifts
-        Pan  = pGeo->base.pan  - pGeo->base.outputShifts[GIMBAL_AXIS_PAN];
-        Tilt = pGeo->base.tilt - pGeo->base.outputShifts[GIMBAL_AXIS_TILT];
+        Pan  = subtractAnglesf(pGeo->base.pan,  pGeo->base.outputShifts[GIMBAL_AXIS_PAN]);
+        Tilt = subtractAnglesf(pGeo->base.tilt, pGeo->base.outputShifts[GIMBAL_AXIS_TILT]);
+        
+        // Convert tilt from -180 to 180 into -270 to 90
+        pGeo->base.tilt = wrapAngle90f(pGeo->base.tilt);
 
 		// Rotation from camera to gimbal, note that this only works if pan
 		// is over tilt (pan first, then tilt, just like Euler)
