@@ -13,7 +13,11 @@ BOOL LookForTrilliumPacketInByteEx(TrilliumPkt_t *pPkt, TrilliumPktInfo_t *pInfo
     else if ((pPkt != NULL) && (pInfo->State < TRILLIUM_PKT_MAX_SIZE + TRILLIUM_PKT_OVERHEAD))
         ((UInt8 *)pPkt)[pInfo->State] = Byte;
 
-	// Update the running checksum as necessary
+    // If the max state looks screwed up, reset everything
+    if (pInfo->MaxState > TRILLIUM_PKT_MAX_SIZE + TRILLIUM_PKT_OVERHEAD)
+        pInfo->State = pInfo->MaxState = 0;
+
+    // Update the running checksum as necessary
     if (pInfo->State == 0)
         InitChecksum(Byte, &pInfo->Check0, &pInfo->Check1);
     else if ((pInfo->State < TRILLIUM_PKT_HEADER_SIZE) || (pInfo->State < pInfo->MaxState - 2))
@@ -50,9 +54,9 @@ BOOL LookForTrilliumPacketInByteEx(TrilliumPkt_t *pPkt, TrilliumPktInfo_t *pInfo
         // If we're into the data payload
         if (pInfo->State > TRILLIUM_PKT_HEADER_SIZE)
         {
-        	// If this is the first checksum byte and it doesn match up, restart the state machine
+            // If this is the first checksum byte and it doesn match up, restart the state machine
             if ((pInfo->State == pInfo->MaxState - 1) && ((pInfo->Check0 & 0xFF) != Byte))
-				pInfo->State = 0;
+                pInfo->State = 0;
             // If we got at least one packet's worth of bytes and it looks like we've got all this packet's data
             else if (pInfo->State >= pInfo->MaxState)
             {
