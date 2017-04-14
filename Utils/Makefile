@@ -2,13 +2,17 @@ LIB = libOrionUtils.a
 SRC = $(wildcard *.c)
 OBJ = $(SRC:.c=.o)
 
+ifneq ($(VERBOSE), 1)
+    V=@
+endif
+
 %.o:%.c
-	@$(CC) -c $(CFLAGS) $< -o $@ $(QOUT) -I../Communications
+	$(V)$(CC) -c $(CFLAGS) $< -o $@ $(QOUT) -I../Communications
 
 build: $(LIB)
 $(LIB): $(OBJ)
-	@$(AR) rcs $(LIB) $(OBJ)
-	@rm *.zip 2>/dev/null || true
+	$(V)$(AR) rcs $(LIB) $(OBJ)
+	$(V)rm *.zip 2>/dev/null || true
 
 clean:
-	@rm -f $(LIB) *.o
+	$(V)rm -f $(LIB) *.o

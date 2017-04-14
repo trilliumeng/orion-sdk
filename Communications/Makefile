@@ -3,12 +3,16 @@
 LIB = libOrionComm.a
 OBJ = $(SRC:.c=.o)
 
+ifneq ($(VERBOSE), 1)
+    V=@
+endif
+
 %.o:%.c
-	@$(CC) -c $(CFLAGS) $< -o $@ -I../Utils -I../Communications $(QOUT)
+	$(V)$(CC) -c $(CFLAGS) $< -o $@ -I../Utils -I../Communications $(QOUT)
 
 build: autogen.mk $(LIB)
 $(LIB): $(OBJ)
-	@$(AR) rcs $(LIB) $(OBJ)
+	$(V)$(AR) rcs $(LIB) $(OBJ)
 
 # Generate code and populate autogen.mk file with src list
 autogen.mk: OrionPublicProtocol.xml 
@@ -16,6 +20,6 @@ autogen.mk: OrionPublicProtocol.xml
 	@echo "SRC = `echo *.c`" > autogen.mk
 
 clean:
-	@mkdir .save && mv OrionComm*.[ch] .save
-	@rm -f $(LIB) *.[cho] *.html *.markdown *.css autogen.mk
-	@mv .save/* . && rm -rf .save
+	$(V)mkdir .save && mv OrionComm*.[ch] .save
+	$(V)rm -f $(LIB) *.[cho] *.html *.markdown *.css autogen.mk
+	$(V)mv .save/* . && rm -rf .save

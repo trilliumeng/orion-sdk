@@ -2,6 +2,10 @@
 # myapps/hello/Makefile
 #
 
+ifneq ($(VERBOSE), 1)
+    V=@
+endif
+
 .PHONY: build install clean
 
 
@@ -12,10 +16,10 @@ OBJS			= $(SRCS:.c=.o)
 CFLAGS += $(EXTRA_CFLAGS) -I../../Communications -I../../Utils
 
 %.o:%.c
-	@$(CC) -c $(CFLAGS) $< -o $@ $(QOUT)
+	$(V)$(CC) -c $(CFLAGS) $< -o $@ $(QOUT)
 
 $(BIN): ../../Communications/libOrionComm.a ../../Utils/libOrionUtils.a $(OBJS)
-	@$(CC) $(LDFLAGS) -o $(BIN) $(OBJS) -L../../Communications -L../../Utils -lOrionComm -lOrionUtils -lm $(QOUT)
+	$(V)$(CC) $(LDFLAGS) -o $(BIN) $(OBJS) -L../../Communications -L../../Utils -lOrionComm -lOrionUtils -lm $(QOUT)
 
 ../../Communications/libOrionComm.a:
 	@make -C ../../Communications
@@ -24,4 +28,4 @@ $(BIN): ../../Communications/libOrionComm.a ../../Utils/libOrionUtils.a $(OBJS)
 	@make -C ../../Utils
 
 clean: 
-	@rm -f $(BIN) *.debug *.o core *~
+	$(V)rm -f $(BIN) *.debug *.o core *~
