@@ -1,5 +1,5 @@
 ifneq ($(VERBOSE), 1)
-    V=@
+	V=@
 endif
 
 .PHONY: build install clean
