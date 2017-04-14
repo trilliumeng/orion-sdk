@@ -11,7 +11,6 @@ static OrionPkt_t PktIn, PktOut;
 // A few helper functions, etc.
 static void KillProcess(const char *pMessage, int Value);
 static void ProcessArgs(int argc, char **argv, OrionUserData_t *pUser);
-static BOOL ProcessData(void);
 static int ProcessKeyboard(void);
 static BOOL CommHandle = FALSE;
 

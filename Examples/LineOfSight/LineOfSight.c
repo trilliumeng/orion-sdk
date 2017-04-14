@@ -232,17 +232,19 @@ static int GetTile(const TileInfo_t *pTileInfo)
         // Convert the ECEF center point of this tile to LLA
         ecefToLLA((double *)&Header, CenterLla);
 
+        // Read in the vertex count
+        fread(&pTile->Vertices.Count, sizeof(uint32_t), 1, pFile);
+
+#ifdef DEBUG
         // Set up constants for degrees-to-meters Taylor series expansion
         static const double m1 = 111132.92, m2 = -559.82, m3 = 1.175, m4 = -0.0023;
         static const double p1 = 111412.84, p2 = -93.5,   p3 = 0.118;
-
-        // Read in the vertex count
-        fread(&pTile->Vertices.Count, sizeof(uint32_t), 1, pFile);
 
         // Print the tile dimensions in meters, along with the number of points
         DEBUG_PRINT(" Tile width   = %.1fm\n", rad2deg(Scale) * (p1 * cos(CenterLla[LAT])) + (p2 * cos(3 * CenterLla[LAT])) + (p3 * cos(5 * CenterLla[LAT])));
         DEBUG_PRINT(" Tile height  = %.1fm\n", rad2deg(Scale) * (m1 + (m2 * cos(2 * CenterLla[LAT])) + (m3 * cos(4 * CenterLla[LAT])) + (m4 * cos(6 * CenterLla[LAT]))));
         DEBUG_PRINT(" Points       = %d\n", pTile->Vertices.Count);
+#endif // DEBUG
 
         // Allocate space for vertex data (U/V/H as well as LLA)
         pTile->Vertices.pU = (uint16_t *)malloc(pTile->Vertices.Count * sizeof(uint16_t));
@@ -304,7 +306,6 @@ static float GetElevation(double TargetLat, double TargetLon)
 {
     double TargetLla[NLLA] = { TargetLat, TargetLon, -10000.0 };
     double Scale = PId / (1 << TileLevel);
-    int Result = 0;
     TileInfo_t TileInfo;
     int Index;
 

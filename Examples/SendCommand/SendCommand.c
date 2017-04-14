@@ -17,7 +17,7 @@ static BOOL CommOpen = FALSE;
 
 int main(int argc, char **argv)
 {
-    OrionCmd_t Cmd = { 0 };
+    OrionCmd_t Cmd = { { 0, 0 } };
     int WaitCount = 0;
 
     // Process the command line arguments
