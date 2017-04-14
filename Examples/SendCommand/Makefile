@@ -1,1 +1,1 @@
--include ../Include.mk
+-include ../Examples.mk
