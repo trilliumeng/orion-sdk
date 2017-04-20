@@ -78,7 +78,7 @@ See TrilliumPacket.c (in the Orion SDK) for details.
         <Value name="ORION_PKT_CAMERA_SWITCH" value="0x60" comment="Command the gimbal to swtich cameras"/>
         <Value name="ORION_PKT_CAMERA_STATE" comment="Command a camera in the gimbal"/>
         <Value name="ORION_PKT_NETWORK_VIDEO" comment="Command the IP settings for video delivery"/>
-        <Value name="ORION_PKT_PRIVATE_63" comment="Reserved packet identifier" hidden="true"/>
+        <Value name="ORION_PKT_CAMERAS" comment="Camera settings information"/>
         <Value name="ORION_PKT_PRIVATE_64" comment="Reserved packet identifier" hidden="true"/>
         <Value name="ORION_PKT_PRIVATE_65" comment="Reserved packet identifier" hidden="true"/>
         <Value name="ORION_PKT_PRIVATE_66" comment="Reserved packet identifier" hidden="true"/>
@@ -804,6 +804,49 @@ See TrilliumPacket.c (in the Orion SDK) for details.
         <Data name="Ttl" inMemoryType="signed8" default="-1" comment="TTL value for UDP video packets. Values less than or equal to zero will use default values of 64 for unicast and 1 for multicast." />
         <Data name="StreamType" enum="StreamType_t" encodedType="unsigned8" default="STREAM_TYPE_H264" comment="Output stream format specifier" />
         <Data name="MjpegQuality" inMemoryType="unsigned8" default="30" comment="MJPEG quality value, from 10 to 95" />
+    </Packet>
+
+    <Packet name="OrionCameras" ID="ORION_PKT_CAMERAS" comment="Camera definitions for the Orion gimbal">
+
+        <Enum name="OrionNumberOfCameras_t" comment="The maximum number of cameras in an Orion Gimbal">
+            <Value name="NUM_CAMERAS" value="2"/>
+        </Enum>
+
+        <Enum name="OrionCameraType_t" comment="The type of camera">
+            <Value name="CAMERA_TYPE_NONE" comment="No camera"/>
+            <Value name="CAMERA_TYPE_VISIBLE" comment="Visible light camera"/>
+            <Value name="CAMERA_TYPE_SWIR" comment="Short wave infrared camera"/>
+            <Value name="CAMERA_TYPE_MWIR" comment="Mid wave infrared camera"/>
+            <Value name="CAMERA_TYPE_LWIR" comment="Long wave infrared camera"/>
+        </Enum>
+
+        <Enum name="OrionCameraProtocol_t" comment="The camera communications protocol">
+            <Value name="CAMERA_PROTO_UNKNOWN" comment="Protocol unknown or unsupported"/>
+            <Value name="CAMERA_PROTO_FLIR" comment="FLIR camera"/>
+            <Value name="CAMERA_PROTO_APTINA" comment="Aptina camera"/>
+            <Value name="CAMERA_PROTO_ZAFIRO" comment="Zafiro camera"/>
+            <Value name="CAMERA_PROTO_HITACHI" comment="Hitachi camera"/>
+            <Value name="CAMERA_PROTO_BAE" comment="BAE camera"/>
+            <Value name="CAMERA_PROTO_SONY" comment="Sony camera"/>
+            <Value name="NUM_CAMERA_PROTOS" comment="Number of available camera protocols"/>
+        </Enum>
+
+        <Data name="NumCameras" inMemoryType="unsigned8" comment="The number of cameras installed"/>
+        <Data name="reserved" inMemoryType="null" array="3" encodedType="unsigned8" comment="Reserved space for future expansion"/>
+        <Structure name="OrionCamSettings" array="NUM_CAMERAS" variableArray="NumCameras" comment="Camera settings information">
+            <Data name="Gpio" inMemoryType="unsigned8" encodedType="null" comment="IO line to activate the camera"/>
+            <Data name="GpioActiveState" inMemoryType="unsigned8" encodedType="null" comment="Polarity of Gpio"/>
+            <Data name="Type" enum="OrionCameraType_t" encodedType="unsigned8" comment="The type of camera"/>
+            <Data name="Proto" enum="OrionCameraProtocol_t" encodedType="unsigned8" comment="The communications protocol of the camera"/>
+            <Data name="MinFocalLength" inMemoryType="float32" encodedType="unsigned32" scaler="1000" comment="Minimum focal length in millimeters"/>
+            <Data name="MaxFocalLength" inMemoryType="float32" encodedType="unsigned32" scaler="1000" comment="Minimum focal length in millimeters"/>
+            <Data name="PixelPitch" inMemoryType="float32" encodedType="unsigned16" scaler="1000000" comment="Spacing of pixels in millimeters"/>
+            <Data name="ArrayWidth" inMemoryType="unsigned16" comment="Number of horizontal pixels in the focal plane array"/>
+            <Data name="ArrayHeight" inMemoryType="unsigned16" comment="Number of vertical pixels in the focal plane array"/>
+            <Data name="FrameRate" inMemoryType="float32" encodedType="null" comment="Frequency at which images are coming off the camera"/>
+            <Data name="AlignMin" inMemoryType="float32" array="NUM_GIMBAL_AXES" encodedType="signed16" max="pi" comment="boresight alignment offsets in radians"/>
+            <Data name="AlignMax" inMemoryType="float32" array="NUM_GIMBAL_AXES" encodedType="signed16" max="pi" comment="boresight alignment offsets in radians"/>
+        </Structure>
     </Packet>
 
     <Documentation name="Packets used to determine manufacturing and software information about the gimbal" paragraph="1" comment="These informational packets are sent by the gimbal in response to user request. To request a specific packet, send that packet to the gimbal with zero length."/>
