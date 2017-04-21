@@ -231,8 +231,8 @@ See TrilliumPacket.c (in the Orion SDK) for details.
         <Data name="posAlt" inMemoryType="float64" encodedType="signed32" scaler="10000" comment="Altitude of the gimbal in meters above the WGS-84 ellipsoid"/>
         <Data name="velNED" inMemoryType="float32" array="3" encodedType="signed16" scaler="100" comment="Velocity of the gimbal in North, East, Down meters per second"/>
         <Data name="gimbalQuat" inMemoryType="float32" array="4" encodedType="signed16" max="1" comment="Gimbal quaternion describing the rotation from the gimbal mount frame to the North, East, Down navigation frame"/>
-        <Data name="pan" inMemoryType="float32" encodedType="signed16" max="pi" comment="Gimbal pan angle in radians from -pi to pi"/>
-        <Data name="tilt" inMemoryType="float32" encodedType="signed16" max="pi" comment="Gimbal tilt angle in radians from -pi to pi"/>
+        <Data name="pan" inMemoryType="float32" encodedType="signed16" max="pi" comment="Gimbal pan angle in radians from -pi to pi. This includes the camera alignment offsets."/>
+        <Data name="tilt" inMemoryType="float32" encodedType="signed16" max="pi" comment="Gimbal tilt angle in radians from -pi to pi This includes the camera alignment offsets."/>
         <Data name="hfov" inMemoryType="float32" encodedType="unsigned16" max="2*pi" comment="Horizontal field of view of the camera in radians from 0 to 2pi"/>
         <Data name="vfov" inMemoryType="float32" encodedType="unsigned16" max="2*pi" comment="Vertical field of view of the camera in radians from 0 to 2pi"/>
         <Data name="losECEF" inMemoryType="float32" encodedType="signed16" scaler="1" array="3" default="0" comment="Vector from the gimbal to the image location in ECEF meters. The image location is only computed if ranging data are provided to the gimbal. Otherwise the image location data are 0,0,0"/>
@@ -249,6 +249,16 @@ See TrilliumPacket.c (in the Orion SDK) for details.
         <Data name="outputShifts" inMemoryType="float32" array="NUM_GIMBAL_AXES" encodedType="signed16" max="pi" default="0" comment="X (horizontal) and Y (vertical) image shifts in radians, as displayed in the video stream"/>
         <Data name="rangeSource" enum="RangeDataSrc_t" encodedType="unsigned8" default="RANGE_SRC_SKYLINK" comment="Range data source used in line of sight calculation"/>
         <Data name="leapSeconds" default="17" inMemoryType="unsigned8" comment="Leap seconds to subtract from GPS time to compute UTC time"/>
+        <Data name="panAlignment" inMemoryType="float32" encodedType="signed8" scaler="1000" default="0" comment="Pan camera alignment offsets in radian. The raw pan angle is given as pan + panAlignment."/>
+        <Data name="tiltAlignment" inMemoryType="float32" encodedType="signed8" scaler="1000" default="0" comment="Tilt camera alignment offsets in radian. The raw tilt angle is given as tilt + tiltAlignment."/>
+        <Enum name="InsRotationOptions" comment="Enumeration INS rotation options">
+            <Value name="insInGimbalNative" comment="The INS is running in the gimbal native axis"/>
+            <Value name="insInPlatform" comment="The INS is running in the platform axis, see the INS options for specific roataion details"/>
+            <Value name="insInPayloadBall" comment="The INS is running in the payload ball."/>
+        </Enum>
+        <Data name="insRotationOption" enum="InsRotationOptions" default="insInGimbalNative" comment="This flag indicates special INS options. If insSpecialOption is 1 the INS is running in the gimbal crown, but is rotated from the gimbal native axis. If insSpecialOption is 2 the INS is running in the ball of the gimbal."/>
+        <Data name="insQuat" inMemoryType="float32" array="4" encodedType="signed16" default="0" dependsOn="insRotationOption" max="1" comment="The rotation of the INS from its native frame to the North, East, Down navigation frame. If insSpecialOption is 0 then this rotation is the same as the gimbalQuat"/>
+        
     </Packet>
 
     <Packet name="OrionPerformance" ID="ORION_PKT_PERFORMANCE" parameterInterface="true" comment="Measurements related to stabilization performance. This packet is sent by the gimbal 4 times per second.">
