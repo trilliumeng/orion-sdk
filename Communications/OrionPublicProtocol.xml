@@ -261,7 +261,7 @@ See TrilliumPacket.c (in the Orion SDK) for details.
         
     </Packet>
 
-    <Packet name="OrionPerformance" ID="ORION_PKT_PERFORMANCE" parameterInterface="true" comment="Measurements related to stabilization performance. This packet is sent by the gimbal 4 times per second.">
+    <Packet name="OrionPerformance" ID="ORION_PKT_PERFORMANCE" comment="Measurements related to stabilization performance. This packet is sent by the gimbal 4 times per second.">
         <Data name="RmsQuad" inMemoryType="float32" array="NUM_GIMBAL_AXES" encodedType="unsigned16" scaler="1000000" comment="Quad rms errors"/>
         <Data name="RmsDir" inMemoryType="float32" array="NUM_GIMBAL_AXES" encodedType="unsigned16" scaler="1000000" comment="Dir rms errors"/>
         <Data name="RmsVel" inMemoryType="float32" array="NUM_GIMBAL_AXES" encodedType="unsigned16" scaler="1000" comment="Vel rms errors"/>
