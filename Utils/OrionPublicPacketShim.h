@@ -24,12 +24,6 @@ typedef TrilliumPktInfo_t OrionPktInfo_t;
 #define LookForOrionPacketInByteEx(a, b, c) LookForTrilliumPacketInByteEx((TrilliumPkt_t *)a, (TrilliumPktInfo_t *)b, ORION_SYNC, c)
 #define MakeOrionPacket(a, b, c)            MakeTrilliumPacket(a, ORION_SYNC, b, c)
 
-// These routines provide legacy API support, for transitioning between the
-// older hand-written communications code and the newer auto-generated code
-
-void FormOrionGpsData(OrionPkt_t *pPkt, const GpsData_t *pGps);
-BOOL DecodeOrionGpsData(const OrionPkt_t *pPkt, GpsData_t *pGps);
-
 #ifdef __cplusplus
 }
 #endif // __cplusplus
