@@ -593,7 +593,10 @@ See TrilliumPacket.c (in the Orion SDK) for details.
 
     <Packet name="OrionFlirSettings" ID="ORION_PKT_FLIR_SETTINGS" comment="FLIR-specific camera settings.">
         <Data name="Index" inMemoryType="unsigned8" comment="Index of the camera that these settings should apply to. Use 0xFF to apply to any connected FLIR camera."/>
-        <Data name="BlackHot" inMemoryType="unsigned8" comment="Image polarity setting - set to 0 for white hot or 1 for black hot"/>
+        <Data name="Reserved" inMemoryType="null" encodedType="bitfield5" constant="0" />
+        <Data name="Invert" inMemoryType="bitfield1" comment="Set to 1 to invert the image" />
+        <Data name="Revert" inMemoryType="bitfield1" comment="Set to 1 to revert the image" />
+        <Data name="BlackHot" inMemoryType="bitfield1" comment="Image polarity setting - set to 0 for white hot or 1 for black hot"/>
         <Data name="MaxAgcGain" inMemoryType="unsigned8" comment="Maximum AGC output gain"/>
         <Data name="AceLevel" inMemoryType="signed8" comment="Active Contrast Enhancement (ACE) level"/>
         <Data name="DdeThreshold" inMemoryType="unsigned8" comment="DDE spatial threshold"/>
