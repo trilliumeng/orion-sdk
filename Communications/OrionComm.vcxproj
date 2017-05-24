@@ -86,7 +86,7 @@
       <PreprocessorDefinitions>_WINDOWS;UNICODE;WIN32;QT_NO_DEBUG;%(PreprocessorDefinitions)</PreprocessorDefinitions>
     </ResourceCompile>
     <PreBuildEvent>
-      <Command>$(SolutionDir)GenerateOrionPublicPacketWin.bat</Command>
+      <Command>"$(SolutionDir)GenerateOrionPublicPacketWin.bat"</Command>
     </PreBuildEvent>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
@@ -120,7 +120,7 @@
       <PreprocessorDefinitions>_WINDOWS;UNICODE;WIN32;_DEBUG;%(PreprocessorDefinitions)</PreprocessorDefinitions>
     </ResourceCompile>
     <PreBuildEvent>
-      <Command>$(SolutionDir)GenerateOrionPublicPacketWin.bat</Command>
+      <Command>"$(SolutionDir)GenerateOrionPublicPacketWin.bat"</Command>
     </PreBuildEvent>
   </ItemDefinitionGroup>
   <ItemGroup>
