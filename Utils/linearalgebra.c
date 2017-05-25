@@ -203,6 +203,34 @@ double vector3Length(const double vector[NVECTOR3])
 
 
 /*!
+ * Change the length of a vector. This is faster than making a unit vector and then scaling.
+ * \param vector is the vector whose length is changed
+ * \param result receives the new vector. fesult can be the same as vector.
+ * \param newlength is the desired length of result. Note that newlength should
+ *        not be negative, as the sign will be lost in this operation.
+ * \return a const pointer to result.
+ */
+const double* vector3ChangeLength(const double vector[NVECTOR3], double result[NVECTOR3], double newlength)
+{
+	double oldlengthSquared = vector3LengthSquared(vector);
+
+	if(oldlengthSquared > 0)
+	{
+		return vector3Scale(vector, result, (newlength*newlength)/oldlengthSquared);
+	}
+	else
+	{
+		// Divide by zero protection here.
+		result[0] = newlength;
+		result[1] = 0;
+		result[2] = 0;
+		return result;
+	}
+
+}// vector3ChangeLength
+
+
+/*!
  * Scale a three dimensional vector
  * \param vector is the vector to be scaled
  * \param result receives the scaled vector. Result can be the same as vector.
@@ -1289,6 +1317,34 @@ float vector3Lengthf(const float vector[NVECTOR3])
 {
     return sqrtf(vector3LengthSquaredf(vector));
 }
+
+
+/*!
+ * Change the length of a vector. This is faster than making a unit vector and then scaling.
+ * \param vector is the vector whose length is changed
+ * \param result receives the new vector. fesult can be the same as vector.
+ * \param newlength is the desired length of result. Note that newlength should
+ *        not be negative, as the sign will be lost in this operation.
+ * \return a const pointer to result.
+ */
+const float* vector3ChangeLengthf(const float vector[NVECTOR3], float result[NVECTOR3], float newlength)
+{
+	float oldlengthSquared = vector3LengthSquaredf(vector);
+
+	if(oldlengthSquared > 0)
+	{
+		return vector3Scalef(vector, result, (newlength*newlength)/oldlengthSquared);
+	}
+	else
+	{
+		// Divide by zero protection here.
+		result[0] = newlength;
+		result[1] = 0;
+		result[2] = 0;
+		return result;
+	}
+
+}// vector3ChangeLengthf
 
 
 /*!

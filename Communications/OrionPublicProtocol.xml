@@ -549,13 +549,12 @@ See TrilliumPacket.c (in the Orion SDK) for details.
     </Packet>
 
     <Packet name="GeopointCmd" ID="ORION_PKT_GEOPOINT_CMD" parameterInterface="true"
-            comment="Send this packet to command the gimbal to go to Geopoint mode. In geopoint the gimbal looks at a target as given by a
-                     latitude, longitude, altitude position. The geopoint command can include a target velocity, which will cause the gimbal
-                     to smoothly move its stare point as it propagates the target position. Geopoint mode is canceled by sending a normal OrionCmd packet.">
+            comment="Send this packet to command the gimbal to go to Geopoint mode. In geopoint the gimbal looks at a target as given by a latitude, longitude, altitude position. The geopoint command can include a target velocity, which will cause the gimbal to smoothly move its stare point as it propagates the target position. Geopoint mode is canceled by sending a normal OrionCmd packet.">
         <Data name="targetLat" inMemoryType="float64" encodedType="signed32" scaler="180*10000000/pi" comment="Geodetic latitude of the target in radians, positive North"/>
         <Data name="targetLon" inMemoryType="float64" encodedType="signed32" scaler="180*10000000/pi" comment="Longitude of the target in radians, positive East"/>
         <Data name="targetAlt" inMemoryType="float64" encodedType="signed32" scaler="10000" comment="Altitude of the target in meters above the WGS-84 ellipsoid"/>
         <Data name="targetVelNED" inMemoryType="float32" array="3" encodedType="signed16" scaler="100" comment="Velocity of the target in North, East, Down meters per second"/>
+        <Data name="joystickRange" inMemoryType="float32" encodedType="unsigned16" default="0" scaler="1" comment="Estimated range to target in meters. If non-zero *and* if geopoint is already running the position information in this packet is ignored and only the velocity and range information is used to propagate the geopoint command position. This is used for cases where a joystick is being used to drive the geopoint. Note that if the gimbal has its own range estimate then a non-zero joystickRange will be replaced with the gimbal's internal range estimate."/>
     </Packet>
 
     <Packet name="OrionPath" ID="ORION_PKT_PATH" comment=

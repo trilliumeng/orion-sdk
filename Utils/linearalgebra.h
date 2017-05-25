@@ -50,6 +50,9 @@ double vector3LengthSquared(const double vector[NVECTOR3]);
 //! Compute the length of a three dimensional vector
 double vector3Length(const double vector[NVECTOR3]);
 
+//! Change the length of a vector. This is faster than making a unit vector and then scaling.
+const double* vector3ChangeLength(const double vector[NVECTOR3], double result[NVECTOR3], double newlength);
+
 //! Scale a three dimensional vector
 const double* vector3Scale(const double vector[NVECTOR3], double result[NVECTOR3], double scale);
 
@@ -219,6 +222,9 @@ float vector3LengthSquaredf(const float vector[NVECTOR3]);
 
 //! Compute the length of a three dimensional vector
 float vector3Lengthf(const float vector[NVECTOR3]);
+
+//! Change the length of a vector. This is faster than making a unit vector and then scaling.
+const float* vector3ChangeLengthf(const float vector[NVECTOR3], float result[NVECTOR3], float newlength);
 
 //! Scale a three dimensional vector
 const float* vector3Scalef(const float vector[NVECTOR3], float result[NVECTOR3], float scale);
