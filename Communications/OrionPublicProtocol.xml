@@ -122,9 +122,9 @@ See TrilliumPacket.c (in the Orion SDK) for details.
         <Value name="ORION_PKT_PRIVATE_E1" comment="Reserved packet identifier" hidden="true"/>
         <Value name="ORION_PKT_PRIVATE_E2" comment="Reserved packet identifier" hidden="true"/>
         <Value name="ORION_PKT_PRIVATE_E3" comment="Reserved packet identifier" hidden="true"/>
-        <Value name="ORION_PKT_PRIVATE_E4" comment="Reserved packet identifier" hidden="true"/>
         <Value name="ORION_PKT_NETWORK_SETTINGS" comment="Change the IP network settings in the gimbal"/>
         <Value name="ORION_PKT_PRIVATE_E5" comment="Reserved packet identifier" hidden="true"/>
+        <Value name="ORION_PKT_PRIVATE_E6" comment="Reserved packet identifier" hidden="true"/>
         <Value name="ORION_PKT_PRIVATE_F0" value="0xF0" comment="Reserved packet identifier" hidden="true"/>
         <Value name="ORION_PKT_PRIVATE_F1" comment="Reserved packet identifier" hidden="true"/>
         <Value name="ORION_PKT_PRIVATE_F2" comment="Reserved packet identifier" hidden="true"/>
@@ -589,7 +589,7 @@ See TrilliumPacket.c (in the Orion SDK) for details.
     <Packet name="StareAck" ID="ORION_PKT_STARE_ACK" parameterInterface="true" comment="This packet tells the gimbal that the step-stare image has been acquired and the gimbal can move to the next step stare point.">
         <Data name="echoSystemTime" inMemoryType="unsigned32" comment="Milliseconds since system bootup received from ORION_PKT_STARE_START. If this value matches the value sent in ORION_PKT_STARE_START then the gimbal will terminate the stare operation early."/>
     </Packet>
-
+    
     <Packet name="OrionCameraSwitch" ID="ORION_PKT_CAMERA_SWITCH" parameterInterface="true" comment="Command the gimbal to swtich cameras.">
         <Data name="Index" inMemoryType="unsigned8" comment="The index of the camera to switch to, counting from 0"/>
     </Packet>
