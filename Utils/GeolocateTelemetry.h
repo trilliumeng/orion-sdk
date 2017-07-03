@@ -79,6 +79,10 @@ typedef struct
 	//! Slant range to target in meters
 	float slantRange;
 
+    //! Image position in ECEF and LLA coordinates
+    double imagePosECEF[NECEF];
+    double imagePosLLA[NLLA];
+
 }GeolocateTelemetry_t;
 
 //! Create a GeolocateTelemetry packet

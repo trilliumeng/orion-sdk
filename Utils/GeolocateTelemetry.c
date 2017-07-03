@@ -78,6 +78,12 @@ BOOL DecodeGeolocateTelemetry(const OrionPkt_t *pPkt, GeolocateTelemetry_t *pGeo
 		// Slant range is the vector magnitude of the line of sight ECEF vector
         pGeo->slantRange = vector3Lengthf(pGeo->base.losECEF);
 
+        // Gimbal ECEF position + line of sight ECEF vector = ECEF image position
+        vector3Sum(pGeo->posECEF, vector3Convertf(pGeo->base.losECEF, pGeo->imagePosECEF), pGeo->imagePosECEF);
+
+        // Convert ECEF image position to LLA
+        ecefToLLA(pGeo->imagePosECEF, pGeo->imagePosLLA);
+
 		return TRUE;
 	}
 	else
