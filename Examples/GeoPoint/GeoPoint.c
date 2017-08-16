@@ -40,7 +40,7 @@ int main(int argc, char **argv)
     }
 
     // This is how you form a packet
-    encodeGeopointCmdPacket(&PktOut, TargetPosLla[LAT], TargetPosLla[LON], TargetPosLla[ALT], TargetVelNed);
+    encodeGeopointCmdPacket(&PktOut, TargetPosLla[LAT], TargetPosLla[LON], TargetPosLla[ALT], TargetVelNed, 0, geopointNone);
 
     // Send the packet
     OrionCommSend(&PktOut);
