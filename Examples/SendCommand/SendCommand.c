@@ -132,7 +132,8 @@ static void ProcessArgs(int argc, char **argv, OrionCmd_t *pCmd)
         // FFC
         case 'F':
         case 'f':
-            pCmd->Mode = ORION_MODE_FFC;
+            // Note that we use the 'auto' FFC mode. To FFC at a specific location, change this line:
+            pCmd->Mode = ORION_MODE_FFC_AUTO;
             break;
         };
     }

@@ -175,7 +175,9 @@ See TrilliumPacket.c (in the Orion SDK) for details.
         <Value name="ORION_MODE_DISABLED" value="0x00" comment="disable motor output"/>
         <Value name="ORION_MODE_FAULT" value="0x01" comment="Gimbal has experienced a fault and motors have been disabled"/>
         <Value name="ORION_MODE_RATE" value="0x10" comment="Commands give the line of sight angular rate of the camera"/>
-        <Value name="ORION_MODE_FFC" value="0x20" comment="Commands the gimbal to perform a flat field correction, pan and tilt will drive the IR camera to look at the black body"/>
+        <Value name="ORION_MODE_FFC_AUTO" value="0x20" comment="Commands the gimbal to perform a flat field correction, pan and tilt will drive the IR camera to look at the black body"/>
+        <Value name="ORION_MODE_FFC" value="ORION_MODE_FFC_AUTO" comment="Legacy FFC mode, alias of ORION_MODE_FFC_AUTO"/>
+        <Value name="ORION_MODE_FFC_MANUAL" value="0x21" comment="Commands the gimbal to perform a flat field correction, pan and tilt will drive the IR camera to the commanded positions"/>
         <Value name="ORION_MODE_SCENE" value="0x30" comment="Commands give the angular rate of the image produced by the camera"/>
         <Value name="ORION_MODE_TRACK" value="0x31" comment="Commands give the angular rate of the track box in the camera image"/>
         <Value name="ORION_MODE_CALIBRATION" value="0x40" comment="Drives the pan and tilt axes to calibrate the stabilizer gyros"/>
