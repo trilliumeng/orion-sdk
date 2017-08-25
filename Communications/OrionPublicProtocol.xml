@@ -122,6 +122,7 @@ See TrilliumPacket.c (in the Orion SDK) for details.
         <Value name="ORION_PKT_PRIVATE_E1" comment="Reserved packet identifier" hidden="true"/>
         <Value name="ORION_PKT_PRIVATE_E2" comment="Reserved packet identifier" hidden="true"/>
         <Value name="ORION_PKT_PRIVATE_E3" comment="Reserved packet identifier" hidden="true"/>
+        <Value name="ORION_PKT_PRIVATE_E4" comment="Reserved packet identifier" hidden="true"/>
         <Value name="ORION_PKT_NETWORK_SETTINGS" comment="Change the IP network settings in the gimbal"/>
         <Value name="ORION_PKT_PRIVATE_E5" comment="Reserved packet identifier" hidden="true"/>
         <Value name="ORION_PKT_PRIVATE_F0" value="0xF0" comment="Reserved packet identifier" hidden="true"/>
