@@ -35,7 +35,7 @@ BOOL OrionCommOpenSerial(const char *pPath)
             // If we can't, close and invalidate the file descriptor
             close(Handle);
             Handle = -1;
-        } 
+        }
         else
         {
             // Otherwise, clear out the port attributes structure
@@ -64,6 +64,12 @@ BOOL OrionCommOpenNetwork(void)
     // Open a new UDP socket for auto-discovery
     int UdpHandle = socket(AF_INET, SOCK_DGRAM, 0);
 
+    // Instead of making the sockets non-blocking, make it block for 100ms at a time
+    // This is the timeval struct setsockopt needs to do this.
+    struct timeval tv;
+    tv.tv_sec = 0;
+    tv.tv_usec = 100000; // 100 ms
+
     // If the socket looks good
     if (UdpHandle >= 0)
     {
@@ -75,8 +81,11 @@ BOOL OrionCommOpenNetwork(void)
         // Bind to the proper port to get responses from the gimbal
         bind(UdpHandle, GetSockAddr(INADDR_ANY, UDP_IN_PORT), sizeof(struct sockaddr_in));
 
-        // Make this socket non blocking
-        fcntl(UdpHandle, F_SETFL, O_NONBLOCK);
+        //make read requests timeout after 100ms
+        if(setsockopt(UdpHandle, SOL_SOCKET, SO_RCVTIMEO, &tv, sizeof(tv)) < 0)
+        {
+            perror("Unable to set UDP socket timeout");
+        }
 
         // Allow the socket to send packets to the broadcast address
         setsockopt(UdpHandle, SOL_SOCKET, SO_BROADCAST, (char *)&Broadcast, sizeof(BOOL));
@@ -102,14 +111,17 @@ BOOL OrionCommOpenNetwork(void)
                 // Open a file descriptor for the TCP comm socket
                 Handle = socket(AF_INET, SOCK_STREAM, 0);
 
+                // instead of making it non-blocking make it block, but for only 100ms at a time
+                if (setsockopt(Handle, SOL_SOCKET, SO_RCVTIMEO, &tv, sizeof(tv)) < 0)
+                {
+                    perror("Error setting TCP socket timeout");
+                }
+
                 // Bind to the right incoming port
                 bind(Handle, GetSockAddr(INADDR_ANY, TCP_PORT), sizeof(struct sockaddr_in));
 
                 // Connect to the gimbal's server socket (note this is a blocking call)
                 connect(Handle, GetSockAddr(Address, TCP_PORT), sizeof(struct sockaddr_in));
-
-                // Now make the socket non-blocking for future reads/writes
-                fcntl(Handle, F_SETFL, O_NONBLOCK);
 
                 // Convert the IP address to network byte order
                 Address = htonl(Address);
@@ -121,9 +133,6 @@ BOOL OrionCommOpenNetwork(void)
                 close(UdpHandle);
                 break;
             }
-
-            // Sleep for 1/10th of a second
-            usleep(100000);
         }
     }
 
