@@ -606,7 +606,7 @@ See TrilliumPacket.c (in the Orion SDK) for details.
     <Packet name="OrionFlirSettings" ID="ORION_PKT_FLIR_SETTINGS" comment="FLIR-specific camera settings.">
         <Data name="Index" inMemoryType="unsigned8" comment="Index of the camera that these settings should apply to. Use 0xFF to apply to any connected FLIR camera."/>
 
-        <Enum name="FlirNucType" comment="FLIR NUC type enumeration">
+        <Enum name="FlirNucType_t" comment="FLIR NUC type enumeration">
             <Value name="NUC_TYPE_MANUAL" comment="Typical operation mode, manual FFC only" />
             <Value name="NUC_TYPE_SSN_NO_MOTION" comment="Silent shutterless NUC (SSN), no motion setting" />
             <Value name="NUC_TYPE_SSN_LOW" comment="Silent shutterless NUC (SSN), low setting" />
@@ -615,7 +615,7 @@ See TrilliumPacket.c (in the Orion SDK) for details.
         </Enum>
 
         <Data name="Reserved" inMemoryType="null" encodedType="bitfield4" constant="0" />
-        <Data name="NucType" enum="FlirNucType" encodedType="bitfield3" comment="NUC type setting" />
+        <Data name="NucType" enum="FlirNucType_t" encodedType="bitfield3" comment="NUC type setting" />
         <Data name="BlackHot" inMemoryType="bitfield1" comment="Image polarity setting - set to 0 for white hot or 1 for black hot"/>
         <Data name="MaxAgcGain" inMemoryType="unsigned8" comment="Maximum AGC output gain"/>
         <Data name="AceLevel" inMemoryType="signed8" comment="Active Contrast Enhancement (ACE) level"/>
