@@ -148,6 +148,9 @@ static int GetPathData(OrionPath_t *pPath)
                 printf("POINT %2d: %10.6lf, %11.6lf, %.0lf\n", pPath->numPoints, Lla[LAT], Lla[LON], Lla[ALT]);
             }
         }
+
+        // Close down the path file
+        fclose(pFile);
     }
 
     // Return the number of points we got from the file
