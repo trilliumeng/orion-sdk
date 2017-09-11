@@ -516,8 +516,8 @@ See TrilliumPacket.c (in the Orion SDK) for details.
         <Data name="posRejected" inMemoryType="bitfield1" comment="1 if the INS rejected the last position update because the chi-square value was too large."/>
         <Data name="velRejected" inMemoryType="bitfield1" comment="1 if the INS rejected the last velocity update because the chi-square value was too large."/>
         <Data name="hdgRejected" inMemoryType="bitfield1" comment="1 if the INS rejected the last heading update because the chi-square value was too large."/>
-        <Data name="gpsPeriod" inMemoryType="float32" encodedType="unsigned8" scaler="0.01" comment="Time in seconds between GPS measurements, 0 if no measurement"/>
-        <Data name="hdgPeriod" inMemoryType="float32" encodedType="unsigned8" scaler="0.01" comment="Time in seconds between heading measurements, 0 if no measurement"/>
+        <Data name="gpsPeriod" inMemoryType="float32" encodedType="unsigned8" scaler="100" comment="Time in seconds between GPS measurements, 0 if no measurement"/>
+        <Data name="hdgPeriod" inMemoryType="float32" encodedType="unsigned8" scaler="100" comment="Time in seconds between heading measurements, 0 if no measurement"/>
         <Data name="posChiSquare" inMemoryType="float32" encodedType="float16" comment="Chi-square statistic of the last position observation"/>
         <Data name="velChiSquare" inMemoryType="float32" encodedType="float16" comment="Chi-square statistic of the last velocity observation"/>
         <Data name="hdgChiSquare" inMemoryType="float32" encodedType="float16" comment="Chi-square statistic of the last heading observation"/>
