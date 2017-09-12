@@ -501,6 +501,8 @@ See TrilliumPacket.c (in the Orion SDK) for details.
             <Value name="imuTypeInternal" comment="Internal Trillium IMU"/>
             <Value name="imuTypeSensonor" comment="Sensonor IMU"/>
             <Value name="imuTypeDmu11" comment="DMU-11 IMU"/>
+            <Value name="imuTypeExternal" comment="Other external IMU"/>
+            <Value name="numImuTypes" comment="Number of known IMU types" />
         </Enum>
 
         <Data name="systemTime" inMemoryType="unsigned32" comment="Milliseconds since system bootup"/>
