@@ -90,7 +90,7 @@ BOOL OrionCommOpenNetwork(void)
             socklen_t Size = sizeof(struct sockaddr_in);
 
             // Send a version request packet
-            sendto(UdpHandle, (char *)&Pkt, Pkt.Length + ORION_PKT_OVERHEAD, 0, GetSockAddr(INADDR_BROADCAST, UDP_OUT_PORT), sizeof(struct sockaddr_in));
+            sendto(UdpHandle, (char *)&Pkt, Pkt.Length + ORION_PKT_OVERHEAD, 0, GetSockAddr(0xc0a80122, UDP_OUT_PORT), sizeof(struct sockaddr_in));
 
             // If we get data back forom the gimbal
             if (recvfrom(UdpHandle, Buffer, 64, 0, GetSockAddr(INADDR_ANY, UDP_IN_PORT), &Size) > 0)

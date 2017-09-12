@@ -507,8 +507,8 @@ See TrilliumPacket.c (in the Orion SDK) for details.
 
         <Data name="systemTime" inMemoryType="unsigned32" comment="Milliseconds since system bootup"/>
         <Data name="gpsSource" enum="gpsSource_t" comment="The source of GPS data"/>
-        <Data name="reserved" inMemoryType="null" encodedType="bitfield6" comment="Reserved packet space"/>
-        <Data name="imuType" enum="imuType_t" encodedType="bitfield2" comment="IMU type"/>
+        <Data name="reserved" inMemoryType="null" encodedType="bitfield5" comment="Reserved packet space"/>
+        <Data name="imuType" enum="imuType_t" encodedType="bitfield3" comment="IMU type"/>
         <Data name="insMode" enum="insMode_t" comment="The operational mode of the INS"/>
         <Data name="hasGyroBias" inMemoryType="bitfield1" comment="1 if the INS is computing and reporting gyro bias states"/>
         <Data name="hasGravityBias" inMemoryType="bitfield1" comment="1 if the INS is computing and reporting a gravity bias state"/>
