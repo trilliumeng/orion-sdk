@@ -276,22 +276,26 @@ See TrilliumPacket.c (in the Orion SDK) for details.
     </Packet>
 
     <Packet name="OrionDiagnostics" ID="ORION_PKT_DIAGNOSTICS" comment="Electrical diagnostic data for the Orion gimbal. This packet is sent by the gimbal every 3 seconds.">
-        <Data name="Voltage24" inMemoryType="float32" encodedType="unsigned16" scaler="1000" comment="Voltage of the 24-volt rail"/>
+        <Data name="Voltage24Motor" inMemoryType="float32" encodedType="unsigned16" scaler="1000" comment="Voltage of the 24-volt motor rail"/>
         <Data name="Voltage12" inMemoryType="float32" encodedType="unsigned16" scaler="1000" comment="Voltage of the 12-volt rail"/>
         <Data name="Voltage3v3" inMemoryType="float32" encodedType="unsigned16" scaler="1000" comment="Voltage of the 3.3-volt rail"/>
-        <Data name="Current24" inMemoryType="float32" encodedType="unsigned16" scaler="1000" comment="Current in Amps of the 24-volt rail"/>
+        <Data name="Current24Motor" inMemoryType="float32" encodedType="unsigned16" scaler="1000" comment="Current in Amps of the 24-volt motor rail"/>
         <Data name="Current12" inMemoryType="float32" encodedType="unsigned16" scaler="1000" comment="Current in Amps of the 12-volt rail"/>
         <Data name="Current3v3" inMemoryType="float32" encodedType="unsigned16" scaler="1000" comment="Current in Amps of the 3.3-volt rail"/>
         <Data name="CrownTemp" inMemoryType="float32" encodedType="signed8" scaler="1.0" comment="Temperature of the crown board in degrees Celsius"/>
         <Data name="SlaTemp" inMemoryType="float32" encodedType="signed8" scaler="1.0" comment="Temperature of the SLA-1500 board (if applicable) in degrees Celsius"/>
         <Data name="GyroTemp" inMemoryType="float32" encodedType="signed8" scaler="1.0" comment="Stabilization gyro ADC temperature in degrees Celsius"/>
         <Data name="reserved" inMemoryType="null" encodedType="unsigned8" constant="0" comment="Reserved space for future expansion"/>
-        <Data name="Voltage24Var" inMemoryType="float32" encodedType="unsigned16" scaler="100000" comment="Voltage variance of the 24-volt rail"/>
+        <Data name="Voltage24MotorVar" inMemoryType="float32" encodedType="unsigned16" scaler="100000" comment="Voltage variance of the 24-volt rail"/>
         <Data name="Voltage12Var" inMemoryType="float32" encodedType="unsigned16" scaler="100000" comment="Voltage variance of the 12-volt rail"/>
         <Data name="Voltage3v3Var" inMemoryType="float32" encodedType="unsigned16" scaler="100000" comment="Voltage variance of the 3.3-volt rail"/>
-        <Data name="Current24Var" inMemoryType="float32" encodedType="unsigned16" scaler="100000" comment="Current variance in Amps of the 24-volt rail"/>
+        <Data name="Current24MotorVar" inMemoryType="float32" encodedType="unsigned16" scaler="100000" comment="Current variance in Amps of the 24-volt rail"/>
         <Data name="Current12Var" inMemoryType="float32" encodedType="unsigned16" scaler="100000" comment="Current variance in Amps of the 12-volt rail"/>
         <Data name="Current3v3Var" inMemoryType="float32" encodedType="unsigned16" scaler="100000" comment="Current variance in Amps of the 3.3-volt rail"/>
+        <Data name="Voltage24Payload" inMemoryType="float32" encodedType="unsigned16" default="0" scaler="1000" comment="Voltage of the 24-volt payload rail" />
+        <Data name="Current24Payload" inMemoryType="float32" encodedType="unsigned16" default="0" scaler="1000" comment="Current in Amps of the 24-volt payload rail" />
+        <Data name="Voltage24PayloadVar" inMemoryType="float32" encodedType="unsigned16" default="0" scaler="100000" comment="Voltage variance of the 24-volt payload rail" />
+        <Data name="Current24PayloadVar" inMemoryType="float32" encodedType="unsigned16" default="0" scaler="100000" comment="Current variance in Amps of the 24-volt payload rail" />
     </Packet>
 
     <Packet name="OrionSoftwareDiagnostics" ID="ORION_PKT_SOFTWARE_DIAGNOSTICS" comment="Diagnostic information related to software performance for a specific board in the Orion Gimbal. This packet is sent by the gimbal once per second.">
