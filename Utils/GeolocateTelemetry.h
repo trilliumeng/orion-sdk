@@ -85,6 +85,18 @@ typedef struct
 
 }GeolocateTelemetry_t;
 
+//! Number of entries to keep in the geolocate telemetry buffer
+#define GEOLOCATE_BUFFER_SIZE 100
+
+/*! A buffer of geolocate telemetry data */
+typedef struct
+{
+	GeolocateTelemetry_t geobuf[GEOLOCATE_BUFFER_SIZE];
+	uint32_t in;
+	uint32_t holding;
+	
+}GeolocateBuffer_t;
+
 //! Create a GeolocateTelemetry packet
 void FormGeolocateTelemetry(OrionPkt_t *pPkt, const GeolocateTelemetry_t *pGeo);
 
@@ -97,6 +109,11 @@ BOOL offsetImageLocation(const GeolocateTelemetry_t *geo, const double imagePosL
 //! Get the terrain intersection based on the current telemetry
 BOOL getTerrainIntersection(const GeolocateTelemetry_t *pGeo, float (*getElevationHAE)(double, double), double PosLLA[NLLA], double *pRange);
 
+//! Get the velocity of the terrain intersection
+BOOL getTerrainIntersectionVelocity(const GeolocateBuffer_t* buf, double range, float imageVel[NNED]);
+
+//! Push a new geolocate telemetry into a geolocate buffer
+void pushGeolocateBuffer(GeolocateBuffer_t* buf, const GeolocateTelemetry_t* geo);
 
 #ifdef __cplusplus
 }
