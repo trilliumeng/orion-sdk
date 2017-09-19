@@ -297,8 +297,8 @@ BOOL getImageVelocity(const GeolocateBuffer_t* buf, double range, float imageVel
  */
 void pushGeolocateBuffer(GeolocateBuffer_t* buf, const GeolocateTelemetry_t* geo)
 {
-    // Copy the data into the buffer
-    buf->geobuf[buf->in] = *geo;
+    // Copy the data into the buffer, cannot do simple assignment
+    copyGeolocateTelemetry(geo, &buf->geobuf[buf->in]);
 
     // Adjust in pointer, in always points to the next entry to go in, which is
     // also the oldest entry when the buffer is full
@@ -387,3 +387,20 @@ BOOL getLOSAngularRate(const GeolocateBuffer_t* buf, uint32_t dt, float rates[NN
     return FALSE;
 
 }// getLOSAngularRate
+
+
+/*!
+ * Copy a geolocate structure, which cannot be done with simple assignment due to the DCM pointers
+ * \param source is the source structure whose contents are copied.
+ * \param dest receives a copy of the data in source.
+ */
+void copyGeolocateTelemetry(const GeolocateTelemetry_t* source, GeolocateTelemetry_t* dest)
+{
+    // Simple assignment here
+    (*dest) = (*source);
+
+    // Now fix the pointers, the dest DCM data pointers need to be pointing at the dest data, not the source data
+    dest->cameraDcm.data = &dest->cameraDcmdata[0];
+    dest->gimbalDcm.data = &dest->gimbalDcmdata[0];
+}
+
