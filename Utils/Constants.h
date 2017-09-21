@@ -21,6 +21,9 @@
 # define MAX(x,y)       (((x) > (y)) ? (x) : (y))
 #endif
 
+// Leap seconds as of 12/31/2016
+#define LEAP_SECONDS    18
+
 /*!
  * Bound a value to be >= a minimum and <= a maximum
  * \param min is the minimum value allowed
