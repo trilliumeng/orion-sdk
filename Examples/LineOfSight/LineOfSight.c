@@ -39,8 +39,8 @@ int main(int argc, char **argv)
     // If we don't have a valid handle yet (i.e. no serial port)
     if (CommOpen == FALSE)
     {
-        // Try to find the gimbal on the network
-        CommOpen = OrionCommOpenNetwork();
+        // Try to find the gimbal on the network on the broadcast address
+        CommOpen = OrionCommOpenNetwork("255.255.255.255");
     }
 
     // If we STILL don't have a valid handle
@@ -132,15 +132,28 @@ static void ProcessArgs(int argc, char **argv, int *pLevel)
 {
     char Error[80];
 
-    // If there are at least two arguments, and the first looks like a serial port
-    if ((argc >= 2) && ((argv[1][0] == '/') || (argv[1][0] == '\\')))
+    // If there are at least two arguments, and the first looks like a serial port or IP
+    if (argc >= 2)
     {
-        // Try opening the specified serial port
-        CommOpen = OrionCommOpenSerial(argv[1]);
+        // Serial port...?
+        if ((argv[1][0] == '/') || (argv[1][0] == '\\'))
+        {
+            // Try opening the specified serial port
+            CommOpen = OrionCommOpenSerial(argv[1]);
+        }
+        // IP address...?
+        else if (strchr(argv[1], '.'))
+        {
+            CommOpen = OrionCommOpenNetwork(argv[1]);
+        }
 
-        // Now decrement the number of arguments and push the pointer up one arg
-        argc--;
-        argv = &argv[1];
+        // If this parameter opened a comm port
+        if (CommOpen == TRUE)
+        {
+            // Decrement the number of arguments and push the pointer up one arg
+            argc--;
+            argv = &argv[1];
+        }
     }
 
     // Use a switch with fall-through to overwrite the default geopoint

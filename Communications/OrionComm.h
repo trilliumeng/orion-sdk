@@ -21,7 +21,7 @@ extern "C"
 #endif
 
 BOOL OrionCommOpenSerial(const char *pPath);
-BOOL OrionCommOpenNetwork(void);
+BOOL OrionCommOpenNetwork(const char *pAddress);
 void OrionCommClose(void);
 BOOL OrionCommSend(const OrionPkt_t *pPkt);
 BOOL OrionCommReceive(OrionPkt_t *pPkt);

@@ -59,10 +59,21 @@ BOOL OrionCommOpenSerial(const char *pPath)
 
 }// OrionCommOpenSerial
 
-BOOL OrionCommOpenNetwork(void)
+BOOL OrionCommOpenNetwork(const char *pAddress)
 {
     // Open a new UDP socket for auto-discovery
     int UdpHandle = socket(AF_INET, SOCK_DGRAM, 0);
+    uint32_t BroadcastAddr = INADDR_BROADCAST;
+
+    // Try converting the address to a uint32_t
+    if (inet_pton(AF_INET, pAddress, &BroadcastAddr) == 1)
+        BroadcastAddr = ntohl(BroadcastAddr);
+    else
+    {
+        // Close the discovery handle and return a failure
+        close(UdpHandle);
+        return FALSE;
+    }
 
     // If the socket looks good
     if (UdpHandle >= 0)
@@ -90,7 +101,7 @@ BOOL OrionCommOpenNetwork(void)
             socklen_t Size = sizeof(struct sockaddr_in);
 
             // Send a version request packet
-            sendto(UdpHandle, (char *)&Pkt, Pkt.Length + ORION_PKT_OVERHEAD, 0, GetSockAddr(0xc0a80122, UDP_OUT_PORT), sizeof(struct sockaddr_in));
+            sendto(UdpHandle, (char *)&Pkt, Pkt.Length + ORION_PKT_OVERHEAD, 0, GetSockAddr(BroadcastAddr, UDP_OUT_PORT), sizeof(struct sockaddr_in));
 
             // If we get data back forom the gimbal
             if (recvfrom(UdpHandle, Buffer, 64, 0, GetSockAddr(INADDR_ANY, UDP_IN_PORT), &Size) > 0)

@@ -72,13 +72,23 @@ BOOL OrionCommOpenSerial(const char *pPath)
 
 }// OrionCommOpenSerial
 
-BOOL OrionCommOpenNetwork(void)
+BOOL OrionCommOpenNetwork(const char *pAddress)
 {
+    // Open a new UDP socket for auto-discovery
     WSADATA WsaData;
     WSAStartup(MAKEWORD(2, 0), &WsaData);
-
-    // Open a new UDP socket for auto-discovery
     SOCKET UdpHandle = socket(AF_INET, SOCK_DGRAM, 0);
+    uint32_t BroadcastAddr;
+
+    // If we were passed a valid IP string, convert it to a uint32_t now
+    if (inet_addr(pAddress) != 0)
+        BroadcastAddr = ntohl(inet_addr(pAddress));
+    else
+    {
+        // Close the discovery handle and return a failure
+        close(UdpHandle);
+        return FALSE;
+    }
 
     // If the socket looks good
     if (UdpHandle != INVALID_SOCKET)
@@ -107,7 +117,7 @@ BOOL OrionCommOpenNetwork(void)
             int Size = sizeof(struct sockaddr_in);
 
             // Send a version request packet
-            sendto(UdpHandle, (char *)&Pkt, Pkt.Length + ORION_PKT_OVERHEAD, 0, GetSockAddr(INADDR_BROADCAST, UDP_OUT_PORT), sizeof(struct sockaddr_in));
+            sendto(UdpHandle, (char *)&Pkt, Pkt.Length + ORION_PKT_OVERHEAD, 0, GetSockAddr(BroadcastAddr, UDP_OUT_PORT), sizeof(struct sockaddr_in));
 
             // If we get data back forom the gimbal
             if (recvfrom(UdpHandle, Buffer, 64, 0, GetSockAddr(INADDR_ANY, UDP_IN_PORT), &Size) > 0)
