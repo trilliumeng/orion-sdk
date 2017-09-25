@@ -143,17 +143,17 @@ BOOL OrionCommOpenNetworkIp(const char *pAddress)
                 // Convert the IP address to network byte order
                 Address = htonl(Address);
 
-                // Now print out the IP address that we connected to
+                // Now print out the IP address that we connected to and break out of the loop
                 printf("Connected to %s\n", inet_ntop(AF_INET, &Address, IpString, INET_ADDRSTRLEN));
-
-                // Close the UDP socket now that we're done with it and get out of this loop
-                close(UdpHandle);
                 break;
             }
 
             // Sleep for 1/10th of a second
             usleep(100000);
         }
+
+        // Close the UDP handle down now that we're done with it
+        close(UdpHandle);
     }
 
     // Return a possibly valid handle to this socket

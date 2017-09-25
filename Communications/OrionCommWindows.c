@@ -158,17 +158,17 @@ BOOL OrionCommOpenNetworkIp(const char *pAddress)
                 // Now make the socket non-blocking for future reads/writes
                 ioctlsocket(TcpSocket, FIONBIO, &Arg);
 
-                // Now print out the IP address that we connected to
+                // Now print out the IP address that we connected to and break out of the loop
                 printf("Connected to %s\n", inet_ntoa(((struct sockaddr_in *)GetSockAddr(0, 0))->sin_addr));
-
-                // Close the UDP socket now that we're done with it and get out of this loop
-                closesocket(UdpHandle);
                 break;
             }
 
             // Sleep for 1/10th of a second
             Sleep(100);
         }
+
+        // Close the UDP socket now that we're done with it
+        closesocket(UdpHandle);
     }
 
     // Return a possibly valid handle to this socket
