@@ -152,6 +152,11 @@ BOOL OrionCommOpenNetworkIp(const char *pAddress)
             usleep(100000);
         }
 
+        // If we timed out waiting for a response, let the user know
+        if (WaitCount >= 20)
+            printf("Failed to connect to %s\n", inet_ntop(AF_INET, &BroadcastAddr, IpString, INET_ADDRSTRLEN));
+
+
         // Close the UDP handle down now that we're done with it
         close(UdpHandle);
     }

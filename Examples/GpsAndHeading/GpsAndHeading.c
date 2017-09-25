@@ -13,7 +13,6 @@ static OrionPkt_t PktIn, PktOut;
 static void KillProcess(const char *pMessage, int Value);
 static void ProcessArgs(int argc, char **argv, double Pos[3], float Vel[3], float *pHeading);
 static BOOL ProcessData(void);
-static BOOL CommOpen = FALSE;
 
 int main(int argc, char **argv)
 {
@@ -45,20 +44,6 @@ int main(int argc, char **argv)
 
     // Process the command line arguments
     ProcessArgs(argc, argv, &Gps.Latitude, Gps.VelNED, &Heading);
-
-    // If we don't have a valid handle yet (i.e. no serial port)
-    if (CommOpen == FALSE)
-    {
-        // Try to find the gimbal on the network on the broadcast address
-        CommOpen = OrionCommOpenNetwork();
-    }
-
-    // If we STILL don't have a valid handle
-    if (CommOpen == FALSE)
-    {
-        // Kill the whole app right now
-        KillProcess("Failed to connect to gimbal", -1);
-    }
 
     // Form a GPS data packet
     encodeGpsDataPacketStructure(&PktOut, &Gps);
@@ -128,38 +113,9 @@ static void ProcessArgs(int argc, char **argv, double Pos[3], float Vel[3], floa
 {
     char Error[80];
 
-    // If there are at least two arguments, and the first looks like a serial port or IP
-    if (argc >= 2)
-    {
-        // Serial port...?
-        if ((argv[1][0] == '/') || (argv[1][0] == '\\'))
-        {
-            // Try opening the specified serial port
-            CommOpen = OrionCommOpenSerial(argv[1]);
-        }
-        // IP address...?
-        else if (OrionCommIpStringValid(argv[1]))
-        {
-            // Try connecting to a gimbal at this IP
-            CommOpen = OrionCommOpenNetworkIp(argv[1]);
-
-            // If that didn't work out...
-            if (CommOpen == FALSE)
-            {
-                // Tell the user that we couldn't connect and kill the app
-                sprintf(Error, "Failed to connect to %s", argv[1]);
-                KillProcess(Error, 1);                
-            }
-        }
-
-        // If this parameter opened a comm port or fixed IP connection
-        if (CommOpen == TRUE)
-        {
-            // Decrement the number of arguments and push the pointer up one arg
-            argc--;
-            argv = &argv[1];
-        }
-    }
+    // If we can't connect to a gimbal, kill the app right now
+    if (OrionCommOpen(&argc, &argv) == FALSE)
+        KillProcess("", 1);
 
     // Use a switch with fall-through to overwrite the default geopoint
     switch (argc)
