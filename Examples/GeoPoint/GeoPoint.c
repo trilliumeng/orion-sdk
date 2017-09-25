@@ -101,11 +101,20 @@ static void ProcessArgs(int argc, char **argv, double Pos[3], float Vel[3])
         // IP address...?
         else if (OrionCommIpStringValid(argv[1]))
         {
+            // Try connecting to a gimbal at this IP
             CommOpen = OrionCommOpenNetworkIp(argv[1]);
+
+            // If that didn't work out...
+            if (CommOpen == FALSE)
+            {
+                // Tell the user that we couldn't connect and kill the app
+                sprintf(Error, "Failed to connect to %s", argv[1]);
+                KillProcess(Error, 1);                
+            }
         }
 
-        // If this parameter opened a comm port
-        if ((CommOpen == TRUE) || (OrionCommIpStringValid(argv[1]) == TRUE))
+        // If this parameter opened a comm port or fixed IP connection
+        if (CommOpen == TRUE)
         {
             // Decrement the number of arguments and push the pointer up one arg
             argc--;
