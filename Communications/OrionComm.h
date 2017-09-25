@@ -20,8 +20,12 @@ extern "C"
 {
 #endif
 
+// Macro to maintain backwards compatibility
+#define OrionCommOpenNetwork(void) OrionCommOpenNetworkIp("255.255.255.255")
+
 BOOL OrionCommOpenSerial(const char *pPath);
-BOOL OrionCommOpenNetwork(const char *pAddress);
+BOOL OrionCommOpenNetworkIp(const char *pAddress);
+BOOL OrionCommIpStringValid(const char *pAddress);
 void OrionCommClose(void);
 BOOL OrionCommSend(const OrionPkt_t *pPkt);
 BOOL OrionCommReceive(OrionPkt_t *pPkt);

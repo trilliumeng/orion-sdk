@@ -27,7 +27,7 @@ int main(int argc, char **argv)
     if (CommOpen == FALSE)
     {
         // Try to find the gimbal on the network on the broadcast address
-        CommOpen = OrionCommOpenNetwork("255.255.255.255");
+        CommOpen = OrionCommOpenNetwork();
     }
 
     // If we STILL don't have a valid handle
@@ -103,13 +103,13 @@ static void ProcessArgs(int argc, char **argv, OrionPath_t *pPath)
             CommOpen = OrionCommOpenSerial(argv[1]);
         }
         // IP address...?
-        else if (strchr(argv[1], '.'))
+        else if (OrionCommIpStringValid(argv[1]))
         {
-            CommOpen = OrionCommOpenNetwork(argv[1]);
+            CommOpen = OrionCommOpenNetworkIp(argv[1]);
         }
 
         // If this parameter opened a comm port
-        if (CommOpen == TRUE)
+        if ((CommOpen == TRUE) || (OrionCommIpStringValid(argv[1]) == TRUE))
         {
             // Decrement the number of arguments and push the pointer up one arg
             argc--;

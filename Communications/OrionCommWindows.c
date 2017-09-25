@@ -17,6 +17,9 @@ BOOL OrionCommOpenSerial(const char *pPath)
     SerialHandle = CreateFileA(pPath, GENERIC_READ | GENERIC_WRITE, 0, NULL,
                               OPEN_EXISTING, FILE_ATTRIBUTE_NORMAL, NULL);
 
+    // Tell the user what COM port they're trying to use
+    printf("Looking for gimbal on %s...\n", pPath);
+
     // If the handle is valid
     if (SerialHandle != INVALID_HANDLE_VALUE)
     {
@@ -67,12 +70,27 @@ BOOL OrionCommOpenSerial(const char *pPath)
         }
     }
 
+    // Tell the user if this failed or, if not, which COM port they're trying to use
+    if (Handle == INVALID_HANDLE_VALUE)
+        printf("Failed to open %s\n", pPath);
+    else
+        printf("Looking for gimbal on %s...\n", pPath);
+
     // Return false
     return SerialHandle != INVALID_HANDLE_VALUE;
 
 }// OrionCommOpenSerial
 
-BOOL OrionCommOpenNetwork(const char *pAddress)
+BOOL OrionCommIpStringValid(const char *pAddress)
+{
+    uint32_t Address = inet_addr(pAddress);
+
+    // Return TRUE if this is a valid IP address
+    return (Address != INADDR_ANY) && (Address != INADDR_NONE);
+
+}// OrionCommIpStringValid
+
+BOOL OrionCommOpenNetworkIp(const char *pAddress)
 {
     // Open a new UDP socket for auto-discovery
     WSADATA WsaData;
@@ -81,8 +99,8 @@ BOOL OrionCommOpenNetwork(const char *pAddress)
     uint32_t BroadcastAddr;
 
     // If we were passed a valid IP string, convert it to a uint32_t now
-    if (inet_addr(pAddress) != 0)
-        BroadcastAddr = ntohl(inet_addr(pAddress));
+    if (OrionCommIpStringValid(pAddress) == TRUE)
+        BrodcastAddr = inet_addr(pAddress);
     else
     {
         // Close the discovery handle and return a failure
@@ -111,8 +129,11 @@ BOOL OrionCommOpenNetwork(const char *pAddress)
         // Build a version request packet (note that it doesn't matter what you send...)
         MakeOrionPacket(&Pkt, ORION_PKT_CROWN_VERSION, 0);
 
-        // Wait for up to 50 iterations
-        while (WaitCount++ < 50)
+        // Now print out the broadcast address we're pinging
+        printf("Looking for gimbal on %s...\n", inet_ntoa(BroadcastAddr));
+
+        // Wait for up to 20 iterations
+        while (WaitCount++ < 20)
         {
             int Size = sizeof(struct sockaddr_in);
 
@@ -153,7 +174,7 @@ BOOL OrionCommOpenNetwork(const char *pAddress)
     // Return a possibly valid handle to this socket
     return TcpSocket != INVALID_SOCKET;
 
-}// OrionCommOpenNetwork
+}// OrionCommOpenNetworkIp
 
 void OrionCommClose(void)
 {
