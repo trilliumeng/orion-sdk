@@ -842,6 +842,7 @@ See TrilliumPacket.c (in the Orion SDK) for details.
         <Data name="StreamType" enum="StreamType_t" encodedType="unsigned8" default="STREAM_TYPE_H264" comment="Output stream format specifier" />
         <Data name="MjpegQuality" inMemoryType="unsigned8" default="30" comment="MJPEG quality value, from 10 to 95" />
         <Data name="SaveSettings" inMemoryType="bitfield1" default="0" comment="Set to 1 to make h.264 settings non-volatile, or 0 to reset to defaults on startup" />
+        <Data name="TsPacketCount" inMemoryType="bitfield4" default="0" comment="Number of TS packets per UDP packet, or 0 for no change" />
     </Packet>
 
     <Packet name="OrionCameras" ID="ORION_PKT_CAMERAS" comment="Camera definitions for the Orion gimbal">
