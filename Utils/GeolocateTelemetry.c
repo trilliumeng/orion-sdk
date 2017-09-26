@@ -189,7 +189,7 @@ BOOL getTerrainIntersection(const GeolocateTelemetry_t *pGeo, float (*getElevati
     static const double StepCoarse = 30.0, StepFine = 1.0;
 
     // Maximum distance to follow a ray before giving up
-    static const double MaxDistance = 5000.0;
+    static const double MaxDistance = 15000.0;
 
     // Rotate a unit line of sight vector by the camera DCM to get a 1-meter NED look vector
     dcmApplyRotation(&pGeo->cameraDcm, Temp, Temp);
@@ -221,18 +221,25 @@ BOOL getTerrainIntersection(const GeolocateTelemetry_t *pGeo, float (*getElevati
         // Get the ground HAE
         GroundHeight = getElevationHAE(PosLLA[LAT], PosLLA[LON]);
 
+        // If we're still coarsely stepping
+        if (Step != StepFine)
+        {
+            // Set the step size to the greater of 1% of current range or StepCoarse
+            Step = MAX(StepCoarse, *pRange * 0.01f);
+        }
+
         // If the end of this ray is under ground
         if (PosLLA[ALT] <= GroundHeight)
         {
             // If we're using a coarse step
-            if (Step == StepCoarse)
+            if (Step != StepFine)
             {
                 // Back up one step
                 *pRange -= Step;
 
                 // Change to the fine step and loop until the current range
+                End = *pRange + Step;
                 Step = StepFine;
-                End = *pRange + StepCoarse;
             }
             // If we're fine stepping, we've found the terrain intersection
             else
