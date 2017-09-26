@@ -71,7 +71,7 @@ BOOL OrionCommOpenSerial(const char *pPath)
     }
 
     // Tell the user if this failed or, if not, which COM port they're trying to use
-    if (Handle == INVALID_HANDLE_VALUE)
+    if (SerialHandle == INVALID_HANDLE_VALUE)
         printf("Failed to open %s\n", pPath);
     else
         printf("Looking for gimbal on %s...\n", pPath);
@@ -100,7 +100,7 @@ BOOL OrionCommOpenNetworkIp(const char *pAddress)
 
     // If we were passed a valid IP string, convert it to a uint32_t now
     if (OrionCommIpStringValid(pAddress) == TRUE)
-        BrodcastAddr = inet_addr(pAddress);
+        BroadcastAddr = inet_addr(pAddress);
     else
     {
         // Close the discovery handle and return a failure
@@ -130,7 +130,7 @@ BOOL OrionCommOpenNetworkIp(const char *pAddress)
         MakeOrionPacket(&Pkt, ORION_PKT_CROWN_VERSION, 0);
 
         // Now print out the broadcast address we're pinging
-        printf("Looking for gimbal on %s...\n", inet_ntoa(BroadcastAddr));
+        printf("Looking for gimbal on %s...\n", inet_ntoa(((struct sockaddr_in *)GetSockAddr(BroadcastAddr, UDP_OUT_PORT))->sin_addr));
 
         // Wait for up to 20 iterations
         while (WaitCount++ < 20)
