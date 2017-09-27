@@ -28,9 +28,49 @@ orion = Proto("orion","Orion Protocol")
 -- the new fields that contain the extracted data (one in string form, one in hex)
 orion_id = ProtoField.new("Packet Type ID", "orion.id", ftypes.UINT8)
 orion_len = ProtoField.new("Data Length", "orion.length", ftypes.UINT8)
+orion_systime = ProtoField.new("System Time", "orion.time", ftypes.UINT32)
 
 -- register the new fields into our fake protocol
-orion.fields = { orion_id, orion_len }
+orion.fields = { orion_id, orion_len, orion_systime }
+
+function round(x, p)
+    if x < 0 then
+        return math.ceil(x * 10 ^ p - 0.5) * 10 ^ -p
+    else
+        return math.floor(x * 10 ^ p + 0.5) * 10 ^ -p
+    end
+end
+
+function get_ip_string(ipv4)
+	local ip_string = ""
+
+	ip_string = ip_string .. ipv4(0,1):uint() .. "."
+	ip_string = ip_string .. ipv4(1,1):uint() .. "."
+	ip_string = ip_string .. ipv4(2,1):uint() .. "."
+	ip_string = ip_string .. ipv4(3,1):uint()
+
+	return ip_string
+end
+
+function get_range_src_string(range_src)
+	local range_str = "Unknown"
+
+	if range_src == 0 then
+		range_str = "None"
+	elseif range_src == 1 then
+		range_str = "SkyLink"
+	elseif range_src == 2 then
+		range_str = "Laser"
+	elseif range_src == 3 then
+		range_str = "Other"
+	elseif range_src == 4 then
+		range_str = "Internal"
+	elseif range_src == 5 then
+		range_str = "Internal DTED"
+	end
+
+	return range_str
+end
 
 function get_mode_string(mode)
 
@@ -45,8 +85,8 @@ function get_mode_string(mode)
 	elseif mode == 64 then mode_str = "Calibration"
 	elseif mode == 80 then mode_str = "Position"
 	elseif mode == 96 then mode_str = "Geopoint"
-	elseif mode == 102 then mode_str = "Path"
-	elseif mode == 103 then mode_str = "Look Down"
+	elseif mode == 112 then mode_str = "Path"
+	elseif mode == 113 then mode_str = "Look Down"
 	end
 
 	return mode_str
@@ -79,6 +119,85 @@ function get_board_string(board)
 	end
 
 	return board_str
+
+end
+
+datum_semiMajorAxis = 6378137.0
+datum_flattening = (1.0 / 298.257223563)
+datum_semiMinorAxis = (datum_semiMajorAxis * (1.0 - datum_flattening))
+datum_eSquared = (1.0 - (datum_semiMinorAxis * datum_semiMinorAxis) / (datum_semiMajorAxis * datum_semiMajorAxis))
+datum_eSecondSquared = ((datum_semiMajorAxis * datum_semiMajorAxis) / (datum_semiMinorAxis * datum_semiMinorAxis) - 1.0)
+
+function lla_to_ecef(lat, lon, alt)
+	local sinLat = math.sin(lat)
+	local cosLat = math.cos(lat)
+	local sinLon = math.sin(lon)
+	local cosLon = math.cos(lon)
+
+    -- // Radius of East-West curvature in meters
+    local Rc = datum_semiMajorAxis / math.sqrt(1.0 - datum_eSquared * sinLat * sinLat)
+    local ecef = {}
+
+    -- // PosECEF position data
+    ecef[0] = (Rc+alt)*cosLat*cosLon;
+    ecef[1] = (Rc+alt)*cosLat*sinLon;
+    ecef[2] = (Rc*(1.0 - datum_eSquared) + alt)*sinLat;
+
+    return ecef
+end
+
+
+function ecef_to_lla(x, y, z)
+    local psquared = x*x + y*y
+    local cosLat, sinLat, cosLon, sinLon
+
+	local lla = {}
+
+    if psquared == 0.0 then
+        -- // We are on the Earth rotation axis, we could be
+        -- // in the center, or at one of the poles
+        lla[2] = math.abs(z) - datum_semiMinorAxis
+        lla[1] = 0.0
+        cosLon = 1.0
+        sinLon = 0.0
+
+        if z == 0.0 then
+            lla[0] = 0.0
+        elseif z > 0.0 then
+            lla[0] = 3.1415926535859/2.0
+        else
+            lla[0] = -3.1415926535859/2.0
+        end
+    else
+        -- // distance from axis of rotation
+        local p = math.sqrt(psquared)
+
+        local zeta = math.atan2(z*datum_semiMajorAxis, p*datum_semiMinorAxis)
+        local SinZeta = math.sin(zeta)
+        local CosZeta = math.cos(zeta)
+
+        -- // Latitude
+        local num = z + datum_eSecondSquared*datum_semiMinorAxis*SinZeta*SinZeta*SinZeta
+        local den = p - datum_eSquared*datum_semiMajorAxis*CosZeta*CosZeta*CosZeta
+
+        -- // hypotenuse should never be zero
+        local hyp = math.sqrt(num*num + den*den)
+        lla[0] = math.atan2(num, den)
+        sinLat = num/hyp
+        cosLat = den/hyp
+
+        -- // Longitude
+        lla[1] = math.atan2(y, x)
+
+        -- // Altitude is calculated differently at the poles, in order to avoid the singularity
+        if math.abs(cosLat) > 0.001 then
+            lla[2] = (p / cosLat) - datum_semiMajorAxis / math.sqrt(1.0 - datum_eSquared * sinLat * sinLat)
+        else
+            lla[2] = math.abs(z) - datum_semiMinorAxis
+        end
+    end
+
+    return lla
 
 end
 
@@ -265,6 +384,15 @@ function print_ext_heading(subtree, buffer, id, size)
 	return name
 end
 
+function print_imu_data_short(subtree, buffer, id, size)
+	local name = "IMU Data Short"
+	subtree = make_subtree(subtree, buffer, name, id, size)
+
+	subtree:add(orion_systime, buffer(0,4):uint())
+
+	return name
+end
+
 function print_ins_quality(subtree, buffer, id, size)
 	local name = "INS Quality"
 	subtree = make_subtree(subtree, buffer, name, id, size)
@@ -416,10 +544,23 @@ function print_geolocate(subtree, buffer, id, size)
 	subtree:add(buffer(44,2), "VFOV: " .. buffer(44,2):uint() / 65535.0 * 360.0)
 
 	if size >= 52 then
-		local los = subtree:add(buffer(46,6), "ECEF Line of Sight")
-		los:add(buffer(46,2), "X: " .. buffer(46,2):int())
-		los:add(buffer(48,2), "Y: " .. buffer(48,2):int())
-		los:add(buffer(50,2), "Z: " .. buffer(50,2):int())
+		local los = subtree:add(buffer(46,6), "Target Position")
+		local lat = math.rad(buffer(12,4):int() / 10000000.0)
+		local lon = math.rad(buffer(16,4):int() / 10000000.0)
+		local alt = buffer(20,4):int() / 10000.0
+
+		local gimbal_ecef = lla_to_ecef(lat, lon, alt)
+
+		local x = buffer(46,2):int()
+		local y = buffer(48,2):int()
+		local z = buffer(50,2):int()
+
+		lla = ecef_to_lla(x + gimbal_ecef[0], y + gimbal_ecef[1], z + gimbal_ecef[2])
+
+		los:add(buffer(46,6), "Latitude: " .. round(math.deg(lla[0]), 6))
+		los:add(buffer(46,6), "Longitude: " .. round(math.deg(lla[1]), 6))
+		los:add(buffer(46,6), "Altitude: " .. round(lla[2], 1))
+		los:add(buffer(46,6), "Slant Range: " .. round(math.sqrt(x*x+y*y+z*z),1))
 	end
 
 	if size >= 54 then
@@ -465,7 +606,7 @@ function print_geolocate(subtree, buffer, id, size)
 	end
 
 	if size >= 77 then
-		subtree:add(buffer(76,1), "Range Source: " .. buffer(76,1))
+		subtree:add(buffer(76,1), "Range Source: " .. get_range_src_string(buffer(76,1):uint()))
 	end
 
 	if size >= 78 then
@@ -476,6 +617,149 @@ function print_geolocate(subtree, buffer, id, size)
 
 end
 
+function print_network_video(subtree, buffer, id, size)
+	local name = "Network Video"
+	subtree = make_subtree(subtree, buffer, name, id, size)
+
+	subtree:add(buffer(0,4), "Destination IP: " .. get_ip_string(buffer(0,4)))
+	subtree:add(buffer(4,2), "Port: " .. buffer(4,2):uint())
+	subtree:add(buffer(6,4), "Bitrate: " .. buffer(6,4):uint())
+
+	if size >= 11 then
+		subtree:add(buffer(10,1), "TTL: " .. buffer(10,1):int())
+	end
+
+	if size >= 12 then
+		local stream_string = "Stream Type: "
+		local stream_val = buffer(11,1):int()
+
+		if stream_val == 0 then
+			stream_string = stream_string .. "h.264"
+		elseif stream_val == 1 then
+			stream_string = stream_string .. "MJPEG"
+		elseif stream_val == 2 then
+			stream_string = stream_string .. "RAW"
+		elseif stream_val == 3 then
+			stream_string = stream_string .. "YUV"
+		else
+			stream_string = stream_string .. "Unknown"
+		end
+
+		subtree:add(buffer(11,1), "Stream Type: " .. stream_string)
+	end
+
+	if size >= 13 then
+		subtree:add(buffer(12,1), "MJPEG Quality: " .. buffer(12,1):int())
+	end
+
+	return name
+end
+
+function print_version(subtree, buffer, id, size)
+	local name = " Version"
+
+	if id == 37 then 
+		name = "Clevis" .. name
+		len = 16
+	elseif  id == 40 then
+		name = "Crown" .. name
+		len = 16
+	elseif id == 41 then
+		name = "Payload" .. name
+		len = 24
+	end
+
+	subtree = make_subtree(subtree, buffer, name, id, size)
+
+	subtree:add(buffer(0,len), "Version: " .. buffer(0,len):string(ENC_UTF_8))
+	subtree:add(buffer(len,16), "Part Number: " .. buffer(len,16):string(ENC_UTF_8))
+
+	if size >= len + 17 then
+		subtree:add(buffer(len+16,4), "On Time: " .. buffer(len+16,4):uint())
+	end
+
+	return name
+
+end
+
+
+function print_network_diagnostics(subtree, buffer, id, size)
+	local name = "Network Diagnostics"
+	subtree = make_subtree(subtree, buffer, name, id, size)
+
+    subtree:add(buffer(0,2), "Flags: " .. buffer(0,2):uint())
+    subtree:add(buffer(2,4), "Rx Bytes: " .. buffer(2,4):uint())
+    subtree:add(buffer(6,4), "Tx Bytes: " .. buffer(6,4):uint())
+    subtree:add(buffer(10,4), "Rx Packets: " .. buffer(10,4):uint())
+    subtree:add(buffer(14,4), "Tx Packets: " .. buffer(14,4):uint())
+    subtree:add(buffer(18,2), "Rx Errors: " .. buffer(18,2):uint())
+    subtree:add(buffer(20,2), "Tx Errors: " .. buffer(20,2):uint())
+    subtree:add(buffer(22,2), "Rx Drops: " .. buffer(22,2):uint())
+    subtree:add(buffer(24,2), "Tx Drops: " .. buffer(24,2):uint())
+    subtree:add(buffer(26,2), "Rx FIFO Errors: " .. buffer(26,2):uint())
+    subtree:add(buffer(28,2), "Tx FIFO Errors: " .. buffer(28,2):uint())
+    subtree:add(buffer(30,2), "Frame Errors: " .. buffer(30,2):uint())
+    subtree:add(buffer(32,2), "Collisions: " .. buffer(32,2):uint())
+    subtree:add(buffer(34,2), "Carrier Errors: " .. buffer(34,2):uint())
+
+    return name
+
+end
+
+function print_range(subtree, buffer, id, size)
+	local name = "Range Data"
+	subtree = make_subtree(subtree, buffer, name, id, size)
+
+	subtree:add(buffer(0,4), "Range [m]: " .. buffer(0,4):uint() * 0.01)
+	subtree:add(buffer(4,2), "Max Age [ms]: " .. buffer(4,2):uint())
+	subtree:add(buffer(6,1), "Range Source: " .. get_range_src_string(buffer(6,1):uint()))
+
+	return name
+
+end
+
+
+function print_path_data(subtree, buffer, id, size)
+	local name = "Path Data"
+	subtree = make_subtree(subtree, buffer, name, id, size)
+
+	subtree:add(buffer(0,1), "Number of Points: " .. buffer(0,1):uint())
+
+	local j = 2
+
+	-- Notably missing: pointDown and numCrossTrackSteps
+
+	for i=1,buffer(0,1):uint() do
+
+		local p = subtree:add(buffer(j,9), "Point " .. (i - 1))
+
+		local x = bit.band(buffer(j+0,4):int(), 0xFFFFFF00) / 256
+		local y = bit.band(buffer(j+3,4):int(), 0xFFFFFF00) / 256
+		local z = bit.band(buffer(j+6,4):int(), 0xFFFFFF00) / 256
+
+		local lla = ecef_to_lla(x, y, z)
+
+		p:add(buffer(j+0,3), "Latitude: " .. round(math.deg(lla[0]), 6))
+		p:add(buffer(j+3,3), "Longitude: " .. round(math.deg(lla[1]), 6))
+		p:add(buffer(j+6,3), "Height: " .. round(lla[2], 1))
+
+		j = j+9
+
+	end
+
+	if size >= j + 2 then
+		subtree:add(buffer(j+0,2), "Along Track Angle: " .. buffer(j+0,2):uint() * 180.0 / 65535.0)
+	end
+
+	if size >= j + 3 then
+		subtree:add(buffer(j+2,1), "Cross Track Ratio: " .. buffer(j+2,1):uint() * 0.01)
+	end
+
+	return name
+
+end
+
+
 function print_packet(pinfo, subtree, buffer)
 	local id = buffer(2,1):uint()
 	local size = buffer(3,1):uint()
@@ -483,13 +767,20 @@ function print_packet(pinfo, subtree, buffer)
 	local info = ""
 
 	if     id == 1   then info = print_cmd(subtree, data, id, size)
+	elseif id == 37 then info = print_version(subtree, data, id, size)
+	elseif id == 40 then info = print_version(subtree, data, id, size)
+	elseif id == 41 then info = print_version(subtree, data, id, size)
 	elseif id == 65 then info = print_diagnostics(subtree, data, id, size)
 	elseif id == 67  then info = print_performance(subtree, data, id, size)
+	elseif id == 70 then info = print_network_diagnostics(subtree, data, id, size)
 	elseif id == 68 then info = print_sw_diagnostics(subtree, data, id, size)
+	elseif id == 98 then info = print_network_video(subtree, data, id, size)
 	elseif id == 209 then info = print_gps_data(subtree, data, id, size)
 	elseif id == 210 then info = print_ext_heading(subtree, data, id, size)
 	elseif id == 211 then info = print_ins_quality(subtree, data, id, size)
 	elseif id == 212 then info = print_geolocate(subtree, data, id, size)
+	elseif id == 214 then info = print_range(subtree, data, id, size)
+	elseif id == 215 then info = print_path_data(subtree, data, id, size)
 	else
 		local name = "Unknown packet ID 0x" .. buffer(2,1)
 		subtree = make_subtree(subtree, data, name, id, size)
