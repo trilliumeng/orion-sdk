@@ -17,9 +17,6 @@ BOOL OrionCommOpenSerial(const char *pPath)
     SerialHandle = CreateFileA(pPath, GENERIC_READ | GENERIC_WRITE, 0, NULL,
                               OPEN_EXISTING, FILE_ATTRIBUTE_NORMAL, NULL);
 
-    // Tell the user what COM port they're trying to use
-    printf("Looking for gimbal on %s...\n", pPath);
-
     // If the handle is valid
     if (SerialHandle != INVALID_HANDLE_VALUE)
     {
@@ -98,9 +95,18 @@ BOOL OrionCommOpenNetworkIp(const char *pAddress)
     SOCKET UdpHandle = socket(AF_INET, SOCK_DGRAM, 0);
     uint32_t BroadcastAddr;
 
-    // If we were passed a valid IP string, convert it to a uint32_t now
+    // If we were passed a valid IP string
     if (OrionCommIpStringValid(pAddress) == TRUE)
+    {
+        // Convert the IP address string to a 32-bit IPv4 address value
         BroadcastAddr = inet_addr(pAddress);
+
+        // Now print out the broadcast address we're pinging
+        printf("Looking for gimbal on %s...\n", inet_ntoa(((struct sockaddr_in *)GetSockAddr(BroadcastAddr, UDP_OUT_PORT))->sin_addr));
+        
+        // Roll the bytes for our GetSockAddr function
+        BroadcastAddr = ntohl(BroadcastAddr);
+    }
     else
     {
         // Close the discovery handle and return a failure
@@ -128,9 +134,6 @@ BOOL OrionCommOpenNetworkIp(const char *pAddress)
 
         // Build a version request packet (note that it doesn't matter what you send...)
         MakeOrionPacket(&Pkt, ORION_PKT_CROWN_VERSION, 0);
-
-        // Now print out the broadcast address we're pinging
-        printf("Looking for gimbal on %s...\n", inet_ntoa(((struct sockaddr_in *)GetSockAddr(BroadcastAddr, UDP_OUT_PORT))->sin_addr));
 
         // Wait for up to 20 iterations
         while (WaitCount++ < 20)
@@ -165,6 +168,16 @@ BOOL OrionCommOpenNetworkIp(const char *pAddress)
 
             // Sleep for 1/10th of a second
             Sleep(100);
+        }
+
+        // If we timed out waiting for a response, let the user know
+        if (WaitCount >= 20)
+        {
+            // Broadcast address byte roll, part one million
+            BroadcastAddr = htonl(BroadcastAddr);
+
+            // Let the user know we failed to connect
+            printf("Failed to connect to %s\n", inet_ntoa(((struct sockaddr_in *)GetSockAddr(BroadcastAddr, UDP_OUT_PORT))->sin_addr));
         }
 
         // Close the UDP socket now that we're done with it

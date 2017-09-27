@@ -79,10 +79,20 @@ BOOL OrionCommOpenNetworkIp(const char *pAddress)
     // Open a new UDP socket for auto-discovery
     int UdpHandle = socket(AF_INET, SOCK_DGRAM, 0);
     uint32_t BroadcastAddr = INADDR_BROADCAST;
+    char IpString[INET_ADDRSTRLEN];
 
     // Try converting the address to a uint32_t
     if (OrionCommIpStringValid(pAddress) == TRUE)
+    {
+        // Convert the IPaddress string to a 32-bit IPv4 address value
         inet_pton(AF_INET, pAddress, &BroadcastAddr);
+
+        // Now print out the broadcast address we're pinging
+        printf("Looking for gimbal on %s...\n", inet_ntop(AF_INET, &BroadcastAddr, IpString, INET_ADDRSTRLEN));
+
+        // Roll the bytes for our GetSockAddr function
+        BroadcastAddr = ntohl(BroadcastAddr);
+    }
     else
     {
         // Close the discovery handle and return a failure
@@ -93,7 +103,6 @@ BOOL OrionCommOpenNetworkIp(const char *pAddress)
     // If the socket looks good
     if (UdpHandle >= 0)
     {
-        char IpString[INET_ADDRSTRLEN];
         BOOL Broadcast = TRUE;
         int WaitCount = 0;
         char Buffer[64];
@@ -110,9 +119,6 @@ BOOL OrionCommOpenNetworkIp(const char *pAddress)
 
         // Build a version request packet (note that it doesn't matter what you send...)
         MakeOrionPacket(&Pkt, ORION_PKT_CROWN_VERSION, 0);
-
-        // Now print out the broadcast address we're pinging
-        printf("Looking for gimbal on %s...\n", inet_ntop(AF_INET, &BroadcastAddr, IpString, INET_ADDRSTRLEN));
 
         // Wait for up to 20 iterations
         while (WaitCount++ < 20)
@@ -154,8 +160,13 @@ BOOL OrionCommOpenNetworkIp(const char *pAddress)
 
         // If we timed out waiting for a response, let the user know
         if (WaitCount >= 20)
-            printf("Failed to connect to %s\n", inet_ntop(AF_INET, &BroadcastAddr, IpString, INET_ADDRSTRLEN));
+        {
+            // Broadcast address byte roll, part one million
+            BroadcastAddr = htonl(BroadcastAddr);
 
+            // Let the user know we failed to connect
+            printf("Failed to connect to %s\n", inet_ntop(AF_INET, &BroadcastAddr, IpString, INET_ADDRSTRLEN));
+        }
 
         // Close the UDP handle down now that we're done with it
         close(UdpHandle);
