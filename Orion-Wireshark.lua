@@ -33,14 +33,6 @@ orion_systime = ProtoField.new("System Time", "orion.time", ftypes.UINT32)
 -- register the new fields into our fake protocol
 orion.fields = { orion_id, orion_len, orion_systime }
 
-function round(x, p)
-    if x < 0 then
-        return math.ceil(x * 10 ^ p - 0.5) * 10 ^ -p
-    else
-        return math.floor(x * 10 ^ p + 0.5) * 10 ^ -p
-    end
-end
-
 function get_ip_string(ipv4)
 	local ip_string = ""
 
@@ -201,8 +193,19 @@ function ecef_to_lla(x, y, z)
 
 end
 
+function quat_to_euler(a, b, c, d)
+
+	local angles = {}
+
+	angles[0] = math.atan2(2*(c*d + b*a), a^2 - b^2 - c^2 + d^2)
+	angles[1] = math.asin(math.max(-1, math.min(-2*(b*d - c*a), 1.0)))
+	angles[2] = math.atan2(2*(b*c + d*a), a^2 + b^2 - c^2 - d^2)
+
+	return angles
+end
+
 function make_subtree(subtree, buffer, name, id, size)
-	subtree = subtree:add(orion, buffer(), name)
+	subtree = subtree:add(orion, buffer, name)
 	subtree:add(orion_id, id)
 	subtree:add(orion_len, size)
 	return subtree
@@ -211,6 +214,10 @@ end
 function print_cmd(subtree, buffer, id, size)
 	local name =  "Command"
 	subtree = make_subtree(subtree, buffer, name, id, size)
+
+	if size == 0 then
+		return name
+	end
 
 	subtree:add(buffer(0,2), "Pan target: " .. math.deg(buffer(0,2):int() / 1000.0))
 	subtree:add(buffer(2,2), "Tilt target: " .. math.deg(buffer(2,2):int() / 1000.0))
@@ -227,6 +234,10 @@ end
 function print_diagnostics(subtree, buffer, id, size)
 	local name = "Diagnostics"
 	subtree = make_subtree(subtree, buffer, name, id, size)
+
+	if size == 0 then
+		return name
+	end
 
 	subtree:add(buffer(12,1), "Crown Temp: " .. buffer(12,1):uint() .. "º")
 	subtree:add(buffer(13,1), "SLA Temp: " .. buffer(13,1):uint() .. "º")
@@ -259,6 +270,10 @@ function print_sw_diagnostics(subtree, buffer, id, size)
 	local name = get_board_string(board) .. " Board SW Diagnostics"
 	subtree = make_subtree(subtree, buffer, name, id, size)
 
+	if size == 0 then
+		return name
+	end
+
 	local j = 4
 
 	for i=1,buffer(1,1):uint() do
@@ -266,27 +281,27 @@ function print_sw_diagnostics(subtree, buffer, id, size)
 		local size = 5 + buffer(j + 4,1):uint() * 6
 		local core = subtree:add(buffer(j, size), "Core " .. i - 1 .. " Loading")
 
-		core:add(buffer(j+0,1), "CPU Load: " .. buffer(j+0,1):uint() / 2.55 .. "%")
-		core:add(buffer(j+1,1), "Heap Load: " .. buffer(j+1,1):uint() / 2.55 .. "%")
-		core:add(buffer(j+2,1), "Stack Load: " .. buffer(j+2,1):uint() / 2.55 .. "%")
+		core:add(buffer(j+0,1), string.format("CPU Load: %.0f%%", buffer(j+0,1):uint() / 2.55))
+		core:add(buffer(j+1,1), string.format("Heap Load: %.0f%%", buffer(j+1,1):uint() / 2.55))
+		core:add(buffer(j+2,1), string.format("Stack Load: %.0f%%", buffer(j+2,1):uint() / 2.55))
 
 		for k=0,buffer(j+4,1):uint()-1 do
 			local thread = core:add(buffer(j + 5 + k * 6, 6), "Thread " .. k .. " Loading")
 			local load = buffer(j + 5 + k * 6 + 0, 1):uint() / 255.0
 			local iter = buffer(j + 5 + k * 6 + 4, 1):uint()
 
-			thread:add(buffer(j + 5 + k * 6 + 0, 1), "CPU Load: " .. buffer(j + 5 + k * 6 + 0, 1):uint() / 2.55 .. "%")
-			thread:add(buffer(j + 5 + k * 6 + 1, 1), "Heap Load: " .. buffer(j + 5 + k * 6 + 1, 1):uint() / 2.55 .. "%")
-			thread:add(buffer(j + 5 + k * 6 + 2, 1), "Stack Load: " .. buffer(j + 5 + k * 6 + 2, 1):uint() / 2.55 .. "%")
-			thread:add(buffer(j + 5 + k * 6 + 3, 1), "WDT Left: " .. buffer(j + 5 + k * 6 + 3, 1):uint() / 2.55 .. "%")
-			thread:add(buffer(j + 5 + k * 6 + 4, 1), "Iterations: " .. buffer(j + 5 + k * 6 + 4, 1):uint())
+			thread:add(buffer(j + 5 + k * 6 + 0, 1), string.format("CPU Load: %.0f%%", buffer(j + 5 + k * 6 + 0, 1):uint() / 2.55))
+			thread:add(buffer(j + 5 + k * 6 + 1, 1), string.format("Heap Load: %.0f%%", buffer(j + 5 + k * 6 + 1, 1):uint() / 2.55))
+			thread:add(buffer(j + 5 + k * 6 + 2, 1), string.format("Stack Load: %.0f%%", buffer(j + 5 + k * 6 + 2, 1):uint() / 2.55))
+			thread:add(buffer(j + 5 + k * 6 + 3, 1), string.format("WDT Left: %.0f%%", buffer(j + 5 + k * 6 + 3, 1):uint() / 2.55))
+			thread:add(buffer(j + 5 + k * 6 + 4, 1), string.format("Iterations: %d", buffer(j + 5 + k * 6 + 4, 1):uint()))
 
 			if iter > 0 and iter < 255 then
 				local period = 5.0
 				local average_ms = period * load / iter * 1000.0
 				local worst = buffer(j + 5 + k * 6 + 5, 1):uint() / 10.0
-				thread:add(buffer(j + 5 + k * 6, 6), "Average Time: " .. average_ms .. "ms")
-				thread:add(buffer(j + 5 + k * 6 + 5, 1), "Worst Case (" .. worst .. "x): " .. average_ms * worst .. "ms")
+				thread:add(buffer(j + 5 + k * 6, 6), string.format("Average Time: %dms", average_ms))
+				thread:add(buffer(j + 5 + k * 6 + 5, 1), string.format("Worst Case (%.1fx): %.1fms", worst, average_ms * worst))
 			end
 
 		end
@@ -301,6 +316,10 @@ end
 function print_performance(subtree, buffer, id, size)
 	local name = "Performance"
 	subtree = make_subtree(subtree, buffer, name, id, size)
+
+	if size == 0 then
+		return name
+	end
 
 	subtree:add(buffer(0,2),  "Pan Quadrature Current Jitter: " .. buffer(0,2):uint() .. " uA")
 	subtree:add(buffer(4,2),  "Pan Direct Current Jitter: " .. buffer(4,2):uint() .. " uA")
@@ -319,6 +338,10 @@ end
 function print_gps_data(subtree, buffer, id, size)
 	local name = "GPS Data"
 	subtree = make_subtree(subtree, buffer, name, id, size)
+
+	if size == 0 then
+		return name
+	end
 
     local fix_type = bit.band(buffer(0,1):uint(), 127)
 	local fix_string = "None"
@@ -374,6 +397,10 @@ function print_ext_heading(subtree, buffer, id, size)
 	local name = "Ext. Heading"
 	subtree = make_subtree(subtree, buffer, name, id, size)
 
+	if size == 0 then
+		return name
+	end
+
 	subtree:add(buffer(0,2), "Heading: " .. buffer(0,2):int() / 32768.0 * 180.0)
 	subtree:add(buffer(2,2), "Noise: " .. buffer(2,2):uint() / 32768.0 * 360.0)
 
@@ -388,6 +415,10 @@ function print_imu_data_short(subtree, buffer, id, size)
 	local name = "IMU Data Short"
 	subtree = make_subtree(subtree, buffer, name, id, size)
 
+	if size == 0 then
+		return name
+	end
+
 	subtree:add(orion_systime, buffer(0,4):uint())
 
 	return name
@@ -396,6 +427,10 @@ end
 function print_ins_quality(subtree, buffer, id, size)
 	local name = "INS Quality"
 	subtree = make_subtree(subtree, buffer, name, id, size)
+
+	if size == 0 then
+		return name
+	end
 
 	subtree:add(buffer(0,4), "System Time: " .. buffer(0,4):uint())
 	subtree:add(buffer(4,1), "GPS Source: " .. get_gps_string(buffer(4,1):uint()))
@@ -516,13 +551,17 @@ function print_geolocate(subtree, buffer, id, size)
 	local name = "Geolocate Telemetry"
 	subtree = make_subtree(subtree, buffer, name, id, size)
 
+	if size == 0 then
+		return name
+	end
+
 	subtree:add(buffer(0,4), "System Time: " .. buffer(0,4):uint())
 	subtree:add(buffer(4,4), "GPS Time of Week: " .. buffer(4,4):uint())
 	subtree:add(buffer(8,2), "Gps Week: " .. buffer(8,2):uint())
-	subtree:add(buffer(10,2), "Geoid Undulation: " .. buffer(10,2):int() / 32768.0 * 120.0)
-	subtree:add(buffer(12,4), "Latitude: " .. buffer(12,4):int() / 10000000.0)
-	subtree:add(buffer(16,4), "Longitude: " .. buffer(16,4):int() / 10000000.0)
-	subtree:add(buffer(20,4), "Altitude: " .. buffer(20,4):int() / 10000.0)
+	subtree:add(buffer(10,2), string.format("Geoid Undulation: %.1f", buffer(10,2):int() / 32768.0 * 120.0))
+	subtree:add(buffer(12,4), string.format("Latitude: %.6f", buffer(12,4):int() / 10000000.0))
+	subtree:add(buffer(16,4), string.format("Longitude: %.6f", buffer(16,4):int() / 10000000.0))
+	subtree:add(buffer(20,4), string.format("Altitude: %.1f", buffer(20,4):int() / 10000.0))
 
 	local gps_vel = subtree:add(buffer(24,6), "GPS Velocity")
 
@@ -530,18 +569,22 @@ function print_geolocate(subtree, buffer, id, size)
 	gps_vel:add(buffer(26,2), "East: " .. buffer(26,2):int() / 100.0)
 	gps_vel:add(buffer(28,2), "Down: " .. buffer(28,2):int() / 100.0)
 
-	local q = subtree:add(buffer(30,8), "Gimbal Quaternion")
+	local a = subtree:add(buffer(30,8), "Gimbal Attitude")
 
-	q:add(buffer(30,2), "a: " .. buffer(30,2):int() / 32768.0)
-	q:add(buffer(32,2), "b: " .. buffer(32,2):int() / 32768.0)
-	q:add(buffer(34,2), "c: " .. buffer(34,2):int() / 32768.0)
-	q:add(buffer(36,2), "d: " .. buffer(36,2):int() / 32768.0)
+	local euler = quat_to_euler(buffer(30,2):int() / 32768.0,
+								buffer(32,2):int() / 32768.0,
+								buffer(34,2):int() / 32768.0,
+								buffer(36,2):int() / 32768.0)
 
-	subtree:add(buffer(38,2), "Pan: " .. buffer(38,2):int() / 32768.0 * 180.0)
-	subtree:add(buffer(40,2), "Tilt: " .. buffer(40,2):int() / 32768.0 * 180.0)
+	a:add(buffer(30,8), string.format("Roll: %.2f", math.deg(euler[0])))
+	a:add(buffer(30,8), string.format("Pitch: %.2f", math.deg(euler[1])))
+	a:add(buffer(30,8), string.format("Yaw: %.2f", math.deg(euler[2])))
 
-	subtree:add(buffer(42,2), "HFOV: " .. buffer(42,2):uint() / 65535.0 * 360.0)
-	subtree:add(buffer(44,2), "VFOV: " .. buffer(44,2):uint() / 65535.0 * 360.0)
+	subtree:add(buffer(38,2), string.format("Pan: %.1f", buffer(38,2):int() / 32768.0 * 180.0))
+	subtree:add(buffer(40,2), string.format("Tilt: %.1f", buffer(40,2):int() / 32768.0 * 180.0))
+
+	subtree:add(buffer(42,2), string.format("HFOV: %.1f", buffer(42,2):uint() / 65535.0 * 360.0))
+	subtree:add(buffer(44,2), string.format("VFOV: %.1f", buffer(44,2):uint() / 65535.0 * 360.0))
 
 	if size >= 52 then
 		local los = subtree:add(buffer(46,6), "Target Position")
@@ -557,10 +600,10 @@ function print_geolocate(subtree, buffer, id, size)
 
 		lla = ecef_to_lla(x + gimbal_ecef[0], y + gimbal_ecef[1], z + gimbal_ecef[2])
 
-		los:add(buffer(46,6), "Latitude: " .. round(math.deg(lla[0]), 6))
-		los:add(buffer(46,6), "Longitude: " .. round(math.deg(lla[1]), 6))
-		los:add(buffer(46,6), "Altitude: " .. round(lla[2], 1))
-		los:add(buffer(46,6), "Slant Range: " .. round(math.sqrt(x*x+y*y+z*z),1))
+		los:add(buffer(46,6), string.format("Latitude: %.6f", math.deg(lla[0])))
+		los:add(buffer(46,6), string.format("Longitude: %.6f", math.deg(lla[1])))
+		los:add(buffer(46,6), string.format("Altitude: %.1f", lla[2]))
+		los:add(buffer(46,6), string.format("Slant Range: %.1f", math.sqrt(x*x+y*y+z*z)))
 	end
 
 	if size >= 54 then
@@ -621,6 +664,10 @@ function print_network_video(subtree, buffer, id, size)
 	local name = "Network Video"
 	subtree = make_subtree(subtree, buffer, name, id, size)
 
+	if size == 0 then
+		return name
+	end
+
 	subtree:add(buffer(0,4), "Destination IP: " .. get_ip_string(buffer(0,4)))
 	subtree:add(buffer(4,2), "Port: " .. buffer(4,2):uint())
 	subtree:add(buffer(6,4), "Bitrate: " .. buffer(6,4):uint())
@@ -657,19 +704,24 @@ end
 
 function print_version(subtree, buffer, id, size)
 	local name = " Version"
+	local len = 16
 
 	if id == 37 then 
 		name = "Clevis" .. name
-		len = 16
 	elseif  id == 40 then
 		name = "Crown" .. name
-		len = 16
 	elseif id == 41 then
 		name = "Payload" .. name
 		len = 24
+	elseif id == 44 then
+		name = "Tracker" .. name	
 	end
 
 	subtree = make_subtree(subtree, buffer, name, id, size)
+
+	if size == 0 then
+		return name
+	end
 
 	subtree:add(buffer(0,len), "Version: " .. buffer(0,len):string(ENC_UTF_8))
 	subtree:add(buffer(len,16), "Part Number: " .. buffer(len,16):string(ENC_UTF_8))
@@ -686,6 +738,10 @@ end
 function print_network_diagnostics(subtree, buffer, id, size)
 	local name = "Network Diagnostics"
 	subtree = make_subtree(subtree, buffer, name, id, size)
+
+	if size == 0 then
+		return name
+	end
 
     subtree:add(buffer(0,2), "Flags: " .. buffer(0,2):uint())
     subtree:add(buffer(2,4), "Rx Bytes: " .. buffer(2,4):uint())
@@ -710,6 +766,10 @@ function print_range(subtree, buffer, id, size)
 	local name = "Range Data"
 	subtree = make_subtree(subtree, buffer, name, id, size)
 
+	if size == 0 then
+		return name
+	end
+
 	subtree:add(buffer(0,4), "Range [m]: " .. buffer(0,4):uint() * 0.01)
 	subtree:add(buffer(4,2), "Max Age [ms]: " .. buffer(4,2):uint())
 	subtree:add(buffer(6,1), "Range Source: " .. get_range_src_string(buffer(6,1):uint()))
@@ -722,6 +782,10 @@ end
 function print_path_data(subtree, buffer, id, size)
 	local name = "Path Data"
 	subtree = make_subtree(subtree, buffer, name, id, size)
+
+	if size == 0 then
+		return name
+	end
 
 	subtree:add(buffer(0,1), "Number of Points: " .. buffer(0,1):uint())
 
@@ -739,9 +803,9 @@ function print_path_data(subtree, buffer, id, size)
 
 		local lla = ecef_to_lla(x, y, z)
 
-		p:add(buffer(j+0,3), "Latitude: " .. round(math.deg(lla[0]), 6))
-		p:add(buffer(j+3,3), "Longitude: " .. round(math.deg(lla[1]), 6))
-		p:add(buffer(j+6,3), "Height: " .. round(lla[2], 1))
+		p:add(buffer(j+0,3), string.format("Latitude: %.6f", math.deg(lla[0])))
+		p:add(buffer(j+3,3), string.format("Longitude: %.6f", math.deg(lla[1])))
+		p:add(buffer(j+6,3), string.format("Height: %.1f", lla[2]))
 
 		j = j+9
 
@@ -759,6 +823,101 @@ function print_path_data(subtree, buffer, id, size)
 
 end
 
+function print_board_info(subtree, buffer, id, size)
+	local name = "Board Info"
+	subtree = make_subtree(subtree, buffer, name, id, size)
+
+	if size == 0 then
+		return name
+	end
+
+	subtree:add(buffer(0,4), "IMU Serial Number: " .. buffer(0,4):uint())
+	subtree:add(buffer(4,4), "Gimbal Serial Number: " .. buffer(4,4):uint())
+	subtree:add(buffer(8,4), "Configuration Bits: 0x" .. buffer(8,4))
+
+	local date_int = buffer(16,2):uint()
+
+	local y = bit.band(date_int, 0xFE00) / 512 + 2000
+	local m = bit.band(date_int, 0x01E0) / 32
+	local d = bit.band(date_int, 0x001F)
+
+	subtree:add(buffer(16,2), string.format("Manufacture Date: %4d/%02d/%02d", y, m, d))
+
+	local date_int = buffer(18,2):uint()
+
+	local y = bit.band(date_int, 0xFE00) / 512 + 2000
+	local m = bit.band(date_int, 0x01E0) / 32
+	local d = bit.band(date_int, 0x001F)
+
+	subtree:add(buffer(18,2), string.format("Calibration Date: %4d/%02d/%02d", y, m, d))
+
+	return name
+end
+
+function print_cameras(subtree, buffer, id, size)
+	local name = "Cameras"
+	subtree = make_subtree(subtree, buffer, name, id, size)
+
+	if size == 0 then
+		return name
+	end
+
+	local int cameras = buffer(0,1):uint()
+
+	subtree:add(buffer(0,1), "Number of Cameras: " .. cameras)
+
+	for i=0,cameras-1 do
+		local cam = subtree:add(buffer(24*i+4,24), "Camera " .. i)
+		local data = buffer(24*i+4,24)
+
+		local type_int = data(0,1):uint()
+		local type_str = "None"
+
+		if type_int == 1 then
+			type_str = "Visible"
+		elseif type_int == 2 then
+			type_str = "SWIR"
+		elseif type_int == 3 then
+			type_str = "MWIR"
+		elseif type_int == 4 then
+			type_str = "LWIR"
+		end
+
+		cam:add(data(0,1), "Type: " .. type_str)
+
+		local proto_int = data(1,1):uint()
+		local proto_str = "Unknown"
+
+		if proto_int == 1 then
+			proto_str = "FLIR"
+		elseif proto_int == 2 then
+			proto_str = "Aptina"
+		elseif proto_int == 3 then
+			proto_str = "Zafiro"
+		elseif proto_int == 4 then
+			proto_str = "Hitachi"
+		elseif proto_int == 5 then
+			proto_str = "BAE"
+		elseif proto_int == 6 then
+			proto_str = "Sony"
+		end
+
+		cam:add(data(1,1), "Protocol: " .. proto_str)
+		cam:add(data(2,4), string.format("Min Focal Length: %.0fmm", data(2,4):uint() / 1000.0))
+		cam:add(data(6,4), string.format("Max Focal Length: %.0fmm", data(6,4):uint() / 1000.0))
+		cam:add(data(10,2), string.format("Pixel Pitch: %.2fum", data(10,2):uint() / 1000.0))
+		cam:add(data(12,2), string.format("Array Width: %u", data(12,2):uint()))
+		cam:add(data(14,2), string.format("Array Height: %u", data(14,2):uint()))
+		cam:add(data(16,2), string.format("Pan Offset 0: %.2f", data(16,2):int() / 32768.0 * 180))
+		cam:add(data(18,2), string.format("Tilt Offset 0: %.2f", data(18,2):int() / 32768.0 * 180))
+		cam:add(data(20,2), string.format("Pan Offset 1: %.2f", data(20,2):int() / 32768.0 * 180))
+		cam:add(data(22,2), string.format("Tilt Offset 1: %.2f", data(22,2):int() / 32768.0 * 180))
+	end
+
+    return name
+end
+
+
 
 function print_packet(pinfo, subtree, buffer)
 	local id = buffer(2,1):uint()
@@ -767,14 +926,17 @@ function print_packet(pinfo, subtree, buffer)
 	local info = ""
 
 	if     id == 1   then info = print_cmd(subtree, data, id, size)
-	elseif id == 37 then info = print_version(subtree, data, id, size)
-	elseif id == 40 then info = print_version(subtree, data, id, size)
-	elseif id == 41 then info = print_version(subtree, data, id, size)
-	elseif id == 65 then info = print_diagnostics(subtree, data, id, size)
+	elseif id == 37  then info = print_version(subtree, data, id, size)
+	elseif id == 39  then info = print_board_info(subtree, data, id, size)
+	elseif id == 40  then info = print_version(subtree, data, id, size)
+	elseif id == 41  then info = print_version(subtree, data, id, size)
+	elseif id == 44  then info = print_version(subtree, data, id, size)
+	elseif id == 65  then info = print_diagnostics(subtree, data, id, size)
 	elseif id == 67  then info = print_performance(subtree, data, id, size)
-	elseif id == 70 then info = print_network_diagnostics(subtree, data, id, size)
-	elseif id == 68 then info = print_sw_diagnostics(subtree, data, id, size)
-	elseif id == 98 then info = print_network_video(subtree, data, id, size)
+	elseif id == 70  then info = print_network_diagnostics(subtree, data, id, size)
+	elseif id == 68  then info = print_sw_diagnostics(subtree, data, id, size)
+	elseif id == 98  then info = print_network_video(subtree, data, id, size)
+	elseif id == 99  then info = print_cameras(subtree, data, id, size)
 	elseif id == 209 then info = print_gps_data(subtree, data, id, size)
 	elseif id == 210 then info = print_ext_heading(subtree, data, id, size)
 	elseif id == 211 then info = print_ins_quality(subtree, data, id, size)
@@ -814,5 +976,7 @@ function orion.dissector(buffer,pinfo,tree)
 	end
 end
 
+DissectorTable.get("udp.port"):add(8745,orion)
+DissectorTable.get("udp.port"):add(8746,orion)
 DissectorTable.get("tcp.port"):add(8747,orion)
 DissectorTable.get("udp.port"):add(8748,orion)
