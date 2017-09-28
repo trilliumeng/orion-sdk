@@ -343,9 +343,9 @@ function print_gps_data(subtree, buffer, id, size)
 		return name
 	end
 
-    local fix_type = bit.band(buffer(0,1):uint(), 127)
+    local fix_type = buffer(0,1):bitfield(1,7)
 	local fix_string = "None"
-	local vertical_valid = bit.band(buffer(0,1):uint(), 128) / 128
+	local vertical_valid = buffer(0,1):bitfield(0,1)
 
 	if fix_type == 1 then fix_string = "Dead Reckoning"
 	elseif fix_type == 2 then fix_string = "2D"
@@ -435,7 +435,7 @@ function print_ins_quality(subtree, buffer, id, size)
 	subtree:add(buffer(0,4), "System Time: " .. buffer(0,4):uint())
 	subtree:add(buffer(4,1), "GPS Source: " .. get_gps_string(buffer(4,1):uint()))
 
-	local imu_type = bit.band(buffer(5,1):uint(), 3)
+	local imu_type = buffer(5,1):bitfield(6,2)
 	local imu_string = "Other"
 
 	if imu_type == 0 then imu_string = "Internal"
@@ -456,8 +456,6 @@ function print_ins_quality(subtree, buffer, id, size)
 	end
 
 	subtree:add(buffer(6,1), "INS Mode: " .. imu_string)
-
-	local bitfield = buffer(7,1):uint()
 
 	-- Skipping because it looks as though the scaling is broken...
 	-- subtree:add(buffer(8,1), "GPS Period" .. buffer(8,1):uint() / 100.0)
@@ -486,7 +484,7 @@ function print_ins_quality(subtree, buffer, id, size)
 
 	local i = 34
 
-	if bit.band(bitfield, 128) == 128 and size >= i + 6 then
+	if buffer(7,1):bitfield(0,1) == 1 and size >= i + 6 then
 		local pos = subtree:add(buffer(i,6), "Gyro Bias Confidence")
 		pos:add(buffer(i+0,2), "p: " .. buffer(i+0,2):uint() / 100000.0)
 		pos:add(buffer(i+2,2), "q: " .. buffer(i+2,2):uint() / 100000.0)
@@ -494,7 +492,7 @@ function print_ins_quality(subtree, buffer, id, size)
 		i = i + 6
 	end
 
-	if bit.band(bitfield, 32) == 32 and size >= i + 6 then
+	if buffer(7,1):bitfield(2,1) == 1 and size >= i + 6 then
 		local pos = subtree:add(buffer(i,6), "Accel Bias Confidence")
 		pos:add(buffer(i+0,2), "X: " .. buffer(i+0,2):uint() / 30000.0)
 		pos:add(buffer(i+2,2), "Y: " .. buffer(i+2,2):uint() / 30000.0)
@@ -502,18 +500,18 @@ function print_ins_quality(subtree, buffer, id, size)
 		i = i + 6
 	end
 
-	if bit.band(bitfield, 64) == 64 and size >= i + 2 then
+	if buffer(7,1):bitfield(1,1) == 1 and size >= i + 2 then
 		subtree:add(buffer(i,2), "Gravity Bias Confidence: " .. buffer(i,2):uint() / 30000)
 		i = i + 2
 	end
 
-	if bit.band(bitfield, 16) == 16 and size >= i + 4 then
+	if buffer(7,1):bitfield(3,1) == 1 and size >= i + 4 then
 		subtree:add(buffer(i+0,2), "Clock Bias Confidence: " .. buffer(i+0,2):uint() / 10000)
 		subtree:add(buffer(i+2,2), "Clock Drift Confidence: " .. buffer(i+2,2):uint() / 10000)
 		i = i + 4
 	end
 
-	if bit.band(bitfield, 128) == 128 and size >= i + 6 then
+	if buffer(7,1):bitfield(0,1) == 1 and size >= i + 6 then
 		local pos = subtree:add(buffer(i,6), "Gyro Bias")
 		pos:add(buffer(i+0,2), "p: " .. math.deg(buffer(i+0,2):int() / 100000.0))
 		pos:add(buffer(i+2,2), "q: " .. math.deg(buffer(i+2,2):int() / 100000.0))
@@ -521,7 +519,7 @@ function print_ins_quality(subtree, buffer, id, size)
 		i = i + 6
 	end
 
-	if bit.band(bitfield, 32) == 32 and size >= i + 6 then
+	if buffer(7,1):bitfield(2,1) == 1 and size >= i + 6 then
 		local pos = subtree:add(buffer(i,6), "Accel Bias")
 		pos:add(buffer(i+0,2), "X: " .. buffer(i+0,2):uint() / 30000.0)
 		pos:add(buffer(i+2,2), "Y: " .. buffer(i+2,2):uint() / 30000.0)
@@ -529,12 +527,12 @@ function print_ins_quality(subtree, buffer, id, size)
 		i = i + 6
 	end
 
-	if bit.band(bitfield, 64) == 64 and size >= i + 2 then
+	if buffer(7,1):bitfield(1,1) == 1 and size >= i + 2 then
 		subtree:add(buffer(i,2), "Gravity Bias: " .. buffer(i,2):int() / 30000)
 		i = i + 2
 	end
 
-	if bit.band(bitfield, 16) == 16 and size >= i + 8 then
+	if buffer(7,1):bitfield(3,1) == 1 and size >= i + 8 then
 		subtree:add(buffer(i+0,2), "Clock Bias" .. buffer(i+0,2):int() / 100)
 		subtree:add(buffer(i+2,2), "Clock Drift" .. buffer(i+2,2):int() / 1000)
 		subtree:add(buffer(i+4,1), "TC Sat Pos Updates: " .. buffer(i+4,1):uint())
@@ -837,17 +835,17 @@ function print_board_info(subtree, buffer, id, size)
 
 	local date_int = buffer(16,2):uint()
 
-	local y = bit.band(date_int, 0xFE00) / 512 + 2000
-	local m = bit.band(date_int, 0x01E0) / 32
-	local d = bit.band(date_int, 0x001F)
+	local y = buffer(16,2):bitfield(0,7) + 2000
+	local m = buffer(16,2):bitfield(7,4)
+	local d = buffer(16,2):bitfield(11,5)
 
 	subtree:add(buffer(16,2), string.format("Manufacture Date: %4d/%02d/%02d", y, m, d))
 
 	local date_int = buffer(18,2):uint()
 
-	local y = bit.band(date_int, 0xFE00) / 512 + 2000
-	local m = bit.band(date_int, 0x01E0) / 32
-	local d = bit.band(date_int, 0x001F)
+	local y = buffer(16,2):bitfield(0,7) + 2000
+	local m = buffer(16,2):bitfield(7,4)
+	local d = buffer(16,2):bitfield(11,5)
 
 	subtree:add(buffer(18,2), string.format("Calibration Date: %4d/%02d/%02d", y, m, d))
 
