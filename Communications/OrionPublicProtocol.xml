@@ -451,7 +451,8 @@ See TrilliumPacket.c (in the Orion SDK) for details.
         </Enum>
 
         <Data name="multiAntHeadingValid" inMemoryType="bitfield1" comment="Set if the GPS has a multi antenna heading solution"/>
-        <Data name="FixType" inMemoryType="bitfield7" comment="uBlox fix type"/>
+        <Data name="reserved" inMemoryType="null" encodedType="bitfield3"/>
+        <Data name="FixType" inMemoryType="bitfield4" comment="uBlox fix type"/>
         <Data name="FixState" inMemoryType="unsigned8" comment="uBlox fix state"/>
         <Data name="TrackedSats" inMemoryType="unsigned8" comment="The number of satellites used in the GPS solution"/>
         <Data name="PDOP" inMemoryType="float32" encodedType="unsigned8" scaler="10" comment="Position dilution of precision"/>
@@ -466,10 +467,14 @@ See TrilliumPacket.c (in the Orion SDK) for details.
         <Data name="ITOW" inMemoryType="unsigned32" comment="GPS time of week in milliseconds"/>
         <Data name="Week" inMemoryType="unsigned16" comment="GPS week number since Jan 6 1980"/>
         <Data name="GeoidUndulation" inMemoryType="float32" encodedType="signed16" scaler="100" comment="Height of the mean seal level geoid with respect to the WGS-84 ellipsoid, in meters"/>
-        <Data name="source" enum="gpsSource_t" default="ubloxSource" encodedType="unsigned8" comment="The source of the GPS data"/>
-        <Data name="verticalVelocityValid" default="1" inMemoryType="unsigned8" comment="0 if vertical velocity data are not valid"/>
+        <Data name="source" enum="gpsSource_t" encodedType="unsigned8" comment="The source of the GPS data"/>
+        <Data name="reserved" inMemoryType="null" encodedType="bitfield6"/>
+        <Data name="detailedAccuracyValid" inMemoryType="bitfield1" comment="Set if detailed accuracy information (posAccuracy and velAccuracy) are included in this packet"/>
+        <Data name="verticalVelocityValid" inMemoryType="bitfield1" comment="0 if vertical velocity data are not valid"/>
         <Data name="leapSeconds" default="17" inMemoryType="unsigned8" comment="Leap seconds to subtract from GPS time to compute UTC time"/>
         <Data name="multiAntHeading" default="0" dependsOn="multiAntHeadingValid" inMemoryType="float32" encodedType="signed16" max="pi" comment="The heading in radians from the multi antenna solution from -pi to pi"/>
+        <Data name="posAccuracy" default="0" dependsOn="detailedAccuracyValid" inMemoryType="float32" array="3" encodedType="unsigned16" scaler="1000" comment="North, East, Down position accuracy estimate in meters"/>
+        <Data name="velAccuracy" default="0" dependsOn="detailedAccuracyValid" inMemoryType="float32" array="3" encodedType="unsigned16" scaler="1000" comment="North, East, Down velocity accuracy estimate in meters per second"/>
         <Data name="Year" inMemoryType="unsigned16" encodedType="null" comment="Year of the date"/>
         <Data name="Month" inMemoryType="unsigned8" encodedType="null" comment="Month of the year from 1 to 12"/>
         <Data name="Day" inMemoryType="unsigned8" encodedType="null" comment="Day of the month from 1 to 31"/>
