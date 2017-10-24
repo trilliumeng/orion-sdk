@@ -212,18 +212,15 @@ float fastCos(float angle)
  */
 float fastISqrt(float x)
 {
-    // Reinterpret x as an int
-    int32_t i = *(int32_t *)&x;
-    float y;
+    // Union for reinterpreting x as an int32_t
+    union { float f; int32_t i; } u;
 
     // "What the fuck?" --John Carmack
-    i = 0x5f3759dfL - (i >> 1);
-
-    // Force reinterpret cast back to float
-    y = *(float *)&i;
+    u.f = x;
+    u.i = 0x5f3759dfL - (u.i >> 1);
 
     // Single Newton iteration
-    return y * (1.5f - (0.5f * x * y * y));
+    return u.f * (1.5f - (0.5f * x * u.f * u.f));
 
 }// fastISqrt
 
