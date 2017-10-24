@@ -47,6 +47,12 @@ float fastSin(float angle);
 //! Fast cosine approximation
 float fastCos(float angle);
 
+//! Fast square root approximation
+float fastISqrt(float x);
+
+//! Fast square root approximation
+float fastSqrt(float x);
+
 //! Apply a first order low pass filter
 float firstOrderFilterf(float prev, float sig, float tau, float sampleTime);
 

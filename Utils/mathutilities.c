@@ -205,6 +205,42 @@ float fastCos(float angle)
 }// fastCos
 
 
+/*! 
+ * Fast inverse square root approximation
+ * \param x is the number to take the inverse square root of
+ * \return x ^ -0.5
+ */
+float fastISqrt(float x)
+{
+    // Reinterpret x as an int
+    int32_t i = *(int32_t *)&x;
+    float y;
+
+    // "What the fuck?" --John Carmack
+    i = 0x5f3759dfL - (i >> 1);
+
+    // Force reinterpret cast back to float
+    y = *(float *)&i;
+
+    // Single Newton iteration
+    return y * (1.5f - (0.5f * x * y * y));
+
+}// fastISqrt
+
+
+/*! 
+ * Fast square root approximation
+ * \param x is the number to take the square root of
+ * \return x ^ 0.5
+ */
+float fastSqrt(float x)
+{
+    // Multiply inverse square root by X to get sqrt(x)
+    return x * fastISqrt(x);
+
+}// fastSqrt
+
+
 /*!
  * A simple first order low pass filter where state is stored by the caller.
  * \param prev is the previous output of the filter
