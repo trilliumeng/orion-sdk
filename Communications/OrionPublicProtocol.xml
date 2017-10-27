@@ -757,7 +757,7 @@ See TrilliumPacket.c (in the Orion SDK) for details.
         <Data name="ApFlyingLock" inMemoryType="bitfield1" comment="Set to 1 if the laser is locked because the autopilot is not in a 'flying' state, otherwise 0" />
         <Data name="BypassEnabled" inMemoryType="bitfield1" comment="Set to 1 if the current command is bypassing the safety interlocks, otherwise 0" />
         <Data name="PitchAngleLock" inMemoryType="bitfield1" comment="Set to 1 if the laser is locked due to a positive pitch angle, otherwise 0" />
-        <Data name="Reserved" inMemoryType="bitfield7" constant="0" comment="Reserved for future use" />
+        <Data name="Reserved" inMemoryType="bitfield14" constant="0" comment="Reserved for future use" />
         <Data name="WaitTimer" inMemoryType="unsigned16" comment="Time remaining, in milliseconds, before the laser will accept another command" />
     </Structure>
 
