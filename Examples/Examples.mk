@@ -14,7 +14,7 @@ CFLAGS += $(EXTRA_CFLAGS) -I../../Communications -I../../Utils
 	$(V)$(CC) -c -Wall $(CFLAGS) $< -o $@ $(QOUT)
 
 $(BIN): ../../Communications/libOrionComm.a ../../Utils/libOrionUtils.a $(OBJS)
-	$(V)$(CC) $(LDFLAGS) -o $(BIN) $(OBJS) -L../../Communications -L../../Utils -lOrionUtils -lOrionComm -lm $(QOUT)
+	$(V)$(CC) -o $(BIN) $(OBJS) -L../../Communications -L../../Utils -lOrionUtils -lOrionComm -lm $(LDFLAGS) $(QOUT)
 
 ../../Communications/libOrionComm.a:
 	@make -C ../../Communications
