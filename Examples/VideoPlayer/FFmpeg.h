@@ -4,7 +4,6 @@
 #include "libavcodec/avcodec.h"
 #include "libavformat/avformat.h"
 #include "libavutil/mathematics.h"
-#include "libavutil/timestamp.h"
 #include "libavutil/opt.h"
 #include "libavutil/rational.h"
 #include "libavutil/avstring.h"
