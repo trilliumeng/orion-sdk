@@ -3,7 +3,8 @@
 
 #include <stdint.h>
 
-int StreamOpen(const char *pUrl);
+int StreamOpen(const char *pUrl, const char *pRecordPath);
+void StreamClose(void);
 
 int StreamProcess(void);
 

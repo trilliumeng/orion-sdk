@@ -15,7 +15,7 @@ static OrionPkt_t PktOut;
 
 // A few helper functions, etc.
 static void KillProcess(const char *pMessage, int Value);
-static void ProcessArgs(int argc, char **argv, OrionNetworkVideo_t *pSettings, char *pVideoUrl);
+static void ProcessArgs(int argc, char **argv, OrionNetworkVideo_t *pSettings, char *pVideoUrl, char *pRecordPath);
 static int ProcessKeyboard(void);
 static void SaveJpeg(uint8_t *pData, int Width, int Height, const char *pPath, int Quality);
 
@@ -23,22 +23,22 @@ int main(int argc, char **argv)
 {
     uint8_t VideoFrame[1280 * 720 * 3] = { 0 }, MetaData[1024] = { 0 };
     OrionNetworkVideo_t Settings = { 0 };
-    char VideoUrl[32] = "";
+    char VideoUrl[32] = "", RecordPath[256] = "";
     int FrameCount = 0;
 
     // Video port will default to 15004
     Settings.Port = 15004;
     Settings.StreamType = STREAM_TYPE_H264;
 
-    // Process the command line arguments
-    ProcessArgs(argc, argv, &Settings, VideoUrl);
+    // Process the command line arguments   
+    ProcessArgs(argc, argv, &Settings, VideoUrl, RecordPath);
 
     // Send the network video settings
     encodeOrionNetworkVideoPacketStructure(&PktOut, &Settings);
     OrionCommSend(&PktOut);
 
     // If we can't open the video stream
-    if (StreamOpen(VideoUrl) == 0)
+    if (StreamOpen(VideoUrl, RecordPath) == 0)
     {
         // Tell the user and get out of here
         printf("Failed to open video at %s\n", VideoUrl);
@@ -80,11 +80,20 @@ int main(int argc, char **argv)
             }
 
             // If we can read a KLV UAS data packet out of the decoder
+            //   TODO: Add metadata parsing
             if (StreamGetMetaData(MetaData, &Size, sizeof(MetaData)))
             {
-                // TODO: Add metadata parsing
+                int Index = 22;
+                char Cmd[64];
+
+                // Grab the 64-bit UNIX timestamp from the KLV data
+                uint64_t Time = uint64FromBeBytes(MetaData, &Index);
+
+                // Print the date to stdout
+                sprintf(Cmd, "date -r%llu\n", Time / 1000000);
+                system(Cmd);
             }
-            
+
             break;
         }
 
@@ -172,6 +181,9 @@ static void KillProcess(const char *pMessage, int Value)
     printf("%s\n", pMessage);
     fflush(stdout);
 
+    // Kill the video stream parser/recorder
+    StreamClose();
+
     // Close down the active file descriptors
     OrionCommClose();
 
@@ -180,16 +192,19 @@ static void KillProcess(const char *pMessage, int Value)
 
 }// KillProcess
 
-static void ProcessArgs(int argc, char **argv, OrionNetworkVideo_t *pSettings, char *pVideoUrl)
+static void ProcessArgs(int argc, char **argv, OrionNetworkVideo_t *pSettings, char *pVideoUrl, char *pRecordPath)
 {
     // If we can't connect to a gimbal, kill the app right now
-    if (OrionCommOpen(&argc, &argv) == FALSE)
-        KillProcess("", 1);
+    // if (OrionCommOpen(&argc, &argv) == FALSE)
+        // KillProcess("", 1);
 
     switch (argc)
     {
-    case 3:
-        pSettings->Port = atoi(argv[2]);
+    // Recording file path
+    case 4: strncpy(pRecordPath, argv[3], 256);
+    // Video destination port
+    case 3: pSettings->Port = atoi(argv[2]);
+    // Video destination IP
     case 2:
     {
         uint8_t Octets[4];
@@ -203,7 +218,7 @@ static void ProcessArgs(int argc, char **argv, OrionNetworkVideo_t *pSettings, c
         break;
     }
     default:
-        printf("USAGE: %s [/path/to/serial | gimbal_ip] video_ip [port]\n", argv[0]);
+        printf("USAGE: %s [/path/to/serial | gimbal_ip] video_ip [port] [record_file.ts]\n", argv[0]);
         KillProcess("", 1);
         break;
     };

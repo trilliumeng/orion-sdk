@@ -4,9 +4,9 @@
 
 #include <string.h>
 
-static AVFormatContext *pFormatContext = NULL;
+static AVFormatContext *pInputContext = NULL;
+static AVFormatContext *pOutputContext = NULL;
 static AVCodecContext *pCodecContext = NULL;
-static AVCodec *pCodec = NULL;
 static AVFrame *pFrame = NULL;
 static AVFrame *pFrameCopy = NULL;
 static AVPacket Packet;
@@ -19,55 +19,81 @@ static uint64_t MetaDataBytes = 0;
 static int VideoStream = 0;
 static int DataStream = 0;
 
-static void StreamCleanup(void);
-
-int StreamOpen(const char *pUrl)
+int StreamOpen(const char *pUrl, const char *pRecordPath)
 {
+    AVCodec *pCodec;
+
     // FFmpeg startup stuff
     avcodec_register_all();
     av_register_all();
     avformat_network_init();
+    av_log_set_level(AV_LOG_QUIET);
 
     // Allocate a new format context
-    pFormatContext = avformat_alloc_context();
+    pInputContext = avformat_alloc_context();
 
     // Have avformat_open_input timeout after 5s
     AVDictionary *pOptions = 0;
     av_dict_set(&pOptions, "timeout", "5000000", 0);
 
     // If the stream doesn't open
-    if (avformat_open_input(&pFormatContext, pUrl, NULL, &pOptions) < 0)
+    if (avformat_open_input(&pInputContext, pUrl, NULL, &pOptions) < 0)
     {
         // Clean up the allocated resources (if any...) and exit with a failure code
-        StreamCleanup();
+        StreamClose();
         return 0;
     }
 
-    // Dump the transport stream data
-    av_dump_format(pFormatContext, 0, pUrl, 0);
-    fflush(stdout);
-
     // If there don't appear to be an valid streams in the transport stream
-    if (pFormatContext->nb_streams == 0)
+    if (pInputContext->nb_streams == 0)
     {
         // Clean up the allocated resources (if any...) and exit with a failure code
-        StreamCleanup();
+        StreamClose();
         return 0;
     }
 
     // Get the stream indices for video and metadata
-    VideoStream = av_find_best_stream(pFormatContext, AVMEDIA_TYPE_VIDEO, -1, -1, NULL, 0);
-    DataStream  = av_find_best_stream(pFormatContext, AVMEDIA_TYPE_DATA,  -1, -1, NULL, 0);
+    VideoStream = av_find_best_stream(pInputContext, AVMEDIA_TYPE_VIDEO, -1, -1, NULL, 0);
+    DataStream  = av_find_best_stream(pInputContext, AVMEDIA_TYPE_DATA,  -1, -1, NULL, 0);
 
     // Set the format context to playing
-    av_read_play(pFormatContext);
+    av_read_play(pInputContext);
 
     // Get a codec pointer based on the video stream's codec ID and allocate a context
-    pCodec = avcodec_find_decoder(pFormatContext->streams[VideoStream]->codec->codec_id);
+    pCodec = avcodec_find_decoder(pInputContext->streams[VideoStream]->codec->codec_id);
     pCodecContext = avcodec_alloc_context3(pCodec);
 
     // Open the newly allocated codec context
     avcodec_open2(pCodecContext, pCodec, NULL);
+
+    // If the user passed in a record path
+    if (pRecordPath && strlen(pRecordPath))
+    {
+        int i;
+
+        // Pull any additional stream information out of the file
+        //   NOTE: Older FFmpeg/libav builds may hang indefinitely here!
+        avformat_find_stream_info(pInputContext, NULL);
+
+        // Allocate a format context for the output file
+        avformat_alloc_output_context2(&pOutputContext, NULL, NULL, pRecordPath);
+
+        // For each stream in the UDP stream
+        for (i = 0; i < pInputContext->nb_streams; i++)
+        {
+            // Mirror this stream to the output format context
+            AVStream *pStream = avformat_new_stream(pOutputContext, pInputContext->streams[0]->codec->codec);
+            avcodec_copy_context(pStream->codec, pInputContext->streams[0]->codec);
+
+            // Add a stream header if the output format calls for it
+            if (pOutputContext->oformat->flags & AVFMT_GLOBALHEADER)
+                pStream->codec->flags |= CODEC_FLAG_GLOBAL_HEADER;
+        }
+
+        // Open the record file and write the header out
+        avio_open(&pOutputContext->pb, pRecordPath, AVIO_FLAG_WRITE);
+        avformat_write_header(pOutputContext, NULL);
+    }
 
     // Allocate the decode and output frame structures
     pFrame = av_frame_alloc();
@@ -83,7 +109,7 @@ int StreamOpen(const char *pUrl)
 
 }// StreamOpen
 
-static void StreamCleanup(void)
+void StreamClose(void)
 {
     // Free the AVFrames
     av_frame_free(&pFrame);
@@ -98,30 +124,43 @@ static void StreamCleanup(void)
     }
 
     // If we allocated a format context
-    if (pFormatContext)
+    if (pInputContext)
     {
         // Pause, close and free it
-        av_read_pause(pFormatContext);
-        avformat_close_input(&pFormatContext);
-        avformat_free_context(pFormatContext);
+        av_read_pause(pInputContext);
+        avformat_close_input(&pInputContext);
+        avformat_free_context(pInputContext);
+    }
+
+    // If there's an output context open
+    if (pOutputContext)
+    {
+        // Write a trailer to the file and close it out
+        av_write_trailer(pOutputContext);
+        avio_close(pOutputContext->pb);
+        avformat_free_context(pOutputContext);
     }
 
     // Nullify all the pointers we just messed with
     pCodecContext  = NULL;
     pFrame         = NULL;
-    pFormatContext = NULL;
+    pInputContext = NULL;
+    pOutputContext  = NULL;
 
-}// StreamCleanup
+}// StreamClose
 
 int StreamProcess(void)
 {
-    int NewVideo = 0, NewMetaData = 0;
+    // New video/metadata flags - note that NewMetaData == 1 if it's not in the TS
+    int NewVideo = 0, NewMetaData = (pInputContext->nb_streams < 2);
 
     // As long as we can keep reading packets from the UDP socket
-    while (av_read_frame(pFormatContext, &Packet) >= 0)
+    while (av_read_frame(pInputContext, &Packet) >= 0)
     {
+        int Index = Packet.stream_index;
+
         // If this packet belongs to the video stream
-        if (Packet.stream_index == VideoStream)
+        if (Index == VideoStream)
         {
             // Pass it to the h.264 decoder
             avcodec_decode_video2(pCodecContext, pFrame, &NewVideo, &Packet);
@@ -153,7 +192,7 @@ int StreamProcess(void)
             }
         }
         // If this is the KLV stream data
-        else if (Packet.stream_index == DataStream)
+        else if (Index == DataStream)
         {
             // If we have a full metadata packet in memory, zero out the size and index
             if (MetaDataBytes == MetaDataSize)
@@ -235,6 +274,38 @@ int StreamProcess(void)
 
             // There's new metadata if the size is non-zero and equal to the number of bytes read in
             NewMetaData = (MetaDataSize != 0) && (MetaDataBytes == MetaDataSize);
+        }
+
+        // If we have an open output file
+        if (pOutputContext)
+        {
+            static int64_t StartPts = 0, StartDts = 0;
+            static int64_t LastPts = -1, LastDts = -1;
+
+            // If we just jumped into the middle of the stream or its timestamps have reset
+            if ((LastPts < 0) || (Packet.pts < LastPts))
+            {
+                // Create an adjustment parameter for both PTS and DTS
+                StartPts += (Packet.pts - LastPts) - 1;
+                StartDts += (Packet.dts - LastDts) - 1;
+            }
+
+            // Save the current PTS/DTS for detecting discontinuities
+            LastPts = Packet.pts;
+            LastDts = Packet.dts;
+
+            // Adjust the PTS/DTS values to create a continuous stream
+            Packet.pts -= StartPts;
+            Packet.dts -= StartDts;
+
+            // Rescale all the PTS/DTS nonsense
+            Packet.pts = av_rescale_q(Packet.pts, pOutputContext->streams[Index]->time_base, pInputContext->streams[Index]->time_base);
+            Packet.dts = av_rescale_q(Packet.dts, pOutputContext->streams[Index]->time_base, pInputContext->streams[Index]->time_base);
+            Packet.duration = av_rescale_q(Packet.duration, pOutputContext->streams[Index]->time_base, pInputContext->streams[Index]->time_base);
+            Packet.pos = -1;
+
+            // Write the frame to the file
+            av_interleaved_write_frame(pOutputContext, &Packet);
         }
 
         // Free the packet data
