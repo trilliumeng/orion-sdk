@@ -82,8 +82,8 @@ int StreamOpen(const char *pUrl, const char *pRecordPath)
         for (i = 0; i < pInputContext->nb_streams; i++)
         {
             // Mirror this stream to the output format context
-            AVStream *pStream = avformat_new_stream(pOutputContext, pInputContext->streams[0]->codec->codec);
-            avcodec_copy_context(pStream->codec, pInputContext->streams[0]->codec);
+            AVStream *pStream = avformat_new_stream(pOutputContext, pInputContext->streams[i]->codec->codec);
+            avcodec_copy_context(pStream->codec, pInputContext->streams[i]->codec);
 
             // Add a stream header if the output format calls for it
             if (pOutputContext->oformat->flags & AVFMT_GLOBALHEADER)

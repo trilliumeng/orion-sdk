@@ -195,8 +195,8 @@ static void KillProcess(const char *pMessage, int Value)
 static void ProcessArgs(int argc, char **argv, OrionNetworkVideo_t *pSettings, char *pVideoUrl, char *pRecordPath)
 {
     // If we can't connect to a gimbal, kill the app right now
-    // if (OrionCommOpen(&argc, &argv) == FALSE)
-        // KillProcess("", 1);
+    if (OrionCommOpen(&argc, &argv) == FALSE)
+        KillProcess("", 1);
 
     switch (argc)
     {
