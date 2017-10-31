@@ -1,18 +1,8 @@
 #include "StreamDecoder.h"
 #include "Constants.h"
+#include "FFmpeg.h"
 
-#include "libavcodec/avcodec.h"
-#include "libavformat/avformat.h"
-#include "libavutil/mathematics.h"
-#include "libavutil/opt.h"
-#include "libavutil/rational.h"
-#include "libavutil/avstring.h"
-#include "libavutil/imgutils.h"
-#include "libswscale/swscale.h"
-
-#if LIBAVCODEC_VERSION_INT < AV_VERSION_INT(55,28,1)
-# error Old FFMpeg build not supported
-#endif
+#include <string.h>
 
 static AVFormatContext *pFormatContext = NULL;
 static AVCodecContext *pCodecContext = NULL;

@@ -116,6 +116,7 @@ static void SaveJpeg(uint8_t *pData, int Width, int Height, const char *pPath, i
     {
         struct jpeg_compress_struct Info;
         struct jpeg_error_mgr Error;
+        unsigned int i;
 
         // Not sure why this has to happen first...
         Info.err = jpeg_std_error(&Error);
@@ -144,7 +145,7 @@ static void SaveJpeg(uint8_t *pData, int Width, int Height, const char *pPath, i
         JSAMPARRAY pScanLines = (JSAMPARRAY)malloc(Height * sizeof(JSAMPROW));
 
         // For each scanline in the image
-        for (unsigned int i = 0; i < Height; i++)
+        for (i = 0; i < Height; i++)
         {
             // Point this scanline row to the appropriate row in the input data
             pScanLines[i] = &pData[i * Info.image_width * Info.input_components];
