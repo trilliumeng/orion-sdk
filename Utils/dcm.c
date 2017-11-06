@@ -180,6 +180,7 @@ DCM_t* dcmAllocate(void)
 
 /*!
  * Fill out the direction cosine matrix from an Euler roll angle
+ * This DCM represents the local to global transform.
  * \param dcm is filled out according to the angle
  * \param roll is the Euler roll angle in radians
  */
@@ -199,6 +200,7 @@ void setDCMBasedOnRoll(DCM_t* dcm, float roll)
 
 /*!
  * Fill out the direction cosine matrix from an Euler pitch angle
+ * This DCM represents the local to global transform.
  * \param dcm is filled out according to the angle
  * \param pitch is the Euler pitch angle in radians
  */
@@ -218,6 +220,7 @@ void setDCMBasedOnPitch(DCM_t* dcm, float pitch)
 
 /*!
  * Fill out the direction cosine matrix from an Euler yaw angle
+ * This DCM represents the local to global transform.
  * \param dcm is filled out according to the angle
  * \param yaw is the Euler yaw angle in radians
  */
@@ -236,7 +239,8 @@ void setDCMBasedOnYaw(DCM_t* dcm, float yaw)
 
 
 /*!
- * Fill out the direction cosine matrix from an Euler, yaw, then pitch, then roll rotation
+ * Fill out the direction cosine matrix from an Euler, yaw, then pitch, then roll rotation.
+ * This DCM represents the local to global transform.
  * \param dcm is filled out according to the angle.
  * \param yaw is the Euler yaw angle in radians
  * \param pitch is the Euler pitch angle in radians
