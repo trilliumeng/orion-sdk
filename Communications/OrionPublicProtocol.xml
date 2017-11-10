@@ -719,6 +719,7 @@ See TrilliumPacket.c (in the Orion SDK) for details.
             <Value name="PROTOCOL_AIRROBOT" comment="Air robot protocol"/>
             <Value name="PROTOCOL_PROPRIETARY1" comment="Proprietary protocol"/>
             <Value name="PROTOCOL_PROPRIETARY2" comment="Proprietary protocol"/>
+            <Value name="PROTOCOL_FLIR" comment="FLIR pass-through protocol"/>
             <Value name="NUM_PROTOCOL"/>
         </Enum>        
 
