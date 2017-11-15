@@ -14,6 +14,7 @@ SOURCES += bitfieldspecial.c \
     fielddecode.c \
     fieldencode.c \
     floatspecial.c \
+    OrionComm.c \
     OrionCommLinux.c \
     OrionCommWindows.c \
     OrionPublicPacket.c \
@@ -37,7 +38,20 @@ CONFIG(debug, debug|release) {
     DESTDIR = release
 }
 
+Public.target = OrionPublic.html
+Public.depends = OrionPublicProtocol.xml
+
 unix {
     target.path = /usr/lib
     INSTALLS += target
 }
+
+win32 {
+    Public.commands = GenerateOrionPublicPacketWin.bat
+} else {
+    Public.commands = ../Protogen/Protogen.sh $$Public.depends .
+}
+
+PRE_TARGETDEPS += $$Public.target
+
+QMAKE_EXTRA_TARGETS += Public
