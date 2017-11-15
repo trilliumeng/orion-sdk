@@ -6,6 +6,7 @@
 #include "KlvParser.h"
 #include "earthposition.h"
 #include "linearalgebra.h"
+#include "mathutilities.h"
 
 #include <stdlib.h>
 #include <stdio.h>
@@ -21,8 +22,8 @@ static OrionPkt_t PktOut;
 static void KillProcess(const char *pMessage, int Value);
 static void ProcessArgs(int argc, char **argv, OrionNetworkVideo_t *pSettings, char *pVideoUrl, char *pRecordPath);
 static int ProcessKeyboard(void);
-static void SaveJpeg(uint8_t *pData, const double Lla[NLLA], int Width, int Height, const char *pPath, int Quality);
-static void WriteExifData(struct jpeg_compress_struct *pInfo, const double Lla[NLLA]);
+static void SaveJpeg(uint8_t *pData, const double Lla[NLLA], uint64_t TimeStamp, int Width, int Height, const char *pPath, int Quality);
+static void WriteExifData(struct jpeg_compress_struct *pInfo, const double Lla[NLLA], uint64_t TimeStamp);
 
 int main(int argc, char **argv)
 {
@@ -73,6 +74,7 @@ int main(int argc, char **argv)
         {
             double Lla[NLLA] = { 0, 0, 0 };
             int Width, Height, Size;
+            uint64_t TimeStamp;
             char Path[64];
 
             // If we can read a KLV UAS data packet out of the decoder
@@ -88,6 +90,9 @@ int main(int argc, char **argv)
                 Lla[LON] = KlvGetValueDouble(KLV_UAS_SENSOR_LON, &Result);
                 Lla[ALT] = KlvGetValueDouble(KLV_UAS_SENSOR_MSL, &Result);
 
+                // Grab the UNIX timestamp as well
+                TimeStamp = KlvGetValueUInt(KLV_UAS_TIME_STAMP, &Result);
+
                 // Print the gimbal LLA data to stdout
                 printf("\nImage Pos: %11.6lf %11.6lf %7.1lf", degrees(Lla[LAT]), degrees(Lla[LON]), Lla[ALT]);
             }
@@ -99,7 +104,7 @@ int main(int argc, char **argv)
                 sprintf(Path, "%05d.jpg", FrameCount);
 
                 // Now save the image as a JPEG
-                SaveJpeg(VideoFrame, Lla, Width, Height, Path, 75);
+                SaveJpeg(VideoFrame, Lla, TimeStamp, Width, Height, Path, 75);
 
                 // Print some confirmation to stdout
                 printf("\nSaved file %s\n", Path);
@@ -127,7 +132,7 @@ int main(int argc, char **argv)
 
 }// main
 
-static void SaveJpeg(uint8_t *pData, const double Lla[NLLA], int Width, int Height, const char *pPath, int Quality)
+static void SaveJpeg(uint8_t *pData, const double Lla[NLLA], uint64_t TimeStamp, int Width, int Height, const char *pPath, int Quality)
 {
     FILE *pFile;
 
@@ -162,7 +167,7 @@ static void SaveJpeg(uint8_t *pData, const double Lla[NLLA], int Width, int Heig
         jpeg_start_compress(&Info, 1);
 
         // Write the EXIF data (if any)
-        WriteExifData(&Info, Lla);
+        WriteExifData(&Info, Lla, TimeStamp);
 
         // Allocate a scanline array
         JSAMPARRAY pScanLines = (JSAMPARRAY)malloc(Height * sizeof(JSAMPROW));
@@ -204,10 +209,19 @@ const char *LatLonToString(char *pBuffer, double Radians, char SuffixPos, char S
 
 }// LatLonToString
 
-static void WriteExifData(struct jpeg_compress_struct *pInfo, const double Lla[NLLA])
+static void WriteExifData(struct jpeg_compress_struct *pInfo, const double Lla[NLLA], uint64_t TimeStamp)
 {
-    // Crude test for valid GPS position
-    if (vector3Length(Lla) > 0)
+    // Convert from UNIX microseconds to GPS milliseconds
+    uint64_t GpsTime = TimeStamp / 1000 + (LEAP_SECONDS * 1000) - 315964800000ULL;
+    uint32_t Week = GpsTime / 604800000ULL, Itow = GpsTime - Week * 604800000ULL;
+    uint8_t Month, Day, Hour, Minute, Second;
+    uint16_t Year;
+
+    // Now get date and time from the reconstructed GPS time
+    computeDateAndTimeFromWeekAndItow(Week, Itow, LEAP_SECONDS, &Year, &Month, &Day, &Hour, &Minute, &Second);
+
+    // Check for valid GPS time
+    if (Year > 2012)
     {
         char Exif[4096], Buffer[64];
         int i = 0;
@@ -226,12 +240,7 @@ static void WriteExifData(struct jpeg_compress_struct *pInfo, const double Lla[N
         i += sprintf(&Exif[i], "  <exif:GPSAltitude>%.1lf</exif:GPSAltitude>\n", Lla[ALT]);
 
         // GPS date/time
-        // i += sprintf(&Exif[i], QString("  <exif:GPSTimeStamp>%1:%2:%3 %4:%5:%6</exif:GPSTimeStamp>\n"))
-        //             .arg(m_Geo.Year).arg(m_Geo.Month, 2, 10, QChar('0'))
-        //             .arg(m_Geo.Day, 2, 10, QChar('0'))
-        //             .arg(m_Geo.Hour, 2, 10, QChar('0'))
-        //             .arg(m_Geo.Minute, 2, 10, QChar('0'))
-        //             .arg(m_Geo.Second, 2, 10, QChar('0'));
+        i += sprintf(&Exif[i],"  <exif:GPSTimeStamp>%u:%02u:%02u %02u:%02u:%02u</exif:GPSTimeStamp>\n", Year, Month, Day, Hour, Minute, Second);
 
         // XML footer garbage
         i += sprintf(&Exif[i], " </rdf:Description>\n");
