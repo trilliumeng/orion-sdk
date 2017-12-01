@@ -93,6 +93,7 @@ See TrilliumPacket.c (in the Orion SDK) for details.
         <Value name="ORION_PKT_PRIVATE_70" value="0x70" comment="Reserved packet identifier" hidden="true"/>
         <Value name="ORION_PKT_PRIVATE_71" comment="Reserved packet identifier" hidden="true"/>
         <Value name="ORION_PKT_AUTOPILOT_DATA" value="0x80" comment="Autopilot state data, if available"/>
+        <Value name="ORION_PKT_PRIVATE_90" value="0x90" comment="Reserved packet identifier" hidden="true"/>
         <Value name="ORION_PKT_RETRACT_CMD" value="0xA0" comment="Retract or deploy command for a gimbal retraction mechanism"/>
         <Value name="ORION_PKT_RETRACT_STATUS" comment="Current gimbal retraction mechanism status"/>
         <Value name="ORION_PKT_PRIVATE_B0" value="0xB0" comment="Reserved packet identifier" hidden="true"/>
