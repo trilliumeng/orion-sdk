@@ -2,6 +2,8 @@
 
 #if LIBAVCODEC_VERSION_INT < AV_VERSION_INT(55,28,1)
 
+#warning "Old versions of avformat_find_stream_info() may hang indefinitely"
+
 int avformat_alloc_output_context2(AVFormatContext **avctx, AVOutputFormat *oformat,
                                    const char *format, const char *filename)
 {
