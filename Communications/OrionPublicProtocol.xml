@@ -173,6 +173,7 @@ See TrilliumPacket.c (in the Orion SDK) for details.
         <Value name="BOARD_CROWN"    comment="The crown board (ins and communications)"/>
         <Value name="BOARD_PAYLOAD"  comment="The paylaod board (camera)"/>
         <Value name="BOARD_LENSCTRL" comment="The lens control board"/>
+        <Value name="BOARD_MISSCOMP" comment="The mission computer"/>
     </Enum>
 
     <Enum name="OrionMode_t" comment="The mode of operation of the gimbal.">
