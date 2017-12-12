@@ -38,8 +38,8 @@ CONFIG(debug, debug|release) {
     DESTDIR = release
 }
 
-Public.target = OrionPublic.html
-Public.depends = OrionPublicProtocol.xml
+Public.target = $$PWD/OrionPublic.html
+Public.depends = $$PWD/OrionPublicProtocol.xml
 
 unix {
     target.path = /usr/lib

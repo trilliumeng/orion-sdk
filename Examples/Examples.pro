@@ -7,5 +7,7 @@ SUBDIRS += \
     LineOfSight \
     PathTrack \
     SendCommand \
-    UserData \
+    UserData
+
+unix:SUBDIRS += \
     VideoPlayer
