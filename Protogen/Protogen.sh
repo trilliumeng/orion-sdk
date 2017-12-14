@@ -1,9 +1,9 @@
 #!/bin/sh
 
-PLATFORM=`uname -i 2>/dev/null`
+PLATFORM=`uname -m 2>/dev/null`
 ROOT_DIR=`dirname $0`
 
-if [ "$PLATFORM" = "i386" ]; then
+if [ "$PLATFORM" = "i686" ]; then
     ARCH=Linux/x86
 elif [ "$PLATFORM" = "x86_64" ]; then
     ARCH=Linux/x64
