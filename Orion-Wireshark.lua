@@ -131,9 +131,9 @@ function lla_to_ecef(lat, lon, alt)
     local ecef = {}
 
     -- // PosECEF position data
-    ecef[0] = (Rc+alt)*cosLat*cosLon;
-    ecef[1] = (Rc+alt)*cosLat*sinLon;
-    ecef[2] = (Rc*(1.0 - datum_eSquared) + alt)*sinLat;
+    ecef[0] = (Rc+alt)*cosLat*cosLon
+    ecef[1] = (Rc+alt)*cosLat*sinLon
+    ecef[2] = (Rc*(1.0 - datum_eSquared) + alt)*sinLat
 
     return ecef
 end
@@ -227,6 +227,88 @@ function print_cmd(subtree, buffer, id, size)
 	subtree:add(buffer(4,1), "Mode: " .. get_mode_string(mode))
 	subtree:add(buffer(5,1), "Stabilized: " .. buffer(5,1):uint())
 	subtree:add(buffer(6,1), "Impulse Time: " .. buffer(6,1):uint() / 10.0)
+
+	return name
+end
+
+function print_lasers(subtree, buffer, id, size)
+	local name =  "Lasers"
+	subtree = make_subtree(subtree, buffer, name, id, size)
+
+	if size == 0 then
+		return name
+	end
+
+	local count = buffer(0,1):uint()
+
+	local start = 1
+
+	for i = 0,count-1 do
+		local p0_len = 1
+		local p1_len = 1
+
+		while buffer(start + 5 + p0_len,1):uint() > 0 do
+			p0_len = p0_len + 1
+		end
+
+		while buffer(start + 5 + p0_len + p1_len,1):uint() > 0 do
+			p1_len = p1_len + 1
+		end
+
+		local data = buffer(start,15 + p0_len + p1_len)
+		laser = subtree:add(data, "Laser " .. i)
+
+		laser:add(data(0,1), "Type: " .. data(0,1):uint())
+		laser:add(data(1,2), "Can Enable: " .. data(1,2):bitfield(7,1))
+		laser:add(data(1,2), "Disable Shift: " .. data(1,2):bitfield(12,1))
+		laser:add(data(1,2), "Fire On Start: " .. data(1,2):bitfield(13,1))
+		laser:add(data(1,2), "Eye Safe: " .. data(1,2):bitfield(14,1))
+		laser:add(data(1,2), "Can Arm: " .. data(1,2):bitfield(15,1))
+
+        laser:add(data(3,2), "Max Active Time: ".. data(3,2):uint() * 0.001) -- inMemoryType="float32" encodedType="unsigned16" scaler="1000.0" comment="Maximum continuous firing time, in seconds" />
+        laser:add(data(5,p0_len), "Password: ".. data(5,p0_len)) -- inMemoryType="string" array="16" comment="Current password, needed to allow overwriting of the current settings" />
+        laser:add(data(5 + p0_len, p1_len), "New Password: ".. data(5 + p0_len,p1_len)) -- inMemoryType="string" array="16" comment="Password to use to lock out state changes. Use an empty string to disable password checking" />
+        laser:add(data(5 + p0_len + p1_len, 2), "Min Ground Speed: ".. data(5 + p0_len + p1_len, 2):int()) -- inMemoryType="signed16" comment="Minimum GPS ground speed for laser activation, in m/s. Values less than zero are treated as no restriction" />
+        laser:add(data(7 + p0_len + p1_len, 2), "Min Altitude: ".. data(7 + p0_len + p1_len, 2):int()) -- inMemoryType="signed16" comment="Minimum GPS altitude for laser activation, in m/s. Values less than zero are treated as no restriction" />
+        laser:add(data(9 + p0_len + p1_len, 2), "Pan Alignment: ".. math.deg(data(9 + p0_len + p1_len, 2):int() / 32768.0 * math.pi / 4)) -- inMemoryType="float32" array="NUM_GIMBAL_AXES" encodedType="signed16" max="pi/4" />
+        laser:add(data(11 + p0_len + p1_len, 2), "Tilt Alignment: ".. math.deg(data(11 + p0_len + p1_len, 2):int() / 32768.0 * math.pi / 4)) -- inMemoryType="float32" array="NUM_GIMBAL_AXES" encodedType="signed16" max="pi/4" />
+        laser:add(data(13 + p0_len + p1_len, 1), "Use AP Data: ".. data(13 + p0_len + p1_len, 1):uint()) -- inMemoryType="unsigned8" comment="Set to 1 to incorporate autopilot data into laser safety checks" />
+
+        start = start + p0_len + p1_len + 15
+	end
+
+	return name
+end
+
+function print_laser_states(subtree, buffer, id, size)
+	local name =  "Laser States"
+	subtree = make_subtree(subtree, buffer, name, id, size)
+
+	if size == 0 then
+		return name
+	end
+
+	local count = buffer(0,1):uint()
+
+	for i = 0,count-1 do
+		local data = buffer(i*6+1,6)
+		laser = subtree:add(data, "Laser " .. i)
+
+		laser:add(data(0,1), "Type: " .. data(0,1):uint())
+        laser:add(data(1,3), "Enabled: " .. data(1,3):bitfield(0,1))
+        laser:add(data(1,3), "Armed: " .. data(1,3):bitfield(1,1))
+        laser:add(data(1,3), "Active: " .. data(1,3):bitfield(2,1))
+        laser:add(data(1,3), "Ground Speed Lock: " .. data(1,3):bitfield(3,1))
+        laser:add(data(1,3), "Altitude Lock: " .. data(1,3):bitfield(4,1))
+        laser:add(data(1,3), "Password Lock: " .. data(1,3):bitfield(5,1))
+        laser:add(data(1,3), "AP Comm Lock: " .. data(1,3):bitfield(6,1))
+        laser:add(data(1,3), "AP Flying Lock: " .. data(1,3):bitfield(7,1))
+        laser:add(data(1,3), "Bypass Enabled: " .. data(1,3):bitfield(8,1))
+        laser:add(data(1,3), "Pitch Angle Lock: " .. data(1,3):bitfield(9,1))
+
+        laser:add(data(4,2), "Wait Timer: " .. data(4,2):uint())
+
+	end
 
 	return name
 end
@@ -690,7 +772,7 @@ function print_network_video(subtree, buffer, id, size)
 			stream_string = stream_string .. "Unknown"
 		end
 
-		subtree:add(buffer(11,1), "Stream Type: " .. stream_string)
+		subtree:add(buffer(11,1), stream_string)
 	end
 
 	if size >= 13 then
@@ -776,6 +858,20 @@ function print_range(subtree, buffer, id, size)
 
 end
 
+function to_uint24(buffer)
+	return buffer:bitfield(0,24)
+end
+
+function to_int24(buffer)
+	local value = to_uint24(buffer)
+
+	if value >= 0x800000 then
+		return 0x1000000 - value
+	else
+		return value
+	end
+end
+
 
 function print_path_data(subtree, buffer, id, size)
 	local name = "Path Data"
@@ -795,9 +891,9 @@ function print_path_data(subtree, buffer, id, size)
 
 		local p = subtree:add(buffer(j,9), "Point " .. (i - 1))
 
-		local x = bit.band(buffer(j+0,4):int(), 0xFFFFFF00) / 256
-		local y = bit.band(buffer(j+3,4):int(), 0xFFFFFF00) / 256
-		local z = bit.band(buffer(j+6,4):int(), 0xFFFFFF00) / 256
+		local x = to_int24(buffer(j+0,3))
+		local y = to_int24(buffer(j+3,3))
+		local z = to_int24(buffer(j+6,3))
 
 		local lla = ecef_to_lla(x, y, z)
 
@@ -917,6 +1013,26 @@ end
 
 
 
+function print_network_settings(subtree, buffer, id, size)
+	local name = "Network Settings"
+	subtree = make_subtree(subtree, buffer, name, id, size)
+
+	if size == 0 then
+		return name
+	end
+
+	subtree:add(buffer(0,4), "IP Address: " .. get_ip_string(buffer(0,4):uint()))
+	subtree:add(buffer(4,4), "Subnet Mask: " .. get_ip_string(buffer(4,4):uint()))
+	subtree:add(buffer(8,4), "Gateway: " .. get_ip_string(buffer(8,4):uint()))
+
+	if size >= 15 then
+		subtree:add(buffer(13,2), "MTU: " .. buffer(13,2):uint())
+	end
+
+    return name
+end
+
+
 function print_packet(pinfo, subtree, buffer)
 	local id = buffer(2,1):uint()
 	local size = buffer(3,1):uint()
@@ -924,6 +1040,8 @@ function print_packet(pinfo, subtree, buffer)
 	local info = ""
 
 	if     id == 1   then info = print_cmd(subtree, data, id, size)
+	elseif id == 5   then info = print_lasers(subtree, data, id, size)
+	elseif id == 6   then info = print_laser_states(subtree, data, id, size)
 	elseif id == 37  then info = print_version(subtree, data, id, size)
 	elseif id == 39  then info = print_board_info(subtree, data, id, size)
 	elseif id == 40  then info = print_version(subtree, data, id, size)
@@ -941,6 +1059,7 @@ function print_packet(pinfo, subtree, buffer)
 	elseif id == 212 then info = print_geolocate(subtree, data, id, size)
 	elseif id == 214 then info = print_range(subtree, data, id, size)
 	elseif id == 215 then info = print_path_data(subtree, data, id, size)
+	elseif id == 228 then info = print_network_settings(subtree, data, id, size)
 	else
 		local name = "Unknown packet ID 0x" .. buffer(2,1)
 		subtree = make_subtree(subtree, data, name, id, size)
