@@ -24,13 +24,32 @@
 
 <p>ProtoGen is a tool that takes a xml protocol description and generates html for documentation, and C source code for encoding and decoding the data. This alleviates much of the challenge and bugs in protocol development. The C source code is highly portable, readable, efficient, and well commented. It is suitable for inclusion in almost any C/C++ compiler environment.</p>
 
-<p>This document refers to ProtoGen version 1.4.5. You can download the <a href="http://www.fivebyfivedevelopment.com/Downloads/ProtoGenWin.zip">windows version here</a>. The <a href="http://www.fivebyfivedevelopment.com/Downloads/ProtoGenMac.zip">mac version is here</a>. The <a href="http://www.fivebyfivedevelopment.com/Downloads/ProtoGenLinux.tgz">linux version is here</a>. Source code for ProtoGen is available on <a href="https://github.com/billvaglienti/ProtoGen">github</a>.</p>
+<p>This document refers to ProtoGen version 2.10. You can download the prebuilt versions for <a href="https://github.com/billvaglienti/ProtoGen/releases">windows, mac, and linux here</a>. Source code for ProtoGen is available on <a href="https://github.com/billvaglienti/ProtoGen">github</a>.</p>
 
 <hr />
 
 <h1 id="usage">Usage</h1>
 
-<p>ProtoGen is a C++/Qt5 compiled command line application, suitable for inclusion as a automated build step (Qt provides the xml, string, and file handling). The command line is: <code>ProtoGen Protocol.xml [Outputpath] [-docs dir] [-latex] [-no-doxygen] [-no-markdown] [-no-helper-files] [Style.css]</code>. <code>Protocol.xml</code> is the file that defines the protocol details. <code>Outputpath</code> is an optional parameter that gives the path where the generated files should be placed. If <code>Outputpath</code> is not given then the files will be placed in the working directory from which ProtoGen is run. <code>-docs dir</code> specifies a separate directory for the documentation markdown to be written. If <code>-docs dir</code> is not specified, documentation markdown will be written to the same same directory as <code>Outputpath</code>. <code>-latex</code> will cause ProtoGen to generate LaTeX style markdown (if multimarkdown is installed and in the PATH). <code>-no-doxygen</code> will cause ProtoGen to skip the output of the developer level html documentation. <code>-no-markdown</code> will cause ProtoGen to skip the output of the user level html documentation. <code>-no-helper-files</code> will cause ProtoGen to skip the output of files not directly specified by the protocol.xml. <code>Style.css</code> will replace the default inline css in the markdown documentation with the contents of the Style.css file.</p>
+<p>ProtoGen is a C++/Qt5 compiled command line application, suitable for inclusion as a automated build step (Qt provides the xml, string, and file handling). The command line is: <code>ProtoGen Protocol.xml [Outputpath] [SupportFile.xml] [-docs dir] [-latex] [-no-doxygen] [-no-markdown] [-no-helper-files] [Style.css] [-no-unrecognized-warnings]</code>. On Mac OS protogen is invoked through an app bundle: <code>ProtoGen.app/Contents/MacOS/ProtoGen</code></p>
+
+<ul>
+<li><p><code>Protocol.xml</code> is the main file that defines the protocol details, setting the protocol name and various options. The main protocol file is always the first xml file on the command line.</p></li>
+<li><p><code>Outputpath</code> is an optional parameter that gives the path where the generated files should be placed. If <code>Outputpath</code> is not given then the files will be placed in the working directory from which ProtoGen is run.</p></li>
+<li><p><code>SupportFile.xml</code> is another file that defines protocol details. The contents of this file are used to augment the contents of the main protocol file, as such its protocol name and options are ignored in favor of the name and options from the main file. You can have as many support files as you like. Protogen will parse the support files before the main file, so the main file can have dependencies on the protocol elements from the support files.</p></li>
+<li><p><code>license &lt;file&gt;</code> is a template file contains license information that will be added verbatim to the top of each generated file.</p></li>
+<li><p><code>-docs &lt;dir&gt;</code> specifies a separate directory for the documentation markdown to be written. If <code>-docs dir</code> is not specified, documentation markdown will be written to the same same directory as <code>Outputpath</code>.</p></li>
+<li><p><code>-show-hidden-items</code> will cause documentation to be generated for <strong>all</strong> elements, even if the element has the <em>hidden=&#8220;true&#8221;</em> flag</p></li>
+<li><p><code>-latex</code> will cause ProtoGen to generate LaTeX style markdown (if multimarkdown is installed and in the PATH).</p></li>
+<li><p><code>-latex-header-level level</code> specifies the starting header-level for generated LaTeX output. If unspecified, it defaults to <code>1</code> (Chapter headings)</p></li>
+<li><p><code>-no-doxygen</code> will cause ProtoGen to skip the output of the developer level html documentation. </p></li>
+<li><p><code>-no-markdown</code> will cause ProtoGen to skip the output of the user level html documentation. </p></li>
+<li><p><code>-no-about-section</code> will cause ProtoGen to skip the output of extra preface and postface information in the generated documentation.</p></li>
+<li><p><code>-no-helper-files</code> will cause ProtoGen to skip the output of files not directly specified by the protocol.xml. </p></li>
+<li><p><code>Style.css</code> will replace the default inline css in the markdown documentation with the contents of the Style.css file.</p></li>
+<li><p><code>-no-css</code> will cause ProtoGen to skip output of CSS data in generated documentation files.</p></li>
+<li><p><code>-no-unrecognized-warnings</code> will suppress warnings about unrecognized tags or attributes in the <code>Protocol.xml</code> file. This is useful if you add data to your xml that you expect Protogen to ignore. </p></li>
+<li><p><code>-table-of-contents</code> specifies that a table of contents section should be added to the markdown output. This will be output using inline html with intra document links to the headings.</p></li>
+</ul>
 
 <h2 id="dependencies">Dependencies</h2>
 
@@ -38,9 +57,15 @@
 
 <p>The source code generated by ProtoGen also contains doxygen markup comments. If the host system has <a href="http://www.stack.nl/~dimitri/doxygen/index.html">doxygen</a> installed ProtoGen can output html documentation for protocol developers. On windows and linux doxygen is invoked by ProtoGen as simply &#8220;doxygen&#8221;. On mac doxygen is invoked by ProtoGen as &#8220;/Applications/Doxygen.app/Contents/Resources/doxygen&#8221;; this is because doxygen for the mac is provided as a .app bundle containing both the GUI and the binary.</p>
 
+<h2 id="usingprotogenasacompilerpre-buildstep">Using ProtoGen as a compiler pre-build step</h2>
+
+<p>ProtoGen will not touch an output file if the generated file is not different from what already exists. In this way you can run ProtoGen repeatedly without worrying about causing unneeded rebuild of your project. ProtoGen runs very quickly, and if you use the <code>-no-doxygen</code> switch it is typically fast enough to run it every time you compile. Note that the generated files include a comment with the ProtoGen version, so if you change ProtoGen version you will get updated output (and hence a compiler rebuild) even if the protocol code did not change.</p>
+
+<p>ProtoGen applies many checks to the protocol xml. In most cases if a problem is discovered the protocol is altered as needed and ProtoGen will output a warning on stdout. The warnings conform to the layout most IDEs will expect; so you can click directly on the warning and go straight to the offending line in the xml (I&#8217;ve only tesed this in Qt Creator).</p>
+
 <h1 id="protocolicd">Protocol ICD</h1>
 
-<p>The protocol is defined in an <a href="http://www.w3.org/XML/">xml</a> document. ProtoGen comes with an example document (exampleprotocol.xml) which can be used as a reference. This example defines a protocol called &#8220;Demolink&#8221; which is frequently referenced in this document.</p>
+<p>The protocol is defined in one or more <a href="http://www.w3.org/XML/">xml</a> documents. ProtoGen comes with an example document (exampleprotocol.xml) which can be used as a reference. This example defines a protocol called &#8220;Demolink&#8221; which is frequently referenced in this document. Tags and attributes in the xml document are not case sensitive. </p>
 
 <h1 id="protocoltag">Protocol tag</h1>
 
@@ -53,19 +78,26 @@
 <p>The Protocol tag supports the following attributes:</p>
 
 <ul>
-<li><p><code>name</code> : The name of the protocol. This will set the name of the primary header file for this protocol, and the generic packet utility functions. In this example (and elsewhere in this file) the name is &#8220;Demolink&#8221;.</p></li>
-<li><p><code>file</code> : Optional attribute that gives the name of the source and header file name (.c and .h) that will be used for all code output except the primary header file, and any structures or packets which have their own <code>file</code> attribute.</p></li>
-<li><p><code>prefix</code> : A string that can be used to prepend structure and file names. This is typically left out, but if a single project uses multiple ProtoGen protocols then it may be useful to give them different prefixes to avoid namespace collisions. A common way to use the <code>prefix</code> is to make it the same as <code>name</code>.</p></li>
+<li><p><code>name</code> : The name of the protocol. This will set the name of the primary header file for this protocol, and the generic packet utility functions. In this example (and elsewhere in this file) the name is &#8220;Demolink&#8221;. This attribute is mandatory, all other Protcol attributes are optional.</p></li>
+<li><p><code>title</code> : The title of the protocol. This is used as the title for the first paragraph in the documentation output. If title is not given then the title of the first paragraph will be <code>name</code> + &#8220;Protocol&#8221;.</p></li>
+<li><p><code>file</code> : Optional attribute that gives the name of the source and header file (.c and .h) that will be used for the encoding and decoding code output; except for the primary header file, and any objects which have their own <code>file</code> attribute.</p></li>
+<li><p><code>verifyfile</code> : Optional attribute that gives the name of the source and header file (.c and .h) that will be used for the initilization and verification code output (if any); except for any objects which have their own <code>verifyfile</code> attribute.</p></li>
+<li><p><code>comparefile</code> : Optional attribute that gives the name of the source and header file (.cpp and .h) that will be used for the comparison code output; except for any objects which have their own <code>comparefile</code> attribute. Presence of the global comparefile attribute enables the compare output for all packets and structures.</p></li>
+<li><p><code>prefix</code> : A string that can be used to prepend structure and file names. This is typically left out, but if a single project uses multiple ProtoGen protocols then it may be useful to give them different prefixes to avoid namespace collisions.</p></li>
+<li><p><code>maxSize</code> : A number that specifies the maximum number of data bytes that a packet can support. If this is provided, and is greater than zero, ProtoGen will issue a warning for any packet whose maximum encoded size is greater than this.</p></li>
 <li><p><code>api</code> : An enumeration that can be used to determine API compatibility. Changes to the protocol definition that break backwards compatibility should increment this value. Calling code can access the api value and use it to (for example) seed a packet checksum/CRC to prevent clashes with different versions of the protocol.</p></li>
 <li><p><code>version</code> : A human readable version string to describe the protocol. Calling code can access the version string.</p></li>
-<li><p><code>endian</code> : By default the generated code will encode to and decode from big endian byte order. setting this attribute to &#8220;little&#8221; will cause the generated code to use little endian byte order. This attribute is <em>not</em> the byte order of the computer that executes the auto generated code. It <em>is</em> the byte order of the data <em>on the wire</em>.</p></li>
+<li><p><code>endian</code> : By default the generated code will encode to and decode from big endian byte order. Setting this attribute to &#8220;little&#8221; will cause the generated code to use little endian byte order. This attribute is <em>not</em> the byte order of the computer that executes the auto generated code. It <em>is</em> the byte order of the data <em>on the wire</em>.</p></li>
 <li><p><code>supportInt64</code> : if this attribute is set to <code>false</code> then integer types greater than 32 bits will not be allowed.</p></li>
 <li><p><code>supportFloat64</code> : if this attribute is set to <code>false</code> then floating point types greater than 32 bits will not be allowed.</p></li>
 <li><p><code>supportBitfield</code> : if this attribute is set to <code>false</code> then bitfields will not be allowed.</p></li>
 <li><p><code>supportLongBitfield</code> : if this attribute is set to <code>true</code> then a second set of bitfield support functions will be defined. The Long bitfield functions use the integer type <code>uint64_t</code> instead of <code>unsigned int</code>. This attribute will be ignored if <code>supportInt64</code> or <code>supportBitfield</code> are <code>false</code>.</p></li>
-<li><p><code>bitfieldTest</code> : if this attribute is set to <code>true</code> then the bitfield support module will include a test function that can be used to determine if bitfield support is working on your compiler.</p></li>
+<li><p><code>bitfieldTest</code> : if this attribute is set to <code>true</code> then Protogen will output a module called &#8220;bitfieldtest&#8221;, which contains a test function that can be used to determine if bitfield support is working on your compiler.</p></li>
 <li><p><code>supportSpecialFloat</code> : if this attribute is set to <code>false</code> then floating point types less than 32 bits will not be allowed for encoded types.</p></li>
+<li><p><code>packetStructureSuffix</code> : This attribute defines the ending of the function names used to encode and decode structures into packets. If not specified then the function name ending is <code>PacketStructure</code>. For example the default name of the function that encodes a structure of date information would be <code>encodeDatePacketStructure()</code>; using this attribute the name could be changed to (for example) <code>encodeDatePktStruct()</code>.</p></li>
+<li><p><code>packetParameterSuffix</code> : This attribute defines the ending of the function names used to encode and decode raw parameters into packets. If not specified then the function name ending is <code>Packet</code>. For example the default name of the function that encodes a parameters of date information would be <code>encodeDatePacket()</code>; using this attribute the name could be changed to (for example) <code>encodeDatePkt()</code>.</p></li>
 <li><p><code>comment</code> : The comment for the Protocol tag will be placed at the top of the main header file as a multi-line doxygen comment with a \mainpage tag.</p></li>
+<li><p><code>pointer</code> : By default, the generated code does not know about the structure of the packet datatype, and uses generic pointers (<code>void*</code>) to reference packet data. This behaviour can be overridden by specifying the datatype of the packet. If this parameter is specified, the protocol file must include the header file where the packet is defined (or alternatively must define the packet structure itself).</p></li>
 </ul>
 
 <h2 id="comments">Comments</h2>
@@ -88,6 +120,29 @@
 //!&lt; This is a single line comment that appears after the object it documents, on the same line.
 </code></pre>
 
+<p>The reflow logic can be suspended by placing comment text between &#8220;\verbatim&#8221; escapes. Text between the &#8220;\verbatim&#8221; escapes is simply output in the comment without reflow or interpretation. This makes it possible to insert more advanced markdown features, such as tables.</p>
+
+<h2 id="files">Files</h2>
+
+<p>By default protogen will output a protocol header file; and a header and source file for every Packet and Structure tag, with the file name matching the tag name. However every global object (Enum, Structure, Packet) supports an optional <code>file</code> attribute. In addition there is an optional global <code>file</code> attribute which applies if an object does not specify a <code>file</code> attribute. Typically an extension is not given, in which case &#8220;.h&#8221; will be added for header files, and &#8220;.c&#8221; for source files. If an extension is given then Protogen will discard it unless it starts with &#8220;.h&#8221; (for headers) or &#8220;.c&#8221; (for sources). So for example if the <code>file</code> attribute of a packet has the extension &#8220;.cpp&#8221;, the source file output by protogen will use that extension, and the header file will use &#8220;.h&#8221;.</p>
+
+<p>The <code>file</code> attribute can include path information (for example &#8220;src/protogen/filename&#8221;). If path information is provided it is assumed to be relative to the global output path, unless the path information is absolute. Path information is only used in the creation of the file; any include directive which references a file will not include the path information.</p>
+
+<h2 id="requiretag">Require tag</h2>
+
+<p>The Require tag is used to insert XML from an external protocol file at the specified location. The generated code will be structued as if the linked xml was written <em>at the location it is referenced</em> - this tag provides the ability to separate the protocol definition into multiple files; which is most commonly used to put common features for multiple protocols into a single file.</p>
+
+<pre><code>&lt;Require file=&quot;../version.xml&quot;/&gt;
+</code></pre>
+
+<p>The Require tag supports the following attributes:</p>
+
+<ul>
+<li><code>file</code> : gives the name of the file to insert, relative to the path of the file which requires it. You can include the .xml file extension, or leave it off.</li>
+</ul>
+
+<p>The external protocol file must follow the same structure requirements as the base protocol file. However, any top-level attributes specified in the file (i.e. in the <code>Protocol</code> tag) will be ignored. The Require tag is similar to including protocol support files on the command line. The only difference is that the Require tag provides fine grained control of where the external protocol elements are defined. The Require tag can be used recursively by referencing a protocol file that itself references another protocol file. Note that Protogen will prevent a protocol file from being referenced more than once, so circular references are avoided.</p>
+
 <h2 id="includetag">Include tag</h2>
 
 <p>The Include tag is used to include other files in the generated code by emmitting a C preprocessor <code>#include</code> directive. If the Include tag is a direct child of the Protocol tag then it is emitted in the main header file. If it is a direct child of a Packet or Structure tag then it is emitted in the packet or structures header file. An example Include tag is:</p>
@@ -103,20 +158,20 @@
 <p>The Include tag supports the following attributes:</p>
 
 <ul>
-<li><p><code>name</code> : gives the name of the file to include, with the extension. The name will be wrapped in quotes (&quot;&quot;) or angle braces (&lt;&gt;), depending on the <code>global</code> attribute, when emitted as part of the #include directive.</p></li>
+<li><p><code>name</code> : gives the name of the file to include, with the extension. The name will be wrapped in quotes (&#8220;&#8221;) or angle braces (&lt;&gt;), depending on the <code>global</code> attribute, when emitted as part of the #include directive.</p></li>
 <li><p><code>comment</code> : Gives a one line comment that follows the #include directive.</p></li>
 <li><p><code>global</code> : Set to <code>true</code> to use a global header file (e.g., #include &lt;stdio.h&gt;) or <code>false</code> to use a local include (e.g., #include &#8220;indices.h&#8221;). The default is <code>false</code>.</p></li>
 </ul>
 
 <h2 id="enumtag">Enum tag</h2>
 
-<p>The Enum tag is used to create a named C language typedef enumeration. As with the Include tag the enumeration is created in the header file that represents the parent of this tag. An example Enum tag is:</p>
+<p>The Enum tag is used to create a named C language typedef enumeration. The enumeration is typically created in the header file that represents the parent of this tag. An example Enum tag is:</p>
 
-<pre><code>&lt;Enum name=&quot;packetIds&quot; comment=&quot;The list of packet identifiers&quot;&gt;
+<pre><code>&lt;Enum name=&quot;packetIds&quot; prefix=&quot;PKT_&quot; comment=&quot;The list of packet identifiers&quot;&gt;
     &lt;Value name=&quot;ENGINECOMMAND&quot; value=&quot;10&quot; comment=&quot;Engine command packet&quot;/&gt;
     &lt;Value name=&quot;ENGINESETTINGS&quot; comment=&quot;Engine settings packet&quot;/&gt;
     &lt;Value name=&quot;THROTTLESETTINGS&quot; comment=&quot;Throttle settings packet&quot;/&gt;
-    &lt;Value name=&quot;VERSION&quot; value=&quot;20&quot; comment=&quot;Version reporting packet&quot;/&gt;
+    &lt;Value name=&quot;VERSION&quot; ignorePrefix=&quot;true&quot; value=&quot;20&quot; comment=&quot;Version reporting packet&quot;/&gt;
     &lt;Value name=&quot;TELEMETRY&quot; comment=&quot;Regular elemetry packet&quot;/&gt;
 &lt;/Enum&gt;
 </code></pre>
@@ -128,11 +183,11 @@
  */
 typedef enum
 {
-    ENGINECOMMAND = 10,  //!&lt; Engine command packet
-    ENGINESETTINGS,      //!&lt; Engine settings packet
-    THROTTLESETTINGS,    //!&lt; Throttle settings packet
-    VERSION = 20,        //!&lt; Version reporting packet
-    TELEMETRY            //!&lt; Regular elemetry packet
+    PKT_ENGINECOMMAND = 10, //!&lt; Engine command packet
+    PKT_ENGINESETTINGS,     //!&lt; Engine settings packet
+    PKT_THROTTLESETTINGS,   //!&lt; Throttle settings packet
+    VERSION = 20,           //!&lt; Version reporting packet
+    PKT_TELEMETRY           //!&lt; Regular elemetry packet
 }packetIds;
 </code></pre>
 
@@ -140,9 +195,14 @@ typedef enum
 
 <ul>
 <li><p><code>name</code> : gives the typedef name of the enumeration</p></li>
+<li><p><code>title</code> : The name of the enumeration used in the documentation output. If title is not given then <code>name</code> is used.</p></li>
+<li><p><code>file</code> : Optional attribute that gives the header file name that will be used for this enumeration. The <code>file</code> attribute can only be used with enumerations that are global (i.e. not a child of a Packet or Structure tag). If <code>file</code> is not provided global enumerations are output in the main header file. Protogen will track the file location of the enumeration and will automatically add the necessary include directive to any module that references the enumeration.</p></li>
 <li><p><code>comment</code> : Gives a multi-line line doxygen comment wrapped at 80 characters that appears above the enumeration.</p></li>
+<li><p><code>prefix</code> : Gives a string that will be prefixed to the name of each element within the enumeration.</p></li>
 <li><p><code>description</code> : If provided, a long-form description can be prepended to the given enumeration (in the documentation markdown). This allows for a more verbose description of the particular enumeration to be added to the docs. NOTE: This description will <em>not</em> appear in the generated code.</p></li>
-<li><p><code>hidden</code> : is used to specify that this particular enumeration will <em>not</em> appear in the generated documentation markdown. NOTE: This enumeartion will still appear in the generated code.</p></li>
+<li><p><code>hidden</code> : is used to specify that this particular enumeration will <em>not</em> appear in the generated documentation markdown. NOTE: This enumeration will still appear in the generated code.</p></li>
+<li><p><code>lookup</code> : is used to specify that this enumeration allows lookup of label text based on enum values. If enabled, the label for a particular enum value can be returned as a string.</p></li>
+<li><p><code>lookupTitle</code> : is used to specify that this enumeration allows lookup of enum title based on enum values. If enabled, the title for a particular enum value can be returned as a string. If the enumertaion does not have a title then the label text is returned.</p></li>
 </ul>
 
 <h3 id="enum:valuesubtagattributes:">Enum : Value subtag attributes:</h3>
@@ -150,16 +210,20 @@ typedef enum
 <p>The Enum tag supports Value subtags; which are used to name individual elements of the enumeration. Attributes of the Value subtag are:</p>
 
 <ul>
-<li><p><code>name</code> : gives the name of the enumeration element. This is the name that will be referenced in code.</p></li>
+<li><p><code>name</code> : gives the name of the enumeration element. This is the name that will be referenced in code, and will be returned by the label text lookup if the enumeration has the <code>lookup</code> attribute turned on.</p></li>
+<li><p><code>title</code> : The name of the enumeration element in the documentation output. If title is not given then <code>name</code> is used. This is the text that will be returned by the title lookup if the enumeration has the <code>lookupTitle</code> attribute turned on.</p></li>
 <li><p><code>value</code> : is an optional attribute that sets the value of this enumeration element. If value is left out the element will get its value in the normal C language way (by incrementing from the previous element, or starting at 0). Note that non numeric values may be used, as long as those strings are resolved by an include directive or previous enumeration.</p></li>
 <li><p><code>comment</code> : gives a one line doxygen comment that follows the enumeration element.</p></li>
+<li><p><code>ignorePrefix</code> : is used to specify that this particular enumeration element will <em>not</em> be assigned a prefix (if a prefix is specifed for this enumeration).</p></li>
+<li><p><code>ignoreLookup</code> : is used to specify that this particular enumeration element will <em>not</em> be included in the enumeration label text lookup. This is useful for duplicate enumeration values.</p></li>
+<li><p><code>hidden</code> : is used to specify that this particular enumeration element will <em>not</em> appear in the generated documentation markdown.</p></li>
 </ul>
 
 <p>In the above example the enumeration support is used to create a list of packet ID values. Although this is the most common use case for this feature, it is not limited to this case. Named enumerations can also be part of the data in a packet. A packet ID enumeration is not required (though it is encouraged as a best practice). Enumerations are also a good choice when creating arrays. If an array length is given by an enumeration that is defined in the protocol xml then ProtoGen will attempt to compute the enumeration value, and use that to compute the length of the array in bytes. This substantially improves the protocol documentation that ProtoGen will output.</p>
 
 <h2 id="structuretag">Structure tag</h2>
 
-<p>The Structure tag is used to define a structure and the code to encode and decode the structure. Structures can appear under the Protocol tag, in which case they are not associated with any one packet, but can be referenced by any following packet.</p>
+<p>The Structure tag is used to define a structure and the code to encode and decode the structure. Structures can appear under the Protocol tag, in which case they are not associated with any one packet, but can be referenced by any packet.</p>
 
 <pre><code>&lt;Structure name=&quot;Date&quot; comment=&quot;Calendar date information&quot;&gt;
     &lt;Data name=&quot;year&quot; inMemoryType=&quot;unsigned16&quot; comment=&quot;year of the date&quot;/&gt;
@@ -185,9 +249,15 @@ typedef struct
 
 <ul>
 <li><p><code>name</code> : Gives the name of the structure. The structure typename is <code>prefix + name + _t</code>. In this case the structure typename is <code>Date_t</code>.</p></li>
-<li><p><code>file</code> : Gives the name of the source and header file name (.c and .h). If this is ommitted the structure will be written to the name given by the global <code>file</code> attribute or, if that is not provided, the <code>prefix + name</code> module. If the same file is specified for multiple structures (or packets) then the relevant data are appended to that file.</p></li>
-<li><p><code>encode</code> : By default encode functions will be output. This can be suppressed by setting <code>encode</code>=&#8220;false&#8221;.</p></li>
-<li><p><code>decode</code> : By default decode functions will be output. This can be suppressed by setting <code>decode</code>=&#8220;false&#8221;.</p></li>
+<li><p><code>title</code> : The name of the structure in the documentation output. If title is not given then <code>prefix + name + _t</code> is used.</p></li>
+<li><p><code>file</code> : Gives the name of the source and header file name. If this is ommitted the structure will be written to the name given by the global <code>file</code> attribute or, if that is not provided, the <code>prefix + name</code> module. If the same file is specified for multiple structures (or packets) then the relevant data are appended to that file.</p></li>
+<li><p><code>deffile</code> : Optional attribute used to specify a definition file which receives the structure definition (and any enumeration which is a child of the structure), in place of the normal file location for the structure definition. As with other file attributes the definition file will be correctly appended if it is used multiple times. Any extension to the <code>deffile</code> attribute will be ignored. The <code>deffile</code> attribute will be ignored if <code>redefine</code> is used.</p></li>
+<li><p><code>encode</code> : By default encode functions will be output. This can be suppressed by setting <code>encode=&quot;false&quot;</code>.</p></li>
+<li><p><code>decode</code> : By default decode functions will be output. This can be suppressed by setting <code>decode=&quot;false&quot;</code>.</p></li>
+<li><p><code>compare</code> : By default compare functions will not be output. Set <code>compare=&quot;true&quot;</code> to enable the compare function output. The compare functions will be output to the <code>prefix + name + &quot;Compare&quot;</code> module, unless the <code>comparefile</code> attribute or global <code>comparefile</code> attribute is given.</p></li>
+<li><p><code>verifyfile</code> : Optional attribute used to specify a module which receives both the init and verify functions (only if verification or initialization values exist for a member field). If <code>verifyfile</code> is omitted then the init and verify functions are output in the normal file. As with other file attributes the verify file will be correctly appended if it is used multiple times.</p></li>
+<li><p><code>comparefile</code> : Optional attribute used to specify a c++ module that implements a comparison function. The comparison functions compare the structure element by element and generate a human readable string report to indicate which elements are different. String handling is provided by Qt&#8217;s QString (which is why this is a c++ module separate from the other output files). Presence of the <code>comparefile</code> attribute enables the compare output.</p></li>
+<li><p><code>redefine</code> : It is possible to create multiple encodings for an existing structure definition by using the redefine attribute to reference a previously defined structure. When doing this the structure itself will not be declared, but the encoding and decoding functions will. This requires that the encoding rules must have fields with the same names and in-memory types as the referenced structure.</p></li>
 <li><p><code>comment</code> : The comment for the structure will be placed at the top of the header file (or the top of the appended text if the file is used more than once).</p></li>
 </ul>
 
@@ -220,21 +290,20 @@ typedef struct
                  table with up to 10 points.&quot;&gt;
 </code></pre>
 
-<p>Packet tag attributes:</p>
+<p>Packet tag attributes beyond Structure tag attributes:</p>
 
 <ul>
-<li><p><code>name</code> : The same as the name attribute of a structure.</p></li>
-<li><p><code>ID</code> : gives the identifying value of the packet. This can be any resolvable string, though typically it will be an element of a previously defined enumeration. If the ID attribute is missing then the all-caps name of the packet is used as the ID. </p></li>
-<li><p><code>file</code> : The same as the file attribute of a structure.</p></li>
+<li><p><code>ID</code> : gives the identifying value of the packet. This can be any resolvable string, though typically it will be an element of an enumeration. If the ID attribute is missing the all-caps name of the packet is used as the ID. In some cases multiple packets may be identical except for the identifier. It is possible to simply define multiple packets in the XML, however a better solution is to specify multiple identifiers by using spaces or commas to delimit the identifers in the ID attribute. If multiple identifiers are given the encode function is changed so the caller provides the desired id. In addition the decode function is changed so that any of the given identifiers can be used for a successful packet decode.</p></li>
 <li><p><code>structureInterface</code> : If this attribute is set to <code>true</code> the structure based interfaces to the packet functions will be created.</p></li>
 <li><p><code>parameterInterface</code> : If this attribute is set to <code>true</code> then a parameter based interface to the packet functions will be created. This is useful for simpler packets that do not have too many parameters and using a structure as the interface method is unwieldy. If neither <code>structureInterface</code> or <code>parameterInterface</code> are specified as <code>true</code> ProtoGen will output parameter based interfaces if the number of fields in the packet is 1 or less, otherwise it will output structure based interfaces.</p></li>
-<li><p><code>comment</code> : The comment for the Packet tag will be placed at the top of the packets header file (or the top of the appended text if the file is used more than once) as a multi-line doxygen comment. The comment will be wrapped at 80 characters using spaces as the separator.</p></li>
-<li><p><code>hidden</code> : is used to specify that this particular packet will NOT appear in the documentation markdown. Useful if a particular packet is not to be revealed to others reading the documentation. NOTE: The packet will still be present in the generated code.</p></li>
+<li><p><code>hidden</code> : If set to <code>true</code> this attribute specifies that this packet will NOT appear in the documentation markdown.</p></li>
+<li><p><code>useInOtherPackets</code> : If set to <code>true</code> this attribute specifies that this packet will generate extra outputs as though it were a top level structure in addition to being a packet. This makes it possible to use this packet as a sub-structure of another packet. </p></li>
+<li><p><code>compare</code> AND <code>comparefile</code> : When used within the context of a packet these attributes trigger the output of an additional comparison functions that uses packet pointers (rather than structure pointers) to do the comparison. The structure comparison function is still output.</p></li>
 </ul>
 
 <h3 id="packet:datasubtags">Packet : Data subtags</h3>
 
-<p>The Packet tag supports Data subtags. The Data tag is the most complex part of the packet definition. Each Data tag represents one line in the packets structure definition, and one hunk of data in the packets encoded format. Packets can be created without any Data tags, in which case the packet is empty. Some example Data tags:</p>
+<p>The Packet tag supports Data subtags. The Data tag is the most complex part of the packet definition. Each Data tag represents one line in the packet structure definition, and one hunk of data in the packet encoded format. Packets can be created without any Data tags, in which case the packet is empty. Some example Data tags:</p>
 
 <pre><code>&lt;Data name=&quot;numCurvePoints&quot; inMemoryType=&quot;bitfield4&quot; comment=&quot;Number of points in the throttle curve&quot;/&gt;
 &lt;Data name=&quot;reserved&quot; inMemoryType=&quot;bitfield3&quot;/&gt;
@@ -284,6 +353,7 @@ typedef struct
 
 <ul>
 <li><p><code>name</code> : The name of the data, not optional (unless <code>inMemoryType=&quot;null&quot;</code>). This is the name that will be referenced in code.</p></li>
+<li><p><code>title</code> : The name of the data in the documentation output. If title is not given then <code>name</code> is used.</p></li>
 <li><code>inMemoryType</code> : The type information for the data in memory, not optional (unless <code>struct</code> or <code>enum</code> attribute is present). Options for the in-memory type are:
 
 <ul>
@@ -292,10 +362,11 @@ typedef struct
 <li><code>floatX</code> : is a floating point with X bits, where X can be 32 or 64.</li>
 <li><code>float</code> : is a 32 bit floating point.</li>
 <li><code>double</code> : is a 64 bit floating point.</li>
-<li><code>bitfieldX_t</code> : is a bitfield with X bits where X can go from 1 to 32 bits.</li>
+<li><code>bitfieldX</code> : is a bitfield with X bits where X can go from 1 to the number of bits in an int, or 64 bits if long bitfields are supported.</li>
 <li><code>string</code> : is a variable length null terminated string of bytes. The maximum length is given by the attribute <code>array</code>.</li>
 <li><code>fixedstring</code> : is a fixed length null terminated string of bytes. The length is given by the attribute <code>array</code>.</li>
 <li><code>null</code> : indicates empty (i.e. reserved for future expansion) space in the packet.</li>
+<li><code>override</code> : indicates that this field is overriding a previous defined field in the structure or packet. In that instance the in-memory type information is taken from a previous field&#8217;s (of the same name) definition. The point of overriding a field is to overcome a previous encoding that was inadequate.</li>
 </ul></li>
 <li><p><code>struct</code> : This attribute replaces the inMemoryType attribute and references a previously defined structure.</p></li>
 <li><p><code>enum</code> : This attribute replaces the inMemoryType and references an enumeration. This can be a type name that is defined in an Enum tag above, or is defined by an included file. If the encodedType is not provided then the encoded size of the enumeration is determined automatically by ProtoGen. If encodedType is provided then the size information provided is used to determine the amount of encoded space the enumeration uses. This includes the ability to specify the enumeration encoded as a bitfield.</p></li>
@@ -304,26 +375,59 @@ typedef struct
 <ul>
 <li><code>unsignedX</code> or <code>uintX_t</code>: is a unsigned integer with X bits, where X can be 8, 16, 24, 32, 40, 48, 56, or 64.</li>
 <li><code>signedX</code> or <code>intX_t</code> : is a signed integer with X bits, where X can be 8, 16, 24, 32, 40, 48, 56, or 64.</li>
-<li><code>floatX</code> : is a floating point with X bits, where X can be 16, 24, 32, or 64.</li>
+<li><code>floatX:Y</code> : is a floating point with X total bits and Y bits of significand, where X can be 16, 24, 32, or 64. See the section on floatspecial for more details</li>
+<li><code>floatX</code> : is a floating point with X total bits, where X can be 16, 24, 32, or 64.</li>
 <li><code>float</code> : is a 32 bit floating point.</li>
 <li><code>double</code> : is a 64 bit floating point.</li>
-<li><code>bitfieldX_t</code> : is a bitfield with X bits where X can go from 1 to the number of bits in an int.</li>
+<li><code>bitfieldX</code> : is a bitfield with X bits where X can go from 1 to the number of bits in an int, or 64 bits if long bitfields are supported.</li>
 <li><code>string</code> : is a variable length null terminated string of bytes. The maximum length is given by the attribute <code>array</code>.</li>
 <li><code>fixedstring</code> : is a fixed length null terminated string of bytes. The length is given by the attribute <code>array</code>.</li>
 <li><code>null</code> : indicates no encoding. The data exist in memory but are not encoded in the packet.</li>
 </ul></li>
-<li><p><code>array</code> : The array size. If array is not provided then the data are simply one element. <code>array</code> can be a number, or an enum, or any defined value from an include file. Note that it is possible to have an array of structures, but not to have an array of bitfields. Although any string that is resolvable at compile time can be used, the generated documentation will be clearer if <code>array</code> is a simple number; since ProtoGen will be able to calculate the length of the array and the byte location of data that follows it.</p></li>
+<li><p><code>bitfieldGroup</code> : If set to &#8220;true&#8221; indicates that this bitfield is the first in a group of bitfields. A bitfield group is handled differently then normal bitfields. When decoding a bitfield group the bytes are first decoded from the bytestream, reversing the byte order if the protocol is little endian. Then the bitfields of the group are pulled from the decoded bytes. When encoding a bitfield group the bitfields are put into an array of bytes which are then encoded to the byte stream, reversing the byte order if the protocol is little endian. The <code>bitfieldGroup=&quot;true&quot;</code> attribute should be applied to the first bitfield of the group, all subsequent bitfields will be assumed to be in the same group. The bitfield group is terminated by a non-bitfield field, or by another bitfield with the <code>bitfieldGroup=&quot;true&quot;</code> attribute.</p></li>
+<li><p><code>array</code> : The array size. If array is not provided then the data are simply one element. <code>array</code> can be a number, or an enum, or any defined value from an include file. Note that it is possible to have an array of structures, but not to have an array of bitfields. Although any string that is resolvable at compile time can be used, the generated documentation will be clearer if <code>array</code> is a simple number, or an enumeration defined in the protocol; since ProtoGen will be able to calculate the length of the array and the byte location of data that follows it.</p></li>
 <li><p><code>variableArray</code> : If this Data are an array, then the <code>variableArray</code> attribute indicates that the array length is variable (up to <code>array</code> size). The <code>variableArray</code> attribute indicates which previously defined data item in the encoding gives the size of the array in the encoding. <code>variableArray</code> is a powerful tool for efficiently encoding an a-priori unknown range of data. The <code>variableArray</code> variable must exist as a primitive non-array member of the encoding, <em>before</em> the definition of the variable array. If the referenced data item does not exist ProtoGen will ignore the <code>variableArray</code> attribute. Note: for text it is better to use the encodedType &#8220;string&#8221;, since this will result in a variable length array which is null terminated, and is therefore compatible with C-style string functions.</p></li>
+<li><p><code>array2d</code> : For two dimensional arrays, the size of the second dimension. <code>array2d</code> is invalid if <code>array</code> is not also specified. If <code>array2d</code> is not provided the array is one dimensional. It is possible to have an two dimensional array of structures.</p></li>
+<li><p><code>variable2dArray</code> : If this Data are a two dimensional array, then the <code>variable2dArray</code> attribute indicates that the second dimension length is variable (up to <code>array2d</code> size). The <code>variable2dArray</code> attribute indicates which previously defined data item in the encoding gives the size of the array in the encoding. The <code>variable2dArray</code> variable must exist as a primitive non-array member of the encoding, <em>before</em> the definition of the variable array. If the referenced data item does not exist ProtoGen will ignore the <code>variable2dArray</code> attribute.</p></li>
 <li><p><code>dependsOn</code> : The <code>dependsOn</code> attribute indicates that the presence of this Data item is dependent on a previously defined data item. If the previous data item evaluates as zero then this data item is skipped in the encoding. <code>dependsOn</code> is useful for encodings that do not know a-priori if a particular data item is available. For example consider a telemetry packet that reports data from all sensors connected to a device: if one of the sensors is not connected or not working then the space in the packet used to report that data can be saved. The <code>dependsOn</code> data item will typically be a single bit bitfield, but can be any previous data item which is not a structure or an array. Bitfields cannot be dependent on other data items. ProtoGen will verify that the <code>dependsOn</code> variable exists as a primitive non-array member of the encoding, <em>before</em> the definition of this data item. If the referenced data item does not exist ProtoGen will ignore the <code>dependsOn</code> attribute.</p></li>
-<li><p><code>min</code> : The minimum value that can be encoded. Typically encoded types take up less space than in-memory types. This is usually accomplished by scaling the data. <code>min</code>, along with <code>max</code> and the number of bits of the encoded type, is used to determine the scaling factor. <code>min</code> is ignored if the encoded type is floating, signed, or string. If <code>min</code> is not given, but <code>max</code> is, then <code>min</code> is assumed to be 0. <code>min</code> can be input as a mathematical expression in infix notation. For example &#8211;10000/2<sup>15</sup> would be correctly evaluated as -.30517578125. In addition the special strings &#8220;pi&#8221; and &#8220;e&#8221; are allowed, and will be replaced with their correct values. For example 180/pi would be evaluated as 57.295779513082321.</p></li>
+<li><p><code>min</code> : The minimum value that can be encoded. Typically encoded types take up less space than in-memory types. This is usually accomplished by scaling the data. <code>min</code>, along with <code>max</code> (or <code>scaler</code>) and the number of bits of the encoded type, is used to determine the scaling factor. <code>min</code> is ignored if the encoded type is floating, signed, or string. If <code>min</code> is not given, but <code>max</code> is, then <code>min</code> is assumed to be 0. <code>min</code> can be input as a mathematical expression in infix notation. For example &#8211;10000/2<sup>15</sup> would be correctly evaluated as -.30517578125. In addition the special strings &#8220;pi&#8221; and &#8220;e&#8221; are allowed, and will be replaced with their correct values. For example 180/pi would be evaluated as 57.295779513082321. If both the in-memory and encoded types are an integer, and if <code>min</code> is an integer, the scaling will be done using integer math rather than floating point math.</p></li>
 <li><p><code>max</code> : The maximum value that can be encoded. <code>max</code> is ignored if the encoded type is floating, or string. If the encoded type is signed, then the minimum encoded value is <code>-max</code>. If the encoded type is unsigned, then the minimum value is <code>min</code> (or 0 if <code>min</code> is not given). If <code>max</code> or <code>scaler</code> are not given then the in memory data are not scaled, but simply cast to the encoded type. <code>max</code> can be input as a mathematical expression in the same way as <code>min</code>.</p></li>
-<li><p><code>scaler</code> : The scaler that is multiplied by the in-memory type to convert to the encoded type. <code>scaler</code> is ignored if <code>max</code> is present. <code>scaler</code> and <code>max</code> (along with <code>min</code>) are different ways to represent the same thing. For signed encoded types <code>scaler</code> is converted to <code>max</code> as: <code>max = ((2^(numbits-1) - 1)/scaler</code>. For unsigned encoded types <code>scaler</code> is converted to <code>max</code> : <code>max = min + ((2^numbits)-1)/scaler</code>. <code>scaler</code> is ignored if the encoded type is string or structure. If <code>scaler</code> or <code>max</code> are not given then the in memory data are not scaled, but simply cast to the encoded type. <code>scaler</code> can be input as a mathematical expression in the same way as <code>min</code>. Although it is unusual <code>scaler</code> can be used with floating point encoded types. This would be useful for cases where the units of the floating point encoded type do not match the desired units of the data in memory.</p></li>
-<li><p><code>default</code> : The default value for this Data. The default value is used if the received packet length is not long enough to encode all the Data. Defaults can only be used as the last element(s) of a packet. Using defaults it is possible to augment a previously defined packet in a backwards compatible way, by extending the length of the packet and adding new fields with default values so that older packets can still be interpreted.</p></li>
-<li><p><code>constant</code> : is used to specify that this Data in a packet is always encoded with the same value. This is useful for encodings such as key-length-value which require specific a-priori known values to appear before the data. It can also be useful for transmitting constants such as the API of the protocol. If the encoded type is string then the constant value is interpreted as a string literal (i.e. quotes are placed around it), unless the constant value contains &#8220;(&#8221; and &#8220;)&#8221;, in which case it is interpreted as a function or macro and no quotes are placed around it. If the inMemoryType is null, the constant value will not be decoded, instead the bytes containing the constant value will simply be skipped over in the decode function.</p></li>
+<li><p><code>scaler</code> : The scaler that is multiplied by the in-memory type to convert to the encoded type. <code>scaler</code> is ignored if <code>max</code> is present. <code>scaler</code> and <code>max</code> (along with <code>min</code>) are different ways to represent the same thing. For signed encoded types <code>scaler</code> is converted to <code>max</code> as: <code>max = ((2^(numbits-1) - 1)/scaler</code>. For unsigned encoded types <code>scaler</code> is converted to <code>max</code> as: <code>max = min + ((2^numbits)-1)/scaler</code>. <code>scaler</code> is ignored if the encoded type is string or structure. If <code>scaler</code> or <code>max</code> are not given then the in memory data are not scaled, but simply cast to the encoded type. <code>scaler</code> can be input as a mathematical expression in the same way as <code>min</code>. Although it is unusual <code>scaler</code> can be used with floating point encoded types. This would be useful for cases where the units of the floating point encoded type do not match the desired units of the data in memory. If both the in-memory and encoded types are an integer, and if <code>min</code> and <code>scaler</code> are an integers, the scaling will be done using integer math rather than floating point math.</p></li>
+<li><p><code>default</code> : The default value for this Data. The default value is used if the received packet length is not long enough to encode all the Data. Defaults can only be used as the last element(s) of a packet. Using defaults it is possible to augment a previously defined packet in a backwards compatible way, by extending the length of the packet and adding new fields with default values so that older packets can still be interpreted. In the case of a <code>string</code> or <code>fixedstring</code> type the default value is treated as a string of characters rather than converted to a number. In addition, in the string case, if the default string should be empty the default attribute should be set to &#8220;null&#8221;. In addition the special strings &#8220;pi&#8221; and &#8220;e&#8221; are allowed, and will be replaced with their correct values; but only if the entire string can be evaluated numerically. Hence &#8220;180/pi&#8221; will be evaluated as 57.295779513082321 but &#8220;piedpiper&#8221; will not be altered.</p></li>
+<li><p><code>constant</code> : is used to specify that this Data in a packet is always encoded with the same value. This is useful for encodings such as key-length-value which require specific a-priori known values to appear before the data. It can also be useful for transmitting constants such as the API of the protocol. If the encoded type is string then the constant value is interpreted as a string literal (i.e. quotes are placed around it), unless the constant value contains &#8220;(&#8221; and &#8220;)&#8221;, in which case it is interpreted as a function or macro and no quotes are placed around it. If the inMemoryType is null, the constant value will not be decoded, instead the bytes containing the constant value will simply be skipped over in the decode function. In addition the special strings &#8220;pi&#8221; and &#8220;e&#8221; are allowed, and will be replaced with their correct values; but only if the entire string can be evaluated numerically. Hence &#8220;180/pi&#8221; will be evaluated as 57.295779513082321 but &#8220;piedpiper&#8221; will not be altered.</p></li>
 <li><p><code>checkConstant</code> : If set to &#8220;true&#8221; this attribute affects the interpretation of <code>constant</code> in the decode function. When checkConstant is set the decode function evaluates the decoded data and returns a fail state if the value is not equal to the supplied constant.</p></li>
+<li><p><code>hidden</code> : is used to specify that this particular data field will <em>not</em> appear in the generated documentation markdown.</p></li>
+<li><p><code>initialValue</code> : is used to specify an initial value that is assigned to this field in the init function. If the <code>initialValue</code> is not given then this field will not receive an initial value in the init function. As with <code>constant</code> or <code>default</code> you can use mathematical expresions including the special strings &#8220;pi and &#8221;e&quot;.</p></li>
+<li><p><code>verifyMinValue</code> : is used to specify the lowest value that this in-memory field should hold. This is used in the verify function. If the value of this field is less than <code>verifyMinValue</code> the verify function will change the value of the field and return 0 to indicate there was a problem. As with <code>constant</code> or <code>default</code> you can use mathematical expresions including the special strings &#8220;pi and &#8221;e&#8220;. in addition you can use the string &#8221;auto&quot;, in which case protogen will compute the minimum value based on this fields encoding rules.</p></li>
+<li><p><code>verifyMaxValue</code> : is used to specify the highest value that this in-memory field should hold. This is used in the verify function. If the value of this field is more than <code>verifyMaxValue</code> the verify function will change the value of the field and return 0 to indicate there was a problem. As with <code>constant</code> or <code>default</code> you can use mathematical expresions including the special strings &#8220;pi and &#8221;e&#8220;. in addition you can use the string &#8221;auto&quot;, in which case protogen will compute the maximum value based on this fields encoding rules.</p></li>
 <li><p><code>comment</code> : A one line doxygen comment that follows the data declaration.</p></li>
 <li><p><code>range | units | notes</code> : If specified, each of these attributes will be added (as single-line comments) to the packet description table in the documentation markdown. These comments will appear next to this <Data> tag, and can be used if extra specificity is required. Note that these fields apply ONLY to the documentation, and will NOT appear anywhere in the generated code.</p></li>
 </ul>
+
+<h2 id="documentationtag">Documentation tag</h2>
+
+<p>The Documentation tag is used to add extra documentation to the markdown output, but not the generated code. It is typically used to provide expository text needed to better document the overall protocol. The tag can appear anywhere in the xml, at the global level (same as Packet tags), or as a sub-tag of Packet or Enum. For global Documentation tags the order of the tag (with respect to global Packet and Enum tags) is preserved in the markdown output; in combination with the heading label and outline level this makes it possible to better organize the markdown output.</p>
+
+<p>Documentation attributes:</p>
+
+<ul>
+<li><p><code>name</code> : The heading of the documentation. This attribute is optional, if it is not given then no heading label is output.</p></li>
+<li><p><code>comment</code> : The expository text for this documentation. The text will be reflowed and wrapped at 80 characters. Multiple paragraphs are supported by using two line feeds (a la markdown) to separate the paragraphs.</p></li>
+<li><p><code>paragraph</code> : The outline level applied to the heading. This attribute is optional, if it is not given the outline level is assumed to be 1 for global Docmentation and 3 for Documentation that is a sub of Packet or Enum. The <code>paragraph</code> attribute only effects the output if the <code>name</code> attribute is given.</p></li>
+<li><p><code>file</code> : A file that provides the text of the Documentation. This attribute is optional, its purpose is to make it possible to have large blocks of text, with markdown formatting, without having to incude the text directly in the .xml file. The file path is relative to the xml input file path. The contets of the file are inserted into the markdown output without interpretation.</p></li>
+</ul>
+
+<p>Documentation examples:</p>
+
+<pre><code>&lt;Documentation comment=&quot;---&quot;/&gt;
+</code></pre>
+
+<p>Inserts &#8220;&#8212;&#8221; into the markdown output. This will produce a horizontal rule in the generated html. ProtoGen will also insert inline html to replace the horizontal rule with a page break when the html is printed (this behavior depends on the stylesheet - see the default style sheet that protogen outputs inline with the markdown).</p>
+
+<pre><code>&lt;Documentation name=&quot;Enumerations&quot; paragraph=&quot;1&quot; comment=&quot;Packets in the protocol refer to these global enumerations.&quot;/&gt;
+</code></pre>
+
+<p>Is an example of documentation that would be used ahead of a global enumeration for packet identifiers. This will insert a level 1 heading named &#8220;Enumerations&#8221; followed by a paragraph of the text given in comment.</p>
 
 <hr />
 
@@ -388,13 +492,13 @@ typedef struct
 
 <h2 id="thepacketlengthandid">The packet length and ID</h2>
 
-<p>The autogenerated code will define any named enumeration given in the protocol xml for the packet. It will define functions to determine the packet ID and the minimum length of the encoded data of the packet. The packet lengths are given in numbers of bytes. ProtoGen refers to &#8220;minimum length&#8221;, rather than &#8220;length&#8221; because packets can include default data, variable length arrays, or strings, any of which can cause the packet length to vary.</p>
+<p>The autogenerated code will define any named enumeration given in the protocol xml for the packet. It will also define macros to determine the packet ID and the minimum length of the encoded data of the packet. The packet lengths are given in numbers of bytes. ProtoGen refers to &#8220;minimum length&#8221;, rather than &#8220;length&#8221; because packets can include default data, variable length arrays, or strings, any of which can cause the packet length to vary.</p>
 
-<pre><code>//! return the minimum data length for the  Version packet
-int getVersionMinDataLength(void);
+<pre><code>//! return the packet ID for the Version packet
+#define getVersionPacketID() (VERSION)
 
-//! return the packet ID for the  Version packet
-uint32_t getVersionPacketID(void);
+//! return the minimum data length for the Version packet
+#define getVersionMinDataLength() (25)
 </code></pre>
 
 <p>Variable length packets are a great tool for optimizing bandwidth utilization without limiting the in-memory capabilities of the code. However the correct length of a variable length packet cannot be determined until the packet has been mostly decoded; therefore the generated code will check the length of such a packet twice. The first check occurs before any decoding is done to verify the packet meets the minimum length. The second check occurs when the packet decoding is complete (or only default fields are left) to verify that there were enough bytes to complete the variable length fields.</p>
@@ -424,16 +528,24 @@ int decodeVersionPacket(const void* pkt, Board_t* board, uint8_t* major, uint8_t
 
 <p>In addition to the packet functions the generated code can include functions to encode and decode a structure to a byte array. These functions can be used if you do not want the generated code to interact with packet routines. Perhaps because your data are not being encoded in packets, or the simple packet interfaces that ProtoGen supports are not sophisticated enough. These functions will only be generated for Structure tags, not Packet tags. If you want to simultaneously have a structure with generic encoding functions and packet functions; then create both a structure tag and a packet tag which references the structure (see the GPS packet in exampleprotocol.xml).</p>
 
-<pre><code>//! Encode a GPS_t structure into a byte array
-void encodeGPS_t(uint8_t* data, int* bytecount, const GPS_t* user);
+<pre><code>//! Create the GPS packet
+void encodeGPSPacket(void* pkt, const GPS_t* gps);
 
-//! Decode a GPS_t structure from a byte array
-int decodeGPS_t(const uint8_t* data, int* bytecount, GPS_t* user);
+//! Decode the GPS packet
+int decodeGPSPacket(const void* pkt, GPS_t* gps);
 </code></pre>
+
+<p>Note that Structures do not emit markdown documentation. If a structure is included as part of a packet, then its documentation will be output when the packets documentation is output, in order to complemetely document the packet.</p>
+
+<h2 id="parsingorder">Parsing order</h2>
+
+<p>Global tags (those directly under the <code>Protocol</code> tag) are not parsed in the order defined in the xml. Instead ProtoGen will first parse global Enums, and then global Structures, and finally global Packets. Enums and Structures which are subs of global tags are parsed when their parent tag is parsed. This parsing order is important because Structures may refer to Enums, and Packets may refer to both Enums and Structures. The parsing order ensures that the references are available when needed.</p>
+
+<p>However the order of the global tags (in the xml) is preserved when the markdown documentation is output. This makes it possible to organize the xml file to produce the best documentation.</p>
 
 <h1 id="othergeneratedcode">Other generated code</h1>
 
-<p>ProtoGen also creates other files that are not specified by the xml, but are used as helper functions for the generated packet code. These are the modules: bitfieldspecial, floatspecial, fieldencode, fielddecode, scaledencode, scaleddecode. Although these modules are not specified by the xml they are still generated. Much of the code in these modules is tedious and repetitive, so it was ultimatley simpler and less error prone to auto generate it. More importantly automatically generating this code makes it easier for future versions of ProtoGen to take advantage of changes or advances in the routines these modules provide.</p>
+<p>ProtoGen also creates other files that are not specified by the xml, but are used as helper functions for the generated packet code. These are the modules: bitfieldtest, floatspecial, fieldencode, fielddecode, scaledencode, scaleddecode. Although these modules are not specified by the xml they are still generated. Much of the code in these modules is tedious and repetitive, so it was ultimatley simpler and less error prone to auto generate it. More importantly automatically generating this code makes it easier for future versions of ProtoGen to take advantage of changes or advances in the routines these modules provide.</p>
 
 <h2 id="fieldencodeandfielddecode">fieldencode and fielddecode</h2>
 
@@ -453,27 +565,35 @@ int decodeGPS_t(const uint8_t* data, int* bytecount, GPS_t* user);
 
 <h2 id="floatspecial">floatspecial</h2>
 
-<p>floatspecial provides routines to convert to and from normal floating point types (64 and 32 bit) to the special types also supported by ProtoGen (namely, 16 and 24 bits). One could legitamately ask why such types are needed: isn&#8217;t it better to simply scale a 32 (or 64) bit float down to a smaller integer? Usually yes, but there are cases where this is not ideal. A good example is the amount of fuel on board an aircraft: Typically the accuracy of the fuel level estimate or sensor is no more than 8 bits. However the dynamic range of the fuel level is a function of the aircraft type. A 4 pound drone might carry 1 pound of fuel. An A380 airliner might carry 500,000 lbs of fuel. There is no simple way to scale the in memory floating point fuel level to a smaller integer type without a-priori knowing the size of vehicle (or using an excessive number of bits). However a 16-bit floating point type with 9 bits of resolution can do this nicely. So for that case, supporting a 16-bit float allows us to save 2 bytes in the encoded data stream.</p>
+<p>floatspecial provides routines to convert to and from normal floating point types (64 and 32 bit) to the special types also supported by ProtoGen (namely, 16 and 24 bits with a variable significand size). One could legitimately ask why such types are needed: isn&#8217;t it better to simply scale a 32 (or 64) bit float down to a smaller integer? Usually yes, but there are cases where this is not ideal. A good example is the amount of fuel on board an aircraft: Typically the accuracy of the fuel level estimate or sensor is no more than 8 bits. However the dynamic range of the fuel level is a function of the aircraft type. A 4 pound drone might carry 1 pound of fuel. An A380 airliner might carry 500,000 lbs of fuel. There is no simple way to scale the in memory floating point fuel level to a smaller integer type without a-priori knowing the size of vehicle (or using an excessive number of bits). However a 16-bit floating point type with 9 bits of resolution can do this nicely. So for that case, supporting a 16-bit float allows us to save 2 bytes in the encoded data stream.</p>
 
-<p>The 16 and 24 bit float formats use the same layout as IEEE&#8211;754: the most signficant bit is a sign bit, the next bits are the biased exponent, the least significant bits are the significand with an implied leading 1. The 24-bit format uses the same number of exponent bits as float32 (8 bits of exponent). Hence float24 covers the same range as a float32, but with 15 bits of resolution rather than 23 bits. The 16-bit format uses 6 bits for exponent, so it has a range that is 1/4 of float32 (aproximately &#8211;2<sup>31</sup> to 2<sup>31</sup>), but with 9 bits of resolution rather than 23 bits.</p>
+<p>The 16 and 24 bit float formats use the same layout as IEEE&#8211;754: the most signficant bit is a sign bit, the next bits are the biased exponent, and the least significant bits are the significand with an implied leading 1. By default the 16 bit float uses 6 bits of expononent with 9 bits of significand, and the 24-bit format uses the same number of exponent bits as float32 (8 bits of exponent). Hence the default float24 covers the same range as a float32, but with 15 bits of resolution rather than 23 bits. The default 16-bit format uses 6 bits for exponent, so it has a range that is 1/4 of float32 (aproximately &#8211;2<sup>31</sup> to 2<sup>31</sup>), but with 9 bits of resolution rather than 23 bits. The 9 and 15 bit signficand floats are what you get if the encoded type is &#8220;float16&#8221; or &#8220;float24&#8221; respectively. However you can specify the float in more detail by adding another number. Asking for a &#8220;float16:10&#8221; encoded type will result in a 16-bit float with 5 bits of exponent and 10 bits of significand.</p>
 
 <p>floatspecial also provides routines to determine if a pattern of 32 or 64 bits is a valid <code>float</code> or <code>double</code>. In the case where a native floating point type is decoded directly from the byte stream (as opposed to being scaled from integer) these functions are used to make sure the floating point number is not infinity, NaN, or denormalized prior to loading the value into a floating point register. This is important for many embedded processors which have limited floating point environments that will throw an exception in the event of an invalid floating point. Any invalid floating point that is decoded is replaced with 0.</p>
 
 <p>ProtoGen assumes that the <code>float</code> (32-bit) and <code>double</code> (64-bit) types adhere to IEEE&#8211;754. ProtoGen&#8217;s assumption of the layout of the <code>float</code> and <code>double</code> types is only a factor in two cases: 1) if the protocol you specify uses 16 or 24 bit floating point types (i.e. if a conversion between the types is needed) and 2) if a native 32 or 64 bit float type is encoded without scaling by integer, which will trigger the check to determine if the float is valid when it is decoded. If any of your processors do not adhere to the IEEE&#8211;754 spec for floating point, do not use 16 or 24 bit floats in your protocol ICD. If you set the protocol attribute <code>supportSpecialFloat=&quot;false&quot;</code> then the floatspecial module will not be emitted and any reference to float16 or float24 in the protocol will generate a warning and the type will be changed to float32. In addition setting <code>supportSpecialFloat=&quot;false&quot;</code> will cause ProtoGen to skip the valid float check on decode.</p>
 
-<h2 id="bitfieldspecial">bitfieldspecial</h2>
+<h2 id="bitfields">Bitfields</h2>
 
-<p>bitfieldspecial provides routines for encoding and decoding bitfields into and out of byte arrays. If you set the protocol attribute <code>supportBitfield=&quot;false&quot;</code> this file will not be output. In addition any bitfields in the protocol description will generate a warning, and the field will be converted to the next larger in-memory unsigned integer. If you use a bitfield which is larger than 32 bits, and if <code>supportLongBitfield</code> is set to <code>&quot;true&quot;</code> the bitfield type will be uint64_t, and the long bitfield functions will be used for that bitfield. The normal bitfield support routines use <code>unsigned int</code> as the base type; this has the advantage of working on all compilers. If the protocol attribute <code>bitfieldTest=&quot;true&quot;</code> a test function will be written into bitfieldspecial which can be used to test the bitfield routines on your compiler.</p>
+<p>Protogen emits inline code for encoding and decoding bitfields into and out of byte arrays. If you set the protocol attribute <code>supportBitfield=&quot;false&quot;</code> any bitfields in the protocol description will generate a warning, and the field will be converted to the next larger in-memory unsigned integer. If you use a bitfield which is larger than 32 bits, and if <code>supportLongBitfield</code> is set to <code>&quot;true&quot;</code> the bitfield type will be uint64_t, and long bitfield functions will be used for that bitfield. The normal bitfield code uses <code>unsigned int</code> as the base type; this has the advantage of working on all compilers. If the protocol attribute <code>bitfieldTest=&quot;true&quot;</code> the bitfieldtest module will be output which can be used to test the bitfield routines on your compiler.</p>
 
-<p>Bitfields are fantastically useful for minimizing the size of packets, however there is some ambiguity when it comes to byte ordering within a bitfield. Since the byte boundaries are not fixed at 8-bit intervals a bitfield cannot be described as big or little endian. ProtoGen encodes bitfields with the most significant bits first in the data stream, and the least significant bits last.</p>
+<p>Bitfields are fantastically useful for minimizing the size of packets, however there is some ambiguity when it comes to byte ordering within a bitfield. Since the byte boundaries are not fixed at 8-bit intervals a bitfield cannot be described as big or little endian. ProtoGen encodes bitfields with the most significant bits first in the data stream, and the least significant bits last. This can be changed by putting the bitfields into a &#8220;bitfield group&#8221;, see the section on bitfield groups for more details.</p>
 
-<p>Although bitfields are typically used to convey integer or enumeration information, it is possible to scale an in-memory type to a bitfield. The only drawback to this usage case is that ProtoGen will not enforce the minimum or maximum value that can be encoded. The normal scaling routines in scaleencode will check for and handle an overflow or underflow, because those routines know at compile time how many bits are available. Since the bitfield scaling routines do not know at compile time how many bits are being used, adding checks for overflow or underflow would be too burdensome. User beware; if you choose to scale a value to a bitfield you must ensure that the scaled value does not overflow the encoded bits.</p>
+<p>Although bitfields are typically used to convey integer or enumeration information, it is possible to scale an in-memory type to a bitfield.</p>
+
+<p>Protogen counts the bits of adjacent bitfields at code generation time (as opposed to run-time), which allows the generated bitfield code to be reasonably efficient. However this requires that the bitcount be fixed at code generation time; for this reason the presence of a bitfield cannot be dependent on other packet fields (see the <code>dependsOn</code> attribute). However bitfields can be given default values, since in that case the bitcount is not relevant once it has been determined that the packet size is not large enough to contain the defaulted fields. </p>
+
+<h2 id="initializationandverification">Initialization and Verification</h2>
+
+<p>It is common for projects to read and write structures directly to storage or memory, and to need some means to correctly initialize and verify a structure. Accordingly Protogen can output functions for initializing structures and for verifying the values in a structure. These functions will only be output if the Structure or Packet contains any fields that have the attributes <code>initialValue</code> and/or <code>verifyMinValue</code> or <code>verifyMaxValue</code>. Whenever these functions are output Protogen will also output a series of #defined constants that give the initial, min, and max values used in these functions. These can be helpful, for example, when creating user interfaces that represent the data in these structures.</p>
+
+<p>Since the intialization and verification of structures are not related to the encoding and decoding of data for communications it is recommended that the files used for these functions be different then those used for packet encoding and deocoding. The attribute <code>verifyfile</code> can be used to change the file that the these functions are written to.</p>
 
 <h1 id="generationofdocumentation">Generation of documentation</h1>
 
 <p>Documentation for a protocol is often the last task undertaken by a developer, but arguably should be the first. The usefulness of a protocol is largely dictated by the quality of its documentation (unless you plan to be the only one to ever use it!). ProtoGen provides automatic documentation. The emitted code will be decorated with doxygen style comments. If doxygen is installed ProtoGen can use it to generate html documentation for the code. This documentation is useful for developers who are coding against the API provided by the generated code.</p>
 
-<p>ProtoGen will also output a Demolink.markdown file which provides a MultiMarkdown formatted document of the protocol. ProtoGen can feed this file to MultiMarkdown (if it is installed) in order to create a Demolink.html file. This file is intended as a master document for the protocol that is suitable for developers and users alike. The author of the protocol xml is encouraged to be verbose in the comment attributes. The better you document your protocol the less users will bug you for help!</p>
+<p>ProtoGen will also output a markdown file which provides a MultiMarkdown formatted document of the protocol. ProtoGen can feed this file to MultiMarkdown (if it is installed) in order to create a html file. This file is intended as a master document for the protocol that is suitable for developers and users alike. The author of the protocol xml is encouraged to be verbose in the comment attributes. The better you document your protocol the less users will bug you for help!</p>
 
 <h3 id="documentationconsequencesofusingtheincludetag">Documentation consequences of using the <code>Include</code> tag</h3>
 
@@ -495,4 +615,4 @@ int decodeGPS_t(const uint8_t* data, int* bytecount, GPS_t* user);
 
 <p><a href="http://www.fivebyfivedevelopment.com">www.fivebyfivedevelopment.com</a></p>
 
-<p>Before founding Five by Five Development in 2013 I was co-founder of <a href="http://www.cloudcaptech.com">Cloud Cap Technology</a>, which developed the Piccolo flight management system. Although Piccolo was at heart a flight controller, I spent more time coding communications protocols than anything else. Hopefully ProtoGen will allow myself and others to spend less time doing that.</p>
+<p>Before starting Five by Five Development in 2013 I was co-founder of <a href="http://www.cloudcaptech.com">Cloud Cap Technology</a>, which developed the Piccolo flight management system. Although Piccolo was at heart a flight controller, I spent more time coding communications protocols than anything else. I now use ProtoGen in virtually all my communications work, and it has become an indispensable tool. Some places where ProtoGen is being used on a daily basis include: <a href="http://www.power4flight.com">Power4Flight</a>, <a href="http://w3.trilliumeng.com/">Trillium Engineering</a>, <a href="https://www.currawongeng.com/">Currawong Engineering</a></p>
