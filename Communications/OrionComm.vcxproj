@@ -127,7 +127,6 @@
     <ClCompile Include="OrionCommLinux.c" />
     <ClCompile Include="OrionCommWindows.c" />
     <ClCompile Include="OrionPublicPacket.c" />
-    <ClCompile Include="bitfieldspecial.c" />
     <ClCompile Include="fielddecode.c" />
     <ClCompile Include="fieldencode.c" />
     <ClCompile Include="floatspecial.c" />
@@ -137,7 +136,6 @@
   <ItemGroup>
     <ClInclude Include="OrionComm.h" />
     <ClInclude Include="OrionPublicPacket.h" />
-    <ClInclude Include="bitfieldspecial.h" />
     <ClInclude Include="fielddecode.h" />
     <ClInclude Include="fieldencode.h" />
     <ClInclude Include="floatspecial.h" />

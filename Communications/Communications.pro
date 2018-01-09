@@ -10,7 +10,7 @@ TARGET = OrionComm
 TEMPLATE = lib
 CONFIG += staticlib
 
-SOURCES += bitfieldspecial.c \
+SOURCES += \
     fielddecode.c \
     fieldencode.c \
     floatspecial.c \
@@ -21,7 +21,7 @@ SOURCES += bitfieldspecial.c \
     scaleddecode.c \
     scaledencode.c
 
-HEADERS += bitfieldspecial.h \
+HEADERS += \
     fielddecode.h \
     fieldencode.h \
     floatspecial.h \

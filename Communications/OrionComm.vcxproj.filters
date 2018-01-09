@@ -28,9 +28,6 @@
     <ClCompile Include="OrionPublicPacket.c">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="bitfieldspecial.c">
-      <Filter>Source Files</Filter>
-    </ClCompile>
     <ClCompile Include="fielddecode.c">
       <Filter>Source Files</Filter>
     </ClCompile>
@@ -52,9 +49,6 @@
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="OrionPublicPacket.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="bitfieldspecial.h">
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="fielddecode.h">
