@@ -25,7 +25,7 @@ int main(int argc, char **argv)
     memset(&PktIn, 0, sizeof(PktIn));
 
     // This is how you form a packet
-    encodeOrionCmdPacketStructure(&PktOut, &Cmd);
+    encodeOrionCmdPacket(&PktOut, &Cmd);
 
     // For now, I fake sending it by copying it straight into the input buffer
     memcpy(Buffer, &PktOut, PktOut.Length + ORION_PKT_OVERHEAD);

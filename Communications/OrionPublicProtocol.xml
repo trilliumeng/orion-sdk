@@ -555,15 +555,19 @@ See TrilliumPacket.c (in the Orion SDK) for details.
     <Documentation comment="---"/>
     <Documentation name="Packets for gimbal control" paragraph="1" comment="These packets are sent by the user to control the gimbal."/>
 
+    <Structure name="OrionCmd" comment="Structure for holding a gimbal axis command">
+        <Data name="Target" inMemoryType="float32" array="NUM_GIMBAL_AXES" encodedType="signed16" scaler="1000.0" comment="Pan and tilt commands in radians or radians per second. Interpretation depends on Mode."/>
+        <Data name="Mode" enum="OrionMode_t" encodedType="unsigned8" comment="Operational mode of the gimbal. Note that not all modes can be directly commanded."/>
+        <Data name="Stabilized" inMemoryType="unsigned8" comment="Non-zero to enable inertial stabilization. If zero then Target is with respect to the gimbal mount, otherwise Target is with respect to the inertial or image space."/>
+        <Data name="ImpulseTime" inMemoryType="float32" encodedType="unsigned8" scaler="10.0" comment="Amount of time in seconds for changing the gimbal position"/>
+    </Structure>
+
     <Packet name="OrionCmd" ID="ORION_PKT_CMD" comment=
         "Basic commands for control of gimbal pan and tilt. Send this packet to the gimbal to effect basic pan and tilt control.
         The gimbal will echo the packet as confirmation of receiving it. Note that this packet cannot be used to command the Geopoint
         or Path modes; those modes need to be commanded through their respective packets. If the gimbal is in Geopoint or Path mode
         receiving this packet will cancel those modes.">
-        <Data name="Target" inMemoryType="float32" array="NUM_GIMBAL_AXES" encodedType="signed16" scaler="1000.0" comment="Pan and tilt commands in radians or radians per second. Interpretation depends on Mode."/>
-        <Data name="Mode" enum="OrionMode_t" encodedType="unsigned8" comment="Operational mode of the gimbal. Note that not all modes can be directly commanded."/>
-        <Data name="Stabilized" inMemoryType="unsigned8" comment="Non-zero to enable inertial stabilization. If zero then Target is with respect to the gimbal mount, otherwise Target is with respect to the inertial or image space."/>
-        <Data name="ImpulseTime" inMemoryType="float32" encodedType="unsigned8" scaler="10.0" comment="Amount of time in seconds for changing the gimbal position"/>
+        <Data name="Cmd" struct="OrionCmd" comment="Pan/tilt command" />
     </Packet>
 
     <Packet name="GeopointCmd" ID="ORION_PKT_GEOPOINT_CMD" parameterInterface="true"

@@ -24,6 +24,10 @@ typedef TrilliumPktInfo_t OrionPktInfo_t;
 #define LookForOrionPacketInByteEx(a, b, c) LookForTrilliumPacketInByteEx((TrilliumPkt_t *)a, (TrilliumPktInfo_t *)b, ORION_SYNC, c)
 #define MakeOrionPacket(a, b, c)            MakeTrilliumPacket(a, ORION_SYNC, b, c)
 
+// Defines for backward compatibility. NOTE: THESE *WILL* BE DEPRECATED IN THE FUTURE
+#define encodeOrionCmdPacketStructure encodeOrionCmdPacket
+#define decodeOrionCmdPacketStructure decodeOrionCmdPacket
+
 #ifdef __cplusplus
 }
 #endif // __cplusplus

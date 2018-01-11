@@ -24,7 +24,7 @@ int main(int argc, char **argv)
     ProcessArgs(argc, argv, &Cmd);
 
     // This is how you form a packet
-    encodeOrionCmdPacketStructure(&PktOut, &Cmd);
+    encodeOrionCmdPacket(&PktOut, &Cmd);
 
     // Send the packet
     OrionCommSend(&PktOut);
