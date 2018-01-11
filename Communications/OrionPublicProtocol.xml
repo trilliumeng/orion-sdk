@@ -53,6 +53,7 @@ See TrilliumPacket.c (in the Orion SDK) for details.
         <Value name="ORION_PKT_RESET" comment="Send this packet to cause the gimbal to reset"/>
         <Value name="ORION_PKT_PRIVATE_05" comment="Reserved packet identifier"  hidden="true"/>
         <Value name="ORION_PKT_LASER_STATES" comment="Laser state information" />
+        <Value name="ORION_PKT_PRIVATE_07" comment="Reserved packet identifier" hidden="true"/>
         <Value name="ORION_PKT_PRIVATE_1F" value="0x1F" comment="Reserved packet identifier" hidden="true"/>
         <Value name="ORION_PKT_PRIVATE_20" comment="Reserved packet identifier" hidden="true"/>
         <Value name="ORION_PKT_PRIVATE_21" comment="Reserved packet identifier" hidden="true"/>
@@ -619,7 +620,7 @@ See TrilliumPacket.c (in the Orion SDK) for details.
         <Data name="Index" inMemoryType="unsigned8" default="0" comment="The index of the camera to command"/>
     </Packet>
 
-    <Packet name="OrionFlirSettings" ID="ORION_PKT_FLIR_SETTINGS" comparefile="compare/compareOrionPublic" printfile="compare/printOrionPublic" comment="FLIR-specific camera settings.">
+    <Packet name="OrionFlirSettings" ID="ORION_PKT_FLIR_SETTINGS" comment="FLIR-specific camera settings.">
         <Data name="Index" inMemoryType="unsigned8" comment="Index of the camera that these settings should apply to. Use 0xFF to apply to any connected FLIR camera."/>
 
         <Enum name="FlirNucType_t" comment="FLIR NUC type enumeration">
@@ -640,7 +641,7 @@ See TrilliumPacket.c (in the Orion SDK) for details.
         <Data name="IntegrationTime" inMemoryType="float32" encodedType="unsigned8" min="1" max="30" default="8" comment="Integration time, in milliseconds"/>
     </Packet>
 
-    <Packet name="OrionAptinaSettings" ID="ORION_PKT_APTINA_SETTINGS" comparefile="compare/compareOrionPublic" printfile="compare/printOrionPublic" comment="Aptina-specific camera settings.">
+    <Packet name="OrionAptinaSettings" ID="ORION_PKT_APTINA_SETTINGS" comment="Aptina-specific camera settings.">
         <Data name="Index" inMemoryType="unsigned8" comment="Index of the camera that these settings should apply to. Use 0xFF to apply to any connected Aptina camera."/>
         <Data name="MinExposure" inMemoryType="float32" encodedType="unsigned16" comment="Minimum exposure time in microseconds" min="0.05" max="33"/>
         <Data name="MaxExposure" inMemoryType="float32" encodedType="unsigned16" comment="Maximum exposure time in milliseconds" min="0.05" max="33"/>
@@ -654,7 +655,7 @@ See TrilliumPacket.c (in the Orion SDK) for details.
         <Data name="Hue" inMemoryType="signed8" default="0" comment="Hue adjustment" />
     </Packet>
 
-    <Packet name="OrionZafiroSettings" ID="ORION_PKT_ZAFIRO_SETTINGS" comparefile="compare/compareOrionPublic" printfile="compare/printOrionPublic" comment="Zafiro-specific camera settings.">
+    <Packet name="OrionZafiroSettings" ID="ORION_PKT_ZAFIRO_SETTINGS" comment="Zafiro-specific camera settings.">
         <Data name="Index" inMemoryType="unsigned8" comment="Index of the camera that these settings should apply to. Use 0xFF to apply to any connected Zafiro camera."/>
         <Data name="BlackHot" inMemoryType="unsigned8" comment="Image polarity setting - set to 0 for white hot or 1 for black hot"/>
         <Data name="IntegrationTime" inMemoryType="float32" encodedType="unsigned8" min="1" max="30" comment="Integration time, in milliseconds"/>
@@ -663,14 +664,14 @@ See TrilliumPacket.c (in the Orion SDK) for details.
         <Data name="AgcSaturation" inMemoryType="float32" encodedType="unsigned8" min="0" max="0.1" comment="AGC histogram saturation"/>
     </Packet>
 
-    <Packet name="OrionHitachiSettings" ID="ORION_PKT_HITACHI_SETTINGS" comparefile="compare/compareOrionPublic" printfile="compare/printOrionPublic" comment="Hitachi-specific camera settings.">
+    <Packet name="OrionHitachiSettings" ID="ORION_PKT_HITACHI_SETTINGS" comment="Hitachi-specific camera settings.">
         <Data name="Index" inMemoryType="unsigned8" comment="Index of the camera that these settings should apply to. Use 0xFF to apply to any connected Hitachi camera."/>
         <Data name="IntegrationTime" inMemoryType="signed16" comment="Integration time in microseconds, or negative to disable shutter-priority mode" />
         <Data name="Aperture" inMemoryType="float32" encodedType="signed16" scaler="10" comment="Aperture f-number, or negative to disable aperture-priority mode" />
         <Data name="Sharpness" inMemoryType="float32" encodedType="unsigned8" max="5" default="1" comment="Sharpening filter strength" />
     </Packet>
 
-    <Packet name="OrionSonySettings" ID="ORION_PKT_SONY_SETTINGS" comparefile="compare/compareOrionPublic" printfile="compare/printOrionPublic" comment="Sony-specific camera settings.">
+    <Packet name="OrionSonySettings" ID="ORION_PKT_SONY_SETTINGS" comment="Sony-specific camera settings.">
         <Data name="Index" inMemoryType="unsigned8" comment="Index of the camera that these settings should apply to. Use 0xFF to apply to any connected Sony camera."/>
         <Data name="MinExposure" inMemoryType="float32" encodedType="unsigned16" comment="Minimum exposure time in milliseconds" min="0.05" max="33"/>
         <Data name="MaxExposure" inMemoryType="float32" encodedType="unsigned16" comment="Maximum exposure time in milliseconds" min="0.05" max="33"/>
@@ -692,6 +693,47 @@ See TrilliumPacket.c (in the Orion SDK) for details.
     <Packet name="OrionRetractCommand" ID="ORION_PKT_RETRACT_CMD" parameterInterface="true" comment="Retract or deploy command for a gimbal retraction mechanism.">
         <Data name="Cmd" enum="OrionRetractCmd_t" encodedType="unsigned8" comment="The retraction mechanism command"/>
         <Data name="Reserved" inMemoryType="null" encodedType="unsigned8" constant="0" comment="Reserved for future use"/>
+    </Packet>
+
+    <Enum name="UserDataPort_t" comment="Destination port identifiers" >
+        <Value name="USER_DATA_PORT_ETHERNET" value="0" comment="Payload Ethernet connection" />
+        <Value name="USER_DATA_PORT_PRIMARY" value="2" comment="Primary front-panel RS-232 serial port" />
+        <Value name="USER_DATA_PORT_FP2" comment="Front panel FP1 RS-232 serial port" />
+        <Value name="USER_DATA_PORT_FP1" comment="Front panel FP2 RS-232 serial port" />
+        <Value name="USER_DATA_PORT_FP3" value="8" comment="Front panel FP3 TTL serial port" />
+        <Value name="USER_DATA_PORT_FP4" comment="Front panel FP4 TTL serial port" />
+        <Value name="USER_DATA_PORT_CURRENT" value="255" comment="The port referenced is whatever port delivered this packet"/>
+    </Enum>
+
+    <Packet name="OrionUartConfig" ID="ORION_PKT_UART_CONFIG" 
+        comment="This packet is used to change or request the baud rate and protocol of a UART on the crown board. Send this packet with zero bytes to request the configuration of the port that receives the request, or with 1 byte to request the configuration of a specific port. Not all port configuration options are available, the ethernet port must run the PROTOCOL_ORION protocol at either 115200 or 230400 bits per second. In general users should not change the ethernet port setup. In addition the PROTOCOL_UBLOX_GPS is not supported on any user configurable port, it is included in the protocol list only for completeness.">
+
+        <Enum name="OrionProtocols_t" comment="Protocols understood by the Orion UART configuration">
+            <Value name="PROTOCOL_NO_CHANGE" comment="Do not change the protocol"/>
+            <Value name="PROTOCOL_NONE" comment="Disable the port"/>
+            <Value name="PROTOCOL_DEFAULT" comment="Use the default protocol. This is port dependent"/>
+            <Value name="PROTOCOL_ORION" comment="Orion packet communications protocol"/>
+            <Value name="PROTOCOL_CLEVIS" comment="Orion packet communications protocol specific to the clevis"/>
+            <Value name="PROTOCOL_CLEVIS_RAW" comment="Clevis raw communications mode"/>
+            <Value name="PROTOCOL_NMEA_GPS" comment="GPS input over NMEA"/>
+            <Value name="PROTOCOL_UBLOX_GPS" comment="uBox GPS"/>
+            <Value name="PROTOCOL_NOVATEL_GPS" comment="Novatel GPS"/>
+            <Value name="PROTOCOL_MAVLINK_GPS" comment="Mavlink GPS"/>
+            <Value name="PROTOCOL_UM7_MAG" comment="CH Robotics UM7 magnetometer"/>
+            <Value name="PROTOCOL_SIGHTLINE_VIDEO" comment="Sightline video processing"/>
+            <Value name="PROTOCOL_SENSONOR_IMU" comment="Sensonor IMU"/>
+            <Value name="PROTOCOL_DMU11_IMU" comment="Silicon sensing IMU"/>
+            <Value name="PROTOCOL_DISCOVERY" comment="Discovery protocol that decides between novatel, UM7, and Sightline"/>
+            <Value name="PROTOCOL_AIRROBOT" comment="Air robot protocol"/>
+            <Value name="PROTOCOL_PROPRIETARY1" comment="Proprietary protocol"/>
+            <Value name="PROTOCOL_PROPRIETARY2" comment="Proprietary protocol"/>
+            <Value name="PROTOCOL_FLIR" comment="FLIR pass-through protocol"/>
+            <Value name="NUM_PROTOCOL"/>
+        </Enum>        
+
+        <Data name="port" enum="UserDataPort_t" encodedType="unsigned8" comment="The port whose configuration should be changed or requested, use USER_DATA_PORT_CURRENT to indicate the port which received this packet"/>
+        <Data name="baud" inMemoryType="unsigned32" encodedType="unsigned24" comment="Baud rate bits per second. Use 0 to select the default baud rate for this port and protocol."/>
+        <Data name="protocol" enum="OrionProtocols_t" encodedType="unsigned8" comment="The protocol to use for this port. If PROTOCOL_NO_CHANGE or PROTOCOL_DEFAULT are used the reply to this packet will contain the actual protocol in use"/>
     </Packet>
 
     <Packet name="OrionUserData" ID="ORION_PKT_USER_DATA" comment="This packet can be used to transfer user-defined data payloads between communication ports on the gimbal.">
@@ -739,48 +781,7 @@ See TrilliumPacket.c (in the Orion SDK) for details.
     <Documentation name="Packets used for gimbal configuration" paragraph="1" comment=
         "These packets are sent by the user to configure the gimbal. To request a configuration packet send the packet with zero length. Configuration information is stored onboard the gimbal and does not need to be re-sent if the gimbal is restarted."/>
 
-    <Enum name="UserDataPort_t" comment="Destination port identifiers" >
-        <Value name="USER_DATA_PORT_ETHERNET" value="0" comment="Payload Ethernet connection" />
-        <Value name="USER_DATA_PORT_PRIMARY" value="2" comment="Primary front-panel RS-232 serial port" />
-        <Value name="USER_DATA_PORT_FP2" comment="Front panel FP1 RS-232 serial port" />
-        <Value name="USER_DATA_PORT_FP1" comment="Front panel FP2 RS-232 serial port" />
-        <Value name="USER_DATA_PORT_FP3" value="8" comment="Front panel FP3 TTL serial port" />
-        <Value name="USER_DATA_PORT_FP4" comment="Front panel FP4 TTL serial port" />
-        <Value name="USER_DATA_PORT_CURRENT" value="255" comment="The port referenced is whatever port delivered this packet"/>
-    </Enum>
-
-    <Packet name="OrionUartConfig" ID="ORION_PKT_UART_CONFIG" comparefile="compare/compareOrionPublic" printfile="compare/printOrionPublic" 
-        comment="This packet is used to change or request the baud rate and protocol of a UART on the crown board. Send this packet with zero bytes to request the configuration of the port that receives the request, or with 1 byte to request the configuration of a specific port. Not all port configuration options are available, the ethernet port must run the PROTOCOL_ORION protocol at either 115200 or 230400 bits per second. In general users should not change the ethernet port setup. In addition the PROTOCOL_UBLOX_GPS is not supported on any user configurable port, it is included in the protocol list only for completeness.">
-
-        <Enum name="OrionProtocols_t" comment="Protocols understood by the Orion UART configuration">
-            <Value name="PROTOCOL_NO_CHANGE" comment="Do not change the protocol"/>
-            <Value name="PROTOCOL_NONE" comment="Disable the port"/>
-            <Value name="PROTOCOL_DEFAULT" comment="Use the default protocol. This is port dependent"/>
-            <Value name="PROTOCOL_ORION" comment="Orion packet communications protocol"/>
-            <Value name="PROTOCOL_CLEVIS" comment="Orion packet communications protocol specific to the clevis"/>
-            <Value name="PROTOCOL_CLEVIS_RAW" comment="Clevis raw communications mode"/>
-            <Value name="PROTOCOL_NMEA_GPS" comment="GPS input over NMEA"/>
-            <Value name="PROTOCOL_UBLOX_GPS" comment="uBox GPS"/>
-            <Value name="PROTOCOL_NOVATEL_GPS" comment="Novatel GPS"/>
-            <Value name="PROTOCOL_MAVLINK_GPS" comment="Mavlink GPS"/>
-            <Value name="PROTOCOL_UM7_MAG" comment="CH Robotics UM7 magnetometer"/>
-            <Value name="PROTOCOL_SIGHTLINE_VIDEO" comment="Sightline video processing"/>
-            <Value name="PROTOCOL_SENSONOR_IMU" comment="Sensonor IMU"/>
-            <Value name="PROTOCOL_DMU11_IMU" comment="Silicon sensing IMU"/>
-            <Value name="PROTOCOL_DISCOVERY" comment="Discovery protocol that decides between novatel, UM7, and Sightline"/>
-            <Value name="PROTOCOL_AIRROBOT" comment="Air robot protocol"/>
-            <Value name="PROTOCOL_PROPRIETARY1" comment="Proprietary protocol"/>
-            <Value name="PROTOCOL_PROPRIETARY2" comment="Proprietary protocol"/>
-            <Value name="PROTOCOL_FLIR" comment="FLIR pass-through protocol"/>
-            <Value name="NUM_PROTOCOL"/>
-        </Enum>        
-
-        <Data name="port" enum="UserDataPort_t" encodedType="unsigned8" comment="The port whose configuration should be changed or requested, use USER_DATA_PORT_CURRENT to indicate the port which received this packet"/>
-        <Data name="baud" inMemoryType="unsigned32" encodedType="unsigned24" comment="Baud rate bits per second. Use 0 to select the default baud rate for this port and protocol."/>
-        <Data name="protocol" enum="OrionProtocols_t" encodedType="unsigned8" comment="The protocol to use for this port. If PROTOCOL_NO_CHANGE or PROTOCOL_DEFAULT are used the reply to this packet will contain the actual protocol in use"/>
-    </Packet>
-
-    <Packet name="OrionLimitsData" ID="ORION_PKT_LIMITS" comparefile="compare/compareOrionPublic" printfile="compare/printOrionPublic" comment=
+    <Packet name="OrionLimitsData" ID="ORION_PKT_LIMITS" comment=
         "Gimbal limits of operation. This includes the max and min pan and tilt angles, as well as the angular rate and the maximum current consumption.">
         <Data name="MinPos"  inMemoryType="float32" array="NUM_GIMBAL_AXES" encodedType="signed16" scaler="1000.0" comment="Minimum position in radians"/>
         <Data name="MaxPos"  inMemoryType="float32" array="NUM_GIMBAL_AXES" encodedType="signed16" scaler="1000.0" comment="Maximum position in radians"/>
@@ -793,7 +794,7 @@ See TrilliumPacket.c (in the Orion SDK) for details.
         <Data name="MaxPower" inMemoryType="float32" array="NUM_GIMBAL_AXES" encodedType="unsigned8" scaler="1.0" default="0" comment="Maximum motor output power, in watts. Set to zero for no limit"/>
     </Packet>
 
-    <Packet name="InsOptions" ID="ORION_PKT_INS_OPTIONS" comparefile="compare/compareOrionPublic" printfile="compare/printOrionPublic" 
+    <Packet name="InsOptions" ID="ORION_PKT_INS_OPTIONS"
             comment="INS options give configuration options for the inertial navigation system (INS) in the gunbal.
                      Changing the INS options will cause the INS to be restarted if the platform rotation changes. When using platform rotation note the order:
                      First yaw about the gimbal's z-axis to create an intermediate axis. Then pitch about the intermediate y-axis to
@@ -832,7 +833,7 @@ See TrilliumPacket.c (in the Orion SDK) for details.
         <Data name="headingObservationBiasAngle" inMemoryType="float32" encodedType="signed16" default="0" max="pi" comment="For external heading observations (including magnetometer) subtract this angle in radians from the heading observation to get the heading in INS or platform frame"/>
     </Packet>
 
-    <Packet name="OrionNetworkSettings" ID="ORION_PKT_NETWORK_SETTINGS" comparefile="compare/compareOrionPublic" printfile="compare/printOrionPublic" comment="Change the IP network settings in the gimbal.">
+    <Packet name="OrionNetworkSettings" ID="ORION_PKT_NETWORK_SETTINGS" comment="Change the IP network settings in the gimbal.">
         <Data name="Ip" inMemoryType="unsigned32" comment="IPv4 address"/>
         <Data name="Mask" inMemoryType="unsigned32" comment="IPv4 network mask"/>
         <Data name="Gateway" inMemoryType="unsigned32" comment="IPv4 gateway address"/>
@@ -840,7 +841,7 @@ See TrilliumPacket.c (in the Orion SDK) for details.
         <Data name="Mtu" inMemoryType="unsigned16" default="0" comment="Ethernet MTU size, set to zero for hardware default" />
     </Packet>
 
-    <Packet name="OrionNetworkVideo" ID="ORION_PKT_NETWORK_VIDEO" comparefile="compare/compareOrionPublic" printfile="compare/printOrionPublic" comment="Change the IP settings for video delivery.">
+    <Packet name="OrionNetworkVideo" ID="ORION_PKT_NETWORK_VIDEO" comment="Change the IP settings for video delivery.">
 
         <Enum name="StreamType_t" comment="Network video output stream types">
             <Value name="STREAM_TYPE_H264" comment="h.264+KLV stream in an MPEG transport stream" />
@@ -860,7 +861,7 @@ See TrilliumPacket.c (in the Orion SDK) for details.
         <Data name="TsPacketCount" inMemoryType="bitfield4" default="7" comment="Number of TS packets per UDP packet, or 0 for no change" />
     </Packet>
 
-    <Packet name="OrionCameras" ID="ORION_PKT_CAMERAS" comparefile="compare/compareOrionPublic" printfile="compare/printOrionPublic" comment="Camera definitions for the Orion gimbal">
+    <Packet name="OrionCameras" ID="ORION_PKT_CAMERAS" comment="Camera definitions for the Orion gimbal">
 
         <Enum name="OrionNumberOfCameras_t" comment="The maximum number of cameras in an Orion Gimbal">
             <Value name="NUM_CAMERAS" value="2"/>
