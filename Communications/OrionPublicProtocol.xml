@@ -207,7 +207,7 @@ See TrilliumPacket.c (in the Orion SDK) for details.
         <Value name="LASER_TYPE_VECTRONIX" comment="Vectronix LRF" />
     </Enum>
 
-    <Structure name="Date" comment="Compresssed date format.">
+    <Structure name="Date" comparefile="compare/compareOrionPublic" printfile="compare/printOrionPublic"  comment="Compresssed date format.">
         <Data name="year" inMemoryType="bitfield7" comment="Years after 2000"/>
         <Data name="month" inMemoryType="bitfield4" comment="Month of the year, from 1 to 12"/>
         <Data name="day" inMemoryType="bitfield5" comment="Day of the month, from 1 to 31"/>
@@ -783,10 +783,10 @@ See TrilliumPacket.c (in the Orion SDK) for details.
 
     <Packet name="OrionLimitsData" ID="ORION_PKT_LIMITS" comparefile="compare/compareOrionPublic" printfile="compare/printOrionPublic" comment=
         "Gimbal limits of operation. This includes the max and min pan and tilt angles, as well as the angular rate and the maximum current consumption.">
-        <Data name="MinPos"  inMemoryType="float32" array="NUM_GIMBAL_AXES" encodedType="signed16" scaler="1000.0" comment="Minimum position in radians"/>
-        <Data name="MaxPos"  inMemoryType="float32" array="NUM_GIMBAL_AXES" encodedType="signed16" scaler="1000.0" comment="Maximum position in radians"/>
-        <Data name="MaxVel"  inMemoryType="float32" array="NUM_GIMBAL_AXES" encodedType="unsigned16" scaler="1000.0" comment="Maximum velocity in radians per second"/>
-        <Data name="MaxAccel"  inMemoryType="float32" array="NUM_GIMBAL_AXES" encodedType="unsigned16" scaler="1.0" comment="Maximum acceleration in radians per second per second"/>
+        <Data name="MinPos"  inMemoryType="float32" array="NUM_GIMBAL_AXES" encodedType="signed16" scaler="1000.0" printscaler="180/pi" comment="Minimum position in radians"/>
+        <Data name="MaxPos"  inMemoryType="float32" array="NUM_GIMBAL_AXES" encodedType="signed16" scaler="1000.0" printscaler="180/pi" comment="Maximum position in radians"/>
+        <Data name="MaxVel"  inMemoryType="float32" array="NUM_GIMBAL_AXES" encodedType="unsigned16" scaler="1000.0" printscaler="180/pi" comment="Maximum velocity in radians per second"/>
+        <Data name="MaxAccel"  inMemoryType="float32" array="NUM_GIMBAL_AXES" encodedType="unsigned16" scaler="1.0" printscaler="180/pi" comment="Maximum acceleration in radians per second per second"/>
         <Data name="ContCur"  inMemoryType="float32" array="NUM_GIMBAL_AXES" encodedType="unsigned16" scaler="1000.0" comment="Maximum continuous current in Amps"/>
         <Data name="PeakCur"  inMemoryType="float32" array="NUM_GIMBAL_AXES" encodedType="unsigned16" scaler="1000.0" comment="Maximum peak current in Amps"/>
         <Data name="PeakCurTime"  inMemoryType="float32" array="NUM_GIMBAL_AXES" encodedType="unsigned16" scaler="1000.0" comment="Peak current time in seconds"/>
@@ -827,13 +827,13 @@ See TrilliumPacket.c (in the Orion SDK) for details.
               comment="If set then the INS will attempt to observe the heading use nonlinear methods. This may be helpful for hovering vehicles that do not have any other heading observation."/>
         <Data name="enableSensonorMV" inMemoryType="bitfield1" comment="If set, and if enablePayloadIns is set, the Sensonor IMU inputs to the INS are coming from the payload ball in the HD80MV orientation."/>
         <Data name="reserved" inMemoryType="null" encodedType="bitfield13" comment="reserved space for future expansion"/>
-        <Data name="gimbalToPlatformEuler" inMemoryType="float32" array="NUM_AXES" encodedType="signed16" max="pi" comment="Roll, Pitch, Yaw angles in radians from -pi to pi. The angles give the Euler rotation (yaw first, then pitch, then roll) that rotates a vector in the platform reference frame into the gimbal reference frame."/>
-        <Data name="initialHeading" inMemoryType="float32" encodedType="signed16" max="pi" comment="Initial heading angle in radians for the INS"/>
+        <Data name="gimbalToPlatformEuler" inMemoryType="float32" array="NUM_AXES" encodedType="signed16" max="pi" printscaler="180/pi" comment="Roll, Pitch, Yaw angles in radians from -pi to pi. The angles give the Euler rotation (yaw first, then pitch, then roll) from the platform reference frame into the gimbal reference frame."/>
+        <Data name="initialHeading" inMemoryType="float32" encodedType="signed16" max="pi" printscaler="180/pi" comment="Initial heading angle in radians for the INS"/>
         <Data name="gpsLeverArm" inMemoryType="float32" array="3" encodedType="signed16" scaler="1000" default="0" comment="X, Y, Z meters from GPS antenna to IMU in the gimbal reference frame, or the platform reference frame if enablePlatformRotation is on"/>
-        <Data name="headingObservationBiasAngle" inMemoryType="float32" encodedType="signed16" default="0" max="pi" comment="For external heading observations (including magnetometer) subtract this angle in radians from the heading observation to get the heading in INS or platform frame"/>
+        <Data name="headingObservationBiasAngle" inMemoryType="float32" encodedType="signed16" default="0" max="pi" printscaler="180/pi" comment="For external heading observations (including magnetometer) subtract this angle in radians from the heading observation to get the heading in INS or platform frame"/>
     </Packet>
 
-    <Packet name="OrionNetworkSettings" ID="ORION_PKT_NETWORK_SETTINGS" comparefile="compare/compareOrionPublic" printfile="compare/printOrionPublic" comment="Change the IP network settings in the gimbal.">
+    <Packet name="OrionNetworkSettings" ID="ORION_PKT_NETWORK_SETTINGS" comment="Change the IP network settings in the gimbal.">
         <Data name="Ip" inMemoryType="unsigned32" comment="IPv4 address"/>
         <Data name="Mask" inMemoryType="unsigned32" comment="IPv4 network mask"/>
         <Data name="Gateway" inMemoryType="unsigned32" comment="IPv4 gateway address"/>
@@ -841,7 +841,15 @@ See TrilliumPacket.c (in the Orion SDK) for details.
         <Data name="Mtu" inMemoryType="unsigned16" default="0" comment="Ethernet MTU size, set to zero for hardware default" />
     </Packet>
 
-    <Packet name="OrionNetworkVideo" ID="ORION_PKT_NETWORK_VIDEO" comparefile="compare/compareOrionPublic" printfile="compare/printOrionPublic" comment="Change the IP settings for video delivery.">
+    <Packet name="OrionNetworkByteSettings" ID="ORION_PKT_NETWORK_SETTINGS" comparefile="compare/compareOrionPublic" printfile="compare/printOrionPublic" comment="Change the IP network settings in the gimbal.">
+        <Data name="Ip" inMemoryType="unsigned8" array="4" comment="IPv4 address"/>
+        <Data name="Mask" inMemoryType="unsigned8" array="4" comment="IPv4 network mask"/>
+        <Data name="Gateway" inMemoryType="unsigned8" array="4" comment="IPv4 gateway address"/>
+        <Data name="LowDelay" inMemoryType="unsigned8" default="0" comment="Set to 1 to use low-delay TCP mode (i.e. disable Nagle's Algorithm)."/>
+        <Data name="Mtu" inMemoryType="unsigned16" default="0" comment="Ethernet MTU size, set to zero for hardware default" />
+    </Packet>
+
+    <Packet name="OrionNetworkVideo" ID="ORION_PKT_NETWORK_VIDEO" comment="Change the IP settings for video delivery.">
 
         <Enum name="StreamType_t" comment="Network video output stream types">
             <Value name="STREAM_TYPE_H264" comment="h.264+KLV stream in an MPEG transport stream" />
@@ -858,7 +866,20 @@ See TrilliumPacket.c (in the Orion SDK) for details.
         <Data name="StreamType" enum="StreamType_t" encodedType="unsigned8" default="STREAM_TYPE_H264" comment="Output stream format specifier" />
         <Data name="MjpegQuality" inMemoryType="unsigned8" default="30" comment="MJPEG quality value, from 10 to 95" />
         <Data name="SaveSettings" inMemoryType="bitfield1" default="0" comment="Set to 1 to make h.264 settings non-volatile, or 0 to reset to defaults on startup" />
-        <Data name="TsPacketCount" inMemoryType="bitfield4" default="7" comment="Number of TS packets per UDP packet, or 0 for no change" />
+        <Data name="TsPacketCount" inMemoryType="bitfield4" default="0" comment="Number of TS packets per UDP packet, or 0 for no change" />
+    </Packet>
+
+
+    <Packet name="OrionNetworkByteVideo" ID="ORION_PKT_NETWORK_VIDEO" comparefile="compare/compareOrionPublic" printfile="compare/printOrionPublic" comment="Change the IP settings for video delivery.">
+
+        <Data name="DestIp" inMemoryType="unsigned8" array="4" comment="destination IPv4 address"/>
+        <Data name="Port" inMemoryType="unsigned16" comment="desitnation port"/>
+        <Data name="Bitrate" inMemoryType="unsigned32" default="0" comment="Video encoding target bitrate, in bits per second"/>
+        <Data name="Ttl" inMemoryType="signed8" default="-1" comment="TTL value for UDP video packets. Values less than or equal to zero will use default values of 64 for unicast and 1 for multicast." />
+        <Data name="StreamType" enum="StreamType_t" encodedType="unsigned8" default="STREAM_TYPE_H264" comment="Output stream format specifier" />
+        <Data name="MjpegQuality" inMemoryType="unsigned8" default="30" comment="MJPEG quality value, from 10 to 95" />
+        <Data name="SaveSettings" inMemoryType="bitfield1" default="0" comment="Set to 1 to make h.264 settings non-volatile, or 0 to reset to defaults on startup" />
+        <Data name="TsPacketCount" inMemoryType="bitfield4" default="0" comment="Number of TS packets per UDP packet, or 0 for no change" />
     </Packet>
 
     <Packet name="OrionCameras" ID="ORION_PKT_CAMERAS" comparefile="compare/compareOrionPublic" printfile="compare/printOrionPublic" comment="Camera definitions for the Orion gimbal">
@@ -899,37 +920,37 @@ See TrilliumPacket.c (in the Orion SDK) for details.
             <Data name="ArrayWidth" inMemoryType="unsigned16" comment="Number of horizontal pixels in the focal plane array"/>
             <Data name="ArrayHeight" inMemoryType="unsigned16" comment="Number of vertical pixels in the focal plane array"/>
             <Data name="FrameRate" inMemoryType="float32" encodedType="null" comment="Frequency at which images are coming off the camera"/>
-            <Data name="AlignMin" inMemoryType="float32" array="NUM_GIMBAL_AXES" encodedType="signed16" max="pi" comment="boresight alignment offsets in radians"/>
-            <Data name="AlignMax" inMemoryType="float32" array="NUM_GIMBAL_AXES" encodedType="signed16" max="pi" comment="boresight alignment offsets in radians"/>
+            <Data name="AlignMin" inMemoryType="float32" array="NUM_GIMBAL_AXES" encodedType="signed16" max="pi" printscaler="180/pi" comment="boresight alignment offsets in radians"/>
+            <Data name="AlignMax" inMemoryType="float32" array="NUM_GIMBAL_AXES" encodedType="signed16" max="pi" printscaler="180/pi" comment="boresight alignment offsets in radians"/>
         </Structure>
     </Packet>
 
     <Documentation name="Packets used to determine manufacturing and software information about the gimbal" paragraph="1" comment="These informational packets are sent by the gimbal in response to user request. To request a specific packet, send that packet to the gimbal with zero length."/>
 
-    <Packet name="OrionClevisVersion" ID="ORION_PKT_CLEVIS_VERSION" comment="Software version for the clevis board in the Orion gimbal.">
+    <Packet name="OrionClevisVersion" ID="ORION_PKT_CLEVIS_VERSION" comparefile="compare/compareOrionPublic" printfile="compare/printOrionPublic" comment="Software version for the clevis board in the Orion gimbal.">
         <Data name="Version" inMemoryType="fixedstring" array="16" comment="Version of the clevis board software"/>
         <Data name="PartNumber" inMemoryType="fixedstring" array="16" comment="Hardware details of the clevis board"/>
         <Data name="OnTime" inMemoryType="unsigned32" default="0" comment="Board on time in minutes"/>
     </Packet>
 
-    <Packet name="OrionCrownVersion" ID="ORION_PKT_CROWN_VERSION" comment="Software version for the crown board in the Orion gimbal.">
+    <Packet name="OrionCrownVersion" ID="ORION_PKT_CROWN_VERSION" comparefile="compare/compareOrionPublic" printfile="compare/printOrionPublic" comment="Software version for the crown board in the Orion gimbal.">
         <Data name="Version" inMemoryType="fixedstring" array="16" comment="Version of the crown board software"/>
         <Data name="PartNumber" inMemoryType="fixedstring" array="16" comment="Hardware details of the crown board"/>
         <Data name="OnTime" inMemoryType="unsigned32" default="0" comment="Board on time in minutes"/>
     </Packet>
 
-    <Packet name="OrionPayloadVersion" ID="ORION_PKT_PAYLOAD_VERSION" comment="Software version for the payload board in the Orion gimbal.">
+    <Packet name="OrionPayloadVersion" ID="ORION_PKT_PAYLOAD_VERSION" comparefile="compare/compareOrionPublic" printfile="compare/printOrionPublic" comment="Software version for the payload board in the Orion gimbal.">
         <Data name="Version" inMemoryType="fixedstring" array="24" comment="Version of the payload board software"/>
         <Data name="PartNumber" inMemoryType="fixedstring" array="16" comment="Hardware details of the payload board"/>
         <Data name="OnTime" inMemoryType="unsigned32" default="0" comment="Board on time in minutes"/>
     </Packet>
 
-    <Packet name="OrionTrackerVersion" ID="ORION_PKT_TRACKER_VERSION" parameterInterface="true" comment="Software version for the tracker board in the Orion Gimbal (if applicable)">
+    <Packet name="OrionTrackerVersion" ID="ORION_PKT_TRACKER_VERSION" parameterInterface="true" comparefile="compare/compareOrionPublic" printfile="compare/printOrionPublic" comment="Software version for the tracker board in the Orion Gimbal (if applicable)">
         <Data name="Version" inMemoryType="fixedstring" array="16" comment="Version of the tracker board software"/>
         <Data name="PartNumber" inMemoryType="fixedstring" array="16" comment="Hardware details of the tracker board"/>
     </Packet>
 
-    <Packet name="OrionBoard" ID="ORION_PKT_BOARD" comment="Information for a specific board in the gimbal.">
+    <Packet name="OrionBoard" ID="ORION_PKT_BOARD" comparefile="compare/compareOrionPublic" printfile="compare/printOrionPublic" comment="Information for a specific board in the gimbal.">
         <Data name="boardSN" inMemoryType="unsigned32" comment="Serial number of this board"/>
         <Data name="assemblySN" inMemoryType="unsigned32" comment="Serial number of the whole assembly"/>
         <Data name="config" inMemoryType="unsigned32" comment="Configuration bits"/>
