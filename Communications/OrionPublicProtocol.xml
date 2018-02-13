@@ -76,6 +76,7 @@ See TrilliumPacket.c (in the Orion SDK) for details.
         <Value name="ORION_PKT_SOFTWARE_DIAGNOSTICS" comment="Diagnostic information related to software performance for a processor"/>
         <Value name="ORION_PKT_VIBRATION" comment="Platform vibration statistics"/>
         <Value name="ORION_PKT_NETWORK_DIAGNOSTICS" comment="Network diagnostics"/>
+        <Value name="ORION_PKT_PRIVATE_47" comment="Reserved packet identifier" hidden="true" />
         <Value name="ORION_PKT_PRIVATE_50" comment="Reserved packet identifier" hidden="true" />
         <Value name="ORION_PKT_PRIVATE_51" comment="Reserved packet identifier" hidden="true" />
         <Value name="ORION_PKT_CAMERA_SWITCH" value="0x60" comment="Command the gimbal to swtich cameras"/>
