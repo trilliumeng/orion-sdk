@@ -526,7 +526,7 @@ See TrilliumPacket.c (in the Orion SDK) for details.
         <Data name="hasGravityBias" inMemoryType="bitfield1" comment="1 if the INS is computing and reporting a gravity bias state"/>
         <Data name="hasAccelBias" inMemoryType="bitfield1" comment="1 if the INS is computing and reporting accelerometer bias states"/>
         <Data name="hasClockBias" inMemoryType="bitfield1" comment="1 if the INS is computing and reporting clock bias and drift states"/>
-        <Data name="reservedbits" inMemoryType="bitfield1" comment="Reserved bits in the bitfield"/>
+        <Data name="hasPanTiltBias" inMemoryType="bitfield1" comment="1 if the INS is computing and reporting pan and tilt bias states"/>
         <Data name="posRejected" inMemoryType="bitfield1" comment="1 if the INS rejected the last position update because the chi-square value was too large."/>
         <Data name="velRejected" inMemoryType="bitfield1" comment="1 if the INS rejected the last velocity update because the chi-square value was too large."/>
         <Data name="hdgRejected" inMemoryType="bitfield1" comment="1 if the INS rejected the last heading update because the chi-square value was too large."/>
@@ -552,6 +552,8 @@ See TrilliumPacket.c (in the Orion SDK) for details.
         <Data name="numTightSatVelUpdates" dependsOn="hasClockBias" inMemoryType="unsigned8" comment="Number of satellites that contributed to tightly coupled velocity updates"/>
         <Data name="numTightPosUpdates" dependsOn="hasClockBias" inMemoryType="unsigned8" comment="Number of signals that contributed to tightly coupled position updates"/>
         <Data name="numTightVelUpdates" dependsOn="hasClockBias" inMemoryType="unsigned8" comment="Number of signals that contributed to tightly coupled velocity updates"/>
+        <Data name="panTiltBias" dependsOn="hasPanTiltBias" inMemoryType="float32" encodedType="signed16" array="NUM_GIMBAL_AXES" max="10*pi/180" comment="Pan and tilt boresight biases"/>
+        <Data name="panTiltChiSquare" dependsOn="hasPanTiltBias" inMemoryType="float32" encodedType="unsigned8" max="10" comment="Pan and tilt chi-square statistic"/>
     </Packet>
 
     <Documentation comment="---"/>
