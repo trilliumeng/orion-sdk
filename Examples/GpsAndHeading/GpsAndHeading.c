@@ -61,7 +61,7 @@ int main(int argc, char **argv)
         WaitCount = 0;
 
     // Now form an external heading packet
-    encodeOrionExtHeadingDataPacket(&PktOut, Heading, HeadingNoise, 0);
+    encodeOrionExtHeadingDataPacket(&PktOut, Heading, HeadingNoise, 0, 0);
 
     // Send the packet
     OrionCommSend(&PktOut);
