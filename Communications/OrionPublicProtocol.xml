@@ -53,7 +53,7 @@ See TrilliumPacket.c (in the Orion SDK) for details.
         <Value name="ORION_PKT_RESET" comment="Send this packet to cause the gimbal to reset"/>
         <Value name="ORION_PKT_PRIVATE_05" comment="Reserved packet identifier"  hidden="true"/>
         <Value name="ORION_PKT_LASER_STATES" comment="Laser state information" />
-        <Value name="ORION_PKT_PRIVATE_07" comment="Reserved packet identifier" hidden="true"/>
+        <Value name="ORION_PKT_STARTUP_CMD" comment="Command to run on startup at the end of motor initialization"/>
         <Value name="ORION_PKT_PRIVATE_1F" value="0x1F" comment="Reserved packet identifier" hidden="true"/>
         <Value name="ORION_PKT_PRIVATE_20" comment="Reserved packet identifier" hidden="true"/>
         <Value name="ORION_PKT_PRIVATE_21" comment="Reserved packet identifier" hidden="true"/>
@@ -572,6 +572,11 @@ See TrilliumPacket.c (in the Orion SDK) for details.
         or Path modes; those modes need to be commanded through their respective packets. If the gimbal is in Geopoint or Path mode
         receiving this packet will cancel those modes.">
         <Data name="Cmd" struct="OrionCmd" comment="Pan/tilt command" />
+    </Packet>
+
+
+    <Packet name="OrionStartupCmd" ID="ORION_PKT_STARTUP_CMD" comment="Command to run upon motor initialization">
+        <Data name="Cmd" struct="OrionCmd" comment="Pan/tilt command. Defaults to position mode, pan/tilt of 0"/>
     </Packet>
 
     <Packet name="GeopointCmd" ID="ORION_PKT_GEOPOINT_CMD" parameterInterface="true"
