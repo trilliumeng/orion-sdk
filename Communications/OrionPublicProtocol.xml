@@ -837,8 +837,10 @@ See TrilliumPacket.c (in the Orion SDK) for details.
         <Data name="reserved" inMemoryType="null" encodedType="bitfield13" comment="reserved space for future expansion"/>
         <Data name="gimbalToPlatformEuler" inMemoryType="float32" array="NUM_AXES" encodedType="signed16" max="pi" printscaler="180/pi" comment="Roll, Pitch, Yaw angles in radians from -pi to pi. The angles give the Euler rotation (yaw first, then pitch, then roll) from the platform reference frame into the gimbal reference frame."/>
         <Data name="initialHeading" inMemoryType="float32" encodedType="signed16" max="pi" printscaler="180/pi" comment="Initial heading angle in radians for the INS"/>
-        <Data name="gpsLeverArm" inMemoryType="float32" array="3" encodedType="signed16" scaler="1000" default="0" comment="X, Y, Z meters from GPS antenna to IMU in the gimbal reference frame, or the platform reference frame if enablePlatformRotation is on"/>
+        <Data name="gpsLeverArm" inMemoryType="float32" array="3" encodedType="signed16" scaler="1000" default="0" comment="X, Y, Z meters from first (primary) GPS antenna to IMU in the gimbal reference frame, or the platform reference frame if enablePlatformRotation is on"/>
         <Data name="headingObservationBiasAngle" inMemoryType="float32" encodedType="signed16" default="0" max="pi" printscaler="180/pi" comment="For external heading observations (including magnetometer) subtract this angle in radians from the heading observation to get the heading in INS or platform frame"/>
+        <Data name="secondGPSLeverArm" inMemoryType="float32" array="3" encodedType="signed16" scaler="1000" default="0" comment="X, Y, Z meters from second GPS antenna to IMU in the gimbal reference frame, or the platform reference frame if enablePlatformRotation is on. This only applies if Novatel Align data are being received."/>
+        <Data name="alignHeadingNoise" inMemoryType="float32" encodedType="unsigned16" default="0" max="pi" printscaler="180/pi" comment="Sensor noise in radians for align heading observation. Use zero for the default sensor noise from the Align hardware."/>
     </Packet>
 
     <Packet name="OrionNetworkSettings" ID="ORION_PKT_NETWORK_SETTINGS" comment="Change the IP network settings in the gimbal.">
@@ -982,7 +984,8 @@ See TrilliumPacket.c (in the Orion SDK) for details.
         <Data name="extHeading" inMemoryType="float32" encodedType="signed16" max="pi" comment="External true heading observation in radians from -pi to pi"/>
         <Data name="noise" inMemoryType="float32" encodedType="unsigned16" max="2*pi" default="3" comment="Sensor noise of the heading observation in radians. Send 0 to cause the INS to simply shift its heading. Otherwise the extHeading will be fed into the INS kalman filter with this sensor noise."/>
         <Data name="headingInGimbalAxis" inMemoryType="bitfield1" default="0" comment="Set this if the provided heading is in gimbal native axis rather than the platform axis. This will cause the gimbal to rotate the heading reference as needed to the platform axis used by the INS. This will have no effect if the INS options do not specify a platform rotation."/>
-        <Data name="reserved" inMemoryType="null" encodedType="bitfield15" default="0"/>
+        <Data name="headingFromAlign" inMemoryType="bitfield1" default="0" comment="Set this if the provided heading came from an align system."/>
+        <Data name="reserved" inMemoryType="null" encodedType="bitfield14" default="0"/>
         <Data name="pitch" inMemoryType="float32" default="0" encodedType="signed16" max="pi" comment="Pitch angle in radians from -pi to pi of the vector used to compute heading."/>
     
     </Packet>
