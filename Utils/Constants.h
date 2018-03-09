@@ -3,9 +3,17 @@
 
 #include "OrionPublicPacket.h"
 
-#define PI 			    3.1415926535897932384626433832795f
-#define PIf             3.1415926535897932384626433832795f
-#define PId             3.1415926535897932384626433832795
+#ifndef PI
+# define PI              3.1415926535897932384626433832795f
+#endif
+
+#ifndef PIf
+# define PIf             3.1415926535897932384626433832795f
+#endif
+
+#ifndef PId
+# define PId             3.1415926535897932384626433832795
+#endif
 
 #define ISQRT_3		    0.5773503f
 #define SQRT_3          1.7320508f
