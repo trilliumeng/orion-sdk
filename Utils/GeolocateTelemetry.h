@@ -110,7 +110,7 @@ BOOL offsetImageLocation(const GeolocateTelemetry_t *geo, const double imagePosL
 BOOL getTerrainIntersection(const GeolocateTelemetry_t *pGeo, float (*getElevationHAE)(double, double), double PosLLA[NLLA], double *pRange);
 
 //! Get the velocity of the terrain intersection
-BOOL getImageVelocity(const GeolocateBuffer_t* buf, double range, float imageVel[NNED]);
+BOOL getImageVelocity(const GeolocateBuffer_t* buf, double range, float imageVel[NNED], uint32_t dt);
 
 //! Push a new geolocate telemetry into a geolocate buffer
 void pushGeolocateBuffer(GeolocateBuffer_t* buf, const GeolocateTelemetry_t* geo);

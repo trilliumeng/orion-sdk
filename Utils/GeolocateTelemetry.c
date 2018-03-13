@@ -262,14 +262,15 @@ BOOL getTerrainIntersection(const GeolocateTelemetry_t *pGeo, float (*getElevati
  * \param buf points to the geolocate buffer
  * \param range is the distance from the gimbal to the image in meters, always positive
  * \param imageVel receives the velocity of the image in North, East Down, meters
+ * \param dt is the desired timer interval in milliseconds
  * \return TRUE if the velocity was computed, else FALSE
  */
-BOOL getImageVelocity(const GeolocateBuffer_t* buf, double range, float imageVel[NNED])
+BOOL getImageVelocity(const GeolocateBuffer_t* buf, double range, float imageVel[NNED], uint32_t dt)
 {
     float rates[NNED];
 
     // Get angular rates by comparing geolocate camera DCMs half a second apart
-    if(getLOSAngularRate(buf, 500, rates))
+    if(getLOSAngularRate(buf, dt, rates))
     {
         float radius[NNED] = {range, 0, 0};
         float vel[NNED];
@@ -291,8 +292,11 @@ BOOL getImageVelocity(const GeolocateBuffer_t* buf, double range, float imageVel
 
         return TRUE;
     }
-
-    return FALSE;
+    else
+    {
+        vector3Setf(imageVel, 0);
+        return FALSE;
+    }
 
 }// getImageVelocity
 
