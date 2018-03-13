@@ -26,56 +26,56 @@ void FormGeolocateTelemetry(OrionPkt_t *pPkt, const GeolocateTelemetry_t *pGeo)
  */
 BOOL DecodeGeolocateTelemetry(const OrionPkt_t *pPkt, GeolocateTelemetry_t *pGeo)
 {
-	// Only parse this packet if the ID and length look right
+    // Only parse this packet if the ID and length look right
     if (decodeGeolocateTelemetryCorePacketStructure(pPkt, &pGeo->base))
-	{
-		stackAllocateDCM(tempDcm);
+    {
+        stackAllocateDCM(tempDcm);
         float Pan, Tilt;
 
         // Date and time
         computeDateAndTimeFromWeekAndItow(pGeo->base.gpsWeek, pGeo->base.gpsITOW, pGeo->base.leapSeconds, &pGeo->Year, &pGeo->Month, &pGeo->Day, &pGeo->Hour, &pGeo->Minute, &pGeo->Second);
 
-		// convert tilt from -180 to 180 into -270 to 90
+        // convert tilt from -180 to 180 into -270 to 90
         if(pGeo->base.tilt > deg2radf(90))
             pGeo->base.tilt -= deg2radf(360);
 
-		// Construct the data that was not transmitted
-		structInitDCM(pGeo->gimbalDcm);
-		structInitDCM(pGeo->cameraDcm);
+        // Construct the data that was not transmitted
+        structInitDCM(pGeo->gimbalDcm);
+        structInitDCM(pGeo->cameraDcm);
 
-		// ECEF position and velocity
+        // ECEF position and velocity
         llaToECEFandTrig(&(pGeo->base.posLat), pGeo->posECEF, &pGeo->llaTrig);
         nedToECEFtrigf(pGeo->base.velNED, pGeo->velECEF, &pGeo->llaTrig);
 
-		// Rotation from gimbal to nav
+        // Rotation from gimbal to nav
         quaternionToDCM(pGeo->base.gimbalQuat, &pGeo->gimbalDcm);
 
-		// Gimbals Euler attitude
-		pGeo->gimbalEuler[AXIS_ROLL]  = dcmRoll(&pGeo->gimbalDcm);
-		pGeo->gimbalEuler[AXIS_PITCH] = dcmPitch(&pGeo->gimbalDcm);
-		pGeo->gimbalEuler[AXIS_YAW]   = dcmYaw(&pGeo->gimbalDcm);
+        // Gimbals Euler attitude
+        pGeo->gimbalEuler[AXIS_ROLL]  = dcmRoll(&pGeo->gimbalDcm);
+        pGeo->gimbalEuler[AXIS_PITCH] = dcmPitch(&pGeo->gimbalDcm);
+        pGeo->gimbalEuler[AXIS_YAW]   = dcmYaw(&pGeo->gimbalDcm);
 
         // Offset the pan/tilt angles with the current estab output shifts
         Pan  = subtractAnglesf(pGeo->base.pan,  pGeo->base.outputShifts[GIMBAL_AXIS_PAN]);
         Tilt = subtractAnglesf(pGeo->base.tilt, pGeo->base.outputShifts[GIMBAL_AXIS_TILT]);
-        
+
         // Convert tilt from -180 to 180 into -270 to 90
         pGeo->base.tilt = wrapAngle90f(pGeo->base.tilt);
 
-		// Rotation from camera to gimbal, note that this only works if pan
-		// is over tilt (pan first, then tilt, just like Euler)
+        // Rotation from camera to gimbal, note that this only works if pan
+        // is over tilt (pan first, then tilt, just like Euler)
         setDCMBasedOnPanTilt(&tempDcm, Pan, Tilt);
 
-		// Now create the rotation from camera to nav.
+        // Now create the rotation from camera to nav.
         matrixMultiplyf(&pGeo->gimbalDcm, &tempDcm, &pGeo->cameraDcm);
 
-		// The cameras quaternion and Euler angles
-		dcmToQuaternion(&pGeo->cameraDcm, pGeo->cameraQuat);
-		pGeo->cameraEuler[AXIS_ROLL]  = dcmRoll(&pGeo->cameraDcm);
-		pGeo->cameraEuler[AXIS_PITCH] = dcmPitch(&pGeo->cameraDcm);
-		pGeo->cameraEuler[AXIS_YAW]   = dcmYaw(&pGeo->cameraDcm);
+        // The cameras quaternion and Euler angles
+        dcmToQuaternion(&pGeo->cameraDcm, pGeo->cameraQuat);
+        pGeo->cameraEuler[AXIS_ROLL]  = dcmRoll(&pGeo->cameraDcm);
+        pGeo->cameraEuler[AXIS_PITCH] = dcmPitch(&pGeo->cameraDcm);
+        pGeo->cameraEuler[AXIS_YAW]   = dcmYaw(&pGeo->cameraDcm);
 
-		// Slant range is the vector magnitude of the line of sight ECEF vector
+        // Slant range is the vector magnitude of the line of sight ECEF vector
         pGeo->slantRange = vector3Lengthf(pGeo->base.losECEF);
 
         // Gimbal ECEF position + line of sight ECEF vector = ECEF image position
@@ -84,10 +84,10 @@ BOOL DecodeGeolocateTelemetry(const OrionPkt_t *pPkt, GeolocateTelemetry_t *pGeo
         // Convert ECEF image position to LLA
         ecefToLLA(pGeo->imagePosECEF, pGeo->imagePosLLA);
 
-		return TRUE;
-	}
-	else
-		return FALSE;
+        return TRUE;
+    }
+    else
+        return FALSE;
 
 }// DecodeGeolocateTelemetry
 
@@ -289,15 +289,22 @@ BOOL getImageVelocity(const GeolocateBuffer_t* buf, uint32_t dt, float imageVel[
         const GeolocateTelemetry_t *pOld = &buf->geobuf[index], *pNew = &buf->geobuf[newest];
         int32_t diff = pNew->base.systemTime - pOld->base.systemTime;
 
-        if ((diff >= (int32_t)dt) && (pOld->base.rangeSource != RANGE_SRC_NONE) && (pNew->base.rangeSource != RANGE_SRC_NONE))
+        // If the newest entry has no range data, don't compute anything. Also skip internal
+        //   range estimates because they assume a velocity of zero
+        if ((pNew->base.rangeSource == RANGE_SRC_NONE) || (pNew->base.rangeSource == RANGE_SRC_INTERNAL))
+            return FALSE;
+        // Otherwise, delta time is good and the two range sources match
+        else if ((diff >= (int32_t)dt) && (pOld->base.rangeSource == pNew->base.rangeSource))
         {
             double DeltaECEF[NECEF], DeltaNED[NNED];
 
+            // Compute the NED distance between the two image positions
             vector3Difference(pNew->imagePosECEF, pOld->imagePosECEF, DeltaECEF);
             ecefToNEDtrig(DeltaECEF, DeltaNED, &pNew->llaTrig);
             vector3Convert(DeltaNED, imageVel);
-            vector3Scalef(imageVel, imageVel, 1000.0f / diff);
 
+            // Now convert to velocity by multiplying by 1000 / dt (in ms)
+            vector3Scalef(imageVel, imageVel, 1000.0f / diff);
             return TRUE;
         }
 
@@ -306,7 +313,6 @@ BOOL getImageVelocity(const GeolocateBuffer_t* buf, uint32_t dt, float imageVel[
             index += GEOLOCATE_BUFFER_SIZE;
     }
 
-    vector3Setf(imageVel, 0);
     return FALSE;
 
 }// getImageVelocity
