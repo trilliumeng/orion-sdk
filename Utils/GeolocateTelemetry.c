@@ -5,9 +5,6 @@
 #include "linearalgebra.h"
 #include "WGS84.h"
 
-//! Get angular rate of camera line of sight
-static BOOL getLOSAngularRate(const GeolocateBuffer_t* buf, uint32_t dt, float rates[NNED]);
-
 
 /*!
  * Create a GeolocateTelemetry packet
@@ -260,43 +257,57 @@ BOOL getTerrainIntersection(const GeolocateTelemetry_t *pGeo, float (*getElevati
 /*!
  * Get the velocity of the terrain intersection
  * \param buf points to the geolocate buffer
- * \param range is the distance from the gimbal to the image in meters, always positive
- * \param imageVel receives the velocity of the image in North, East Down, meters
  * \param dt is the desired timer interval in milliseconds
+ * \param imageVel receives the velocity of the image in North, East Down, meters
  * \return TRUE if the velocity was computed, else FALSE
  */
-BOOL getImageVelocity(const GeolocateBuffer_t* buf, double range, float imageVel[NNED], uint32_t dt)
+BOOL getImageVelocity(const GeolocateBuffer_t* buf, uint32_t dt, float imageVel[NNED])
 {
-    float rates[NNED];
+    int newest, oldest, index;
 
-    // Get angular rates by comparing geolocate camera DCMs half a second apart
-    if(getLOSAngularRate(buf, dt, rates))
-    {
-        float radius[NNED] = {range, 0, 0};
-        float vel[NNED];
-
-        // The index of the newest geolocate data
-        int newest = buf->in - 1;
-        if(newest < 0)
-            newest += GEOLOCATE_BUFFER_SIZE;
-
-        // Use the rates to compute a velocity, omega cross r
-        vector3Crossf(rates, radius, vel);
-
-        // vel is the velocity in camera reference frame, rotate to the NED frame
-        dcmApplyRotation(&(buf->geobuf[newest].cameraDcm), vel, imageVel);
-
-        // And add in the velocity of the gimbal (i.e. if angular rates are zero
-        // then the image is moving as fast as the camera)
-        vector3Sumf(imageVel, buf->geobuf[newest].base.velNED, imageVel);
-
-        return TRUE;
-    }
-    else
-    {
-        vector3Setf(imageVel, 0);
+    if(buf->holding < 2)
         return FALSE;
+
+    // The newest entry is one behind the in pointer
+    newest = buf->in - 1;
+    if(newest < 0)
+        newest += GEOLOCATE_BUFFER_SIZE;
+
+    // The oldest entry (if holding == 1, then oldest and newest are the same)
+    oldest = newest - (buf->holding - 1);
+    if(oldest < 0)
+        oldest += GEOLOCATE_BUFFER_SIZE;
+
+    // Go backwards in time until we match or exceed dt
+    index = newest - 1;
+    if(index < 0)
+        index += GEOLOCATE_BUFFER_SIZE;
+
+    while (index != oldest)
+    {
+        // The difference in time in milliseconds
+        GeolocateTelemetry_t *pOld = &buf->geobuf[index], *pNew = &buf->geobuf[newest];
+        int32_t diff = pNew->base.systemTime - pOld->base.systemTime;
+
+        if ((diff >= (int32_t)dt) && (pOld->base.rangeSource != RANGE_SRC_NONE) && (pNew->base.rangeSource != RANGE_SRC_NONE))
+        {
+            double DeltaECEF[NECEF], DeltaNED[NNED];
+
+            vector3Difference(pNew->imagePosECEF, pOld->imagePosECEF, DeltaECEF);
+            ecefToNEDtrig(DeltaECEF, DeltaNED, &pNew->llaTrig);
+            vector3Convert(DeltaNED, imageVel);
+            vector3Scalef(imageVel, imageVel, 1000.0f / diff);
+
+            return TRUE;
+        }
+
+        // Go back one more
+        if (--index < 0)
+            index += GEOLOCATE_BUFFER_SIZE;
     }
+
+    vector3Setf(imageVel, 0);
+    return FALSE;
 
 }// getImageVelocity
 
@@ -322,82 +333,6 @@ void pushGeolocateBuffer(GeolocateBuffer_t* buf, const GeolocateTelemetry_t* geo
         buf->holding++;
 
 }// pushGeolocateBuffer
-
-
-/*!
- * \param buf is the geolocate buffer
- * \param dt is the desired timer interval in milliseconds
- * \parma rates receives the angular rates, in *camera* frame.
- * \return TRUE if the rates were returned, else false
- */
-BOOL getLOSAngularRate(const GeolocateBuffer_t* buf, uint32_t dt, float rates[NNED])
-{
-    int newest, oldest, index;
-
-    if(buf->holding < 2)
-        return FALSE;
-
-    // The newest entry is one behind the in pointer
-    newest = buf->in - 1;
-    if(newest < 0)
-        newest += GEOLOCATE_BUFFER_SIZE;
-
-    // The oldest entry (if holding == 1, then oldest and newest are the same)
-    oldest = newest - (buf->holding - 1);
-    if(oldest < 0)
-        oldest += GEOLOCATE_BUFFER_SIZE;
-
-    // Go backwards in time until we match or exceed dt
-    index = newest - 1;
-    if(index < 0)
-        index += GEOLOCATE_BUFFER_SIZE; 
-
-    while(index != oldest)
-    {
-        // The difference in time in milliseconds
-        int32_t diff = buf->geobuf[newest].base.systemTime - buf->geobuf[index].base.systemTime;
-
-        if(diff >= (int32_t)dt)
-        {
-            stackAllocateDCM(temp);
-
-            // Inverse of time in seconds (diff is in milliseconds)
-            float inversetime = 1000.0/diff;
-
-            // To compute the attitude update between prev and current cameraDcm we
-            // need the inverse of the previous cameraDcm. However cameraDcm is a rotation
-            // matrix, so its inverse is its transpose.
-
-            // Compute the change in rotation from the previous to the current
-            matrixMultiplyTransAf(&(buf->geobuf[index].cameraDcm), &(buf->geobuf[newest].cameraDcm), &temp);
-
-            // temp is the now the first order attitude update matrix,
-            // which contains the skew symmetric delta angles
-            rates[0] = 0.5f*(dcmGet(&temp, 2, 1) - dcmGet(&temp, 1, 2));
-            rates[1] = 0.5f*(dcmGet(&temp, 0, 2) - dcmGet(&temp, 2, 0));
-            rates[2] = 0.5f*(dcmGet(&temp, 1, 0) - dcmGet(&temp, 0, 1));
-
-            // Convert to rates by dividing by time difference in seconds.
-            // rates is the angular rate of the camera line of sight, in
-            // camera frame! (i.e. as though gyros were on the camera)
-            rates[0] *= inversetime;
-            rates[1] *= inversetime;
-            rates[2] *= inversetime;
-            
-            return TRUE;
-
-        }// If found the desired time difference
-
-        // Go back one more
-        index--;
-        if(index < 0)
-            index += GEOLOCATE_BUFFER_SIZE; 
-
-    }// while still searching backwards in time
-
-    return FALSE;
-
-}// getLOSAngularRate
 
 
 /*!
