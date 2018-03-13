@@ -286,7 +286,7 @@ BOOL getImageVelocity(const GeolocateBuffer_t* buf, uint32_t dt, float imageVel[
     while (index != oldest)
     {
         // The difference in time in milliseconds
-        GeolocateTelemetry_t *pOld = &buf->geobuf[index], *pNew = &buf->geobuf[newest];
+        const GeolocateTelemetry_t *pOld = &buf->geobuf[index], *pNew = &buf->geobuf[newest];
         int32_t diff = pNew->base.systemTime - pOld->base.systemTime;
 
         if ((diff >= (int32_t)dt) && (pOld->base.rangeSource != RANGE_SRC_NONE) && (pNew->base.rangeSource != RANGE_SRC_NONE))
