@@ -19,7 +19,7 @@ int main(int argc, char **argv)
     // Heading and estimated heading noise in radians
     float Heading = deg2radf(270.0f), HeadingNoise = deg2radf(3.0f);
     int WaitCount = 0;
-    GpsData_t Gps;
+    GpsData_t Gps = { 0 };
 
     // Default latitude, longitude, and altitude. Note that lat/lon are double-precision
     //   values in radians
