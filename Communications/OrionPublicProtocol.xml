@@ -445,7 +445,7 @@ See TrilliumPacket.c (in the Orion SDK) for details.
             <Value name="mavlinkSource" comment="Mavlink supplied data"/>
             <Value name="nmeaSource" comment="External GPS, supplied by NMEA input"/>
             <Value name="novatelSource" comment="Novatel dual frequency GPS"/>
-            <Value name="piccoloSource" comment="Piccolo host GPS data" />
+            <Value name="autopilotSource" comment="Autopilot host GPS data" />
             <Value name="numGpsSources" comment="Number of possible GPS sources"/>
         </Enum>
 
