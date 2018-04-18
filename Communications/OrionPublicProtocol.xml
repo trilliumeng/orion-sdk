@@ -641,9 +641,10 @@ See TrilliumPacket.c (in the Orion SDK) for details.
             <Value name="NUC_TYPE_SSN_HIGH" comment="Silent shutterless NUC (SSN), high setting" />
         </Enum>
 
-        <Data name="Reserved" inMemoryType="null" encodedType="bitfield4" constant="0" />
+        <Data name="Reserved" inMemoryType="null" encodedType="bitfield1" constant="0" />
+        <Data name="Palette" inMemoryType="bitfield3" />
         <Data name="NucType" enum="FlirNucType_t" encodedType="bitfield3" comment="NUC type setting" />
-        <Data name="BlackHot" inMemoryType="bitfield1" comment="Image polarity setting - set to 0 for white hot or 1 for black hot"/>
+        <Data name="BlackHot" inMemoryType="bitfield1" comment="Image polarity setting - set to 0 for white hot or 1 for black hot. This field is ignored if Palette is non-zero"/>
         <Data name="MaxAgcGain" inMemoryType="unsigned8" comment="Maximum AGC output gain"/>
         <Data name="AceLevel" inMemoryType="signed8" comment="Active Contrast Enhancement (ACE) level"/>
         <Data name="DdeThreshold" inMemoryType="unsigned8" comment="DDE spatial threshold"/>
