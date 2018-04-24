@@ -790,6 +790,7 @@ See TrilliumPacket.c (in the Orion SDK) for details.
         <Data name="port" enum="UserDataPort_t" encodedType="unsigned8" comment="The port whose configuration should be changed or requested, use USER_DATA_PORT_CURRENT to indicate the port which received this packet"/>
         <Data name="baud" inMemoryType="unsigned32" encodedType="unsigned24" comment="Baud rate bits per second. Use 0 to select the default baud rate for this port and protocol."/>
         <Data name="protocol" enum="OrionProtocols_t" encodedType="unsigned8" comment="The protocol to use for this port. If PROTOCOL_NO_CHANGE or PROTOCOL_DEFAULT are used the reply to this packet will contain the actual protocol in use"/>
+        <Data name="temporary" inMemoryType="unsigned8" default="0" comment="A value of 0 indicates that the settings should persist across power cycles. Non-zero values will cause the new setting to be lost after power cycle"/>
     </Packet>
 
     <Packet name="OrionLimitsData" ID="ORION_PKT_LIMITS" comparefile="compare/compareOrionPublic" printfile="compare/printOrionPublic" comment=
