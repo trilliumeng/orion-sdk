@@ -38,7 +38,7 @@ void quaternionToDCM(const float quat[NQUATERNION], DCM_t* dcm)
 /*!
  * Convert a DCM to quaternion
  * \param dcm is the direction cosine matrix to convert
- * \param quat recieves the quaternion
+ * \param quat receives the quaternion
  */
 void dcmToQuaternion(const DCM_t* dcm, float quat[NQUATERNION])
 {
