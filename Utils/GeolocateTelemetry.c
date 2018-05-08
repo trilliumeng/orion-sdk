@@ -5,6 +5,8 @@
 #include "linearalgebra.h"
 #include "WGS84.h"
 
+#include <string.h>
+
 
 /*!
  * Create a GeolocateTelemetry packet
@@ -29,67 +31,83 @@ BOOL DecodeGeolocateTelemetry(const OrionPkt_t *pPkt, GeolocateTelemetry_t *pGeo
     // Only parse this packet if the ID and length look right
     if (decodeGeolocateTelemetryCorePacketStructure(pPkt, &pGeo->base))
     {
-        stackAllocateDCM(tempDcm);
-        float Pan, Tilt;
-
-        // Date and time
-        computeDateAndTimeFromWeekAndItow(pGeo->base.gpsWeek, pGeo->base.gpsITOW, pGeo->base.leapSeconds, &pGeo->Year, &pGeo->Month, &pGeo->Day, &pGeo->Hour, &pGeo->Minute, &pGeo->Second);
-
-        // convert tilt from -180 to 180 into -270 to 90
-        if(pGeo->base.tilt > deg2radf(90))
-            pGeo->base.tilt -= deg2radf(360);
-
-        // Construct the data that was not transmitted
-        structInitDCM(pGeo->gimbalDcm);
-        structInitDCM(pGeo->cameraDcm);
-
-        // ECEF position and velocity
-        llaToECEFandTrig(&(pGeo->base.posLat), pGeo->posECEF, &pGeo->llaTrig);
-        nedToECEFtrigf(pGeo->base.velNED, pGeo->velECEF, &pGeo->llaTrig);
-
-        // Rotation from gimbal to nav
-        quaternionToDCM(pGeo->base.gimbalQuat, &pGeo->gimbalDcm);
-
-        // Gimbals Euler attitude
-        pGeo->gimbalEuler[AXIS_ROLL]  = dcmRoll(&pGeo->gimbalDcm);
-        pGeo->gimbalEuler[AXIS_PITCH] = dcmPitch(&pGeo->gimbalDcm);
-        pGeo->gimbalEuler[AXIS_YAW]   = dcmYaw(&pGeo->gimbalDcm);
-
-        // Offset the pan/tilt angles with the current estab output shifts
-        Pan  = subtractAnglesf(pGeo->base.pan,  pGeo->base.outputShifts[GIMBAL_AXIS_PAN]);
-        Tilt = subtractAnglesf(pGeo->base.tilt, pGeo->base.outputShifts[GIMBAL_AXIS_TILT]);
-
-        // Convert tilt from -180 to 180 into -270 to 90
-        pGeo->base.tilt = wrapAngle90f(pGeo->base.tilt);
-
-        // Rotation from camera to gimbal, note that this only works if pan
-        // is over tilt (pan first, then tilt, just like Euler)
-        setDCMBasedOnPanTilt(&tempDcm, Pan, Tilt);
-
-        // Now create the rotation from camera to nav.
-        matrixMultiplyf(&pGeo->gimbalDcm, &tempDcm, &pGeo->cameraDcm);
-
-        // The cameras quaternion and Euler angles
-        dcmToQuaternion(&pGeo->cameraDcm, pGeo->cameraQuat);
-        pGeo->cameraEuler[AXIS_ROLL]  = dcmRoll(&pGeo->cameraDcm);
-        pGeo->cameraEuler[AXIS_PITCH] = dcmPitch(&pGeo->cameraDcm);
-        pGeo->cameraEuler[AXIS_YAW]   = dcmYaw(&pGeo->cameraDcm);
-
-        // Slant range is the vector magnitude of the line of sight ECEF vector
-        pGeo->slantRange = vector3Lengthf(pGeo->base.losECEF);
-
-        // Gimbal ECEF position + line of sight ECEF vector = ECEF image position
-        vector3Sum(pGeo->posECEF, vector3Convertf(pGeo->base.losECEF, pGeo->imagePosECEF), pGeo->imagePosECEF);
-
-        // Convert ECEF image position to LLA
-        ecefToLLA(pGeo->imagePosECEF, pGeo->imagePosLLA);
-
+        // If it decoded properly, extrapolate the core data to the full GeolocateTelemetry_t struct
+        ConvertGeolocateTelemetryCore(&pGeo->base, pGeo);
         return TRUE;
     }
     else
         return FALSE;
 
 }// DecodeGeolocateTelemetry
+
+
+/*!
+ * Convert a GeolocateTelemetryCore_t struct to GeolocateTelemetry_t
+ * \param pCore is a GeolocateTelemetryCore_t message to be converted
+ * \param pGeo receives a copy of pCore, as well as some locally constructed data
+ */
+void ConvertGeolocateTelemetryCore(const GeolocateTelemetryCore_t *pCore, GeolocateTelemetry_t *pGeo)
+{
+    stackAllocateDCM(tempDcm);
+    float Pan, Tilt;
+
+    // Copy the core data in (if need be)
+    if (pCore != &pGeo->base)
+        memcpy(&pGeo->base, pCore, sizeof(GeolocateTelemetryCore_t));
+
+    // Date and time
+    computeDateAndTimeFromWeekAndItow(pGeo->base.gpsWeek, pGeo->base.gpsITOW, pGeo->base.leapSeconds, &pGeo->Year, &pGeo->Month, &pGeo->Day, &pGeo->Hour, &pGeo->Minute, &pGeo->Second);
+
+    // convert tilt from -180 to 180 into -270 to 90
+    if(pGeo->base.tilt > deg2radf(90))
+        pGeo->base.tilt -= deg2radf(360);
+
+    // Construct the data that was not transmitted
+    structInitDCM(pGeo->gimbalDcm);
+    structInitDCM(pGeo->cameraDcm);
+
+    // ECEF position and velocity
+    llaToECEFandTrig(&(pGeo->base.posLat), pGeo->posECEF, &pGeo->llaTrig);
+    nedToECEFtrigf(pGeo->base.velNED, pGeo->velECEF, &pGeo->llaTrig);
+
+    // Rotation from gimbal to nav
+    quaternionToDCM(pGeo->base.gimbalQuat, &pGeo->gimbalDcm);
+
+    // Gimbals Euler attitude
+    pGeo->gimbalEuler[AXIS_ROLL]  = dcmRoll(&pGeo->gimbalDcm);
+    pGeo->gimbalEuler[AXIS_PITCH] = dcmPitch(&pGeo->gimbalDcm);
+    pGeo->gimbalEuler[AXIS_YAW]   = dcmYaw(&pGeo->gimbalDcm);
+
+    // Offset the pan/tilt angles with the current estab output shifts
+    Pan  = subtractAnglesf(pGeo->base.pan,  pGeo->base.outputShifts[GIMBAL_AXIS_PAN]);
+    Tilt = subtractAnglesf(pGeo->base.tilt, pGeo->base.outputShifts[GIMBAL_AXIS_TILT]);
+
+    // Convert tilt from -180 to 180 into -270 to 90
+    pGeo->base.tilt = wrapAngle90f(pGeo->base.tilt);
+
+    // Rotation from camera to gimbal, note that this only works if pan
+    // is over tilt (pan first, then tilt, just like Euler)
+    setDCMBasedOnPanTilt(&tempDcm, Pan, Tilt);
+
+    // Now create the rotation from camera to nav.
+    matrixMultiplyf(&pGeo->gimbalDcm, &tempDcm, &pGeo->cameraDcm);
+
+    // The cameras quaternion and Euler angles
+    dcmToQuaternion(&pGeo->cameraDcm, pGeo->cameraQuat);
+    pGeo->cameraEuler[AXIS_ROLL]  = dcmRoll(&pGeo->cameraDcm);
+    pGeo->cameraEuler[AXIS_PITCH] = dcmPitch(&pGeo->cameraDcm);
+    pGeo->cameraEuler[AXIS_YAW]   = dcmYaw(&pGeo->cameraDcm);
+
+    // Slant range is the vector magnitude of the line of sight ECEF vector
+    pGeo->slantRange = vector3Lengthf(pGeo->base.losECEF);
+
+    // Gimbal ECEF position + line of sight ECEF vector = ECEF image position
+    vector3Sum(pGeo->posECEF, vector3Convertf(pGeo->base.losECEF, pGeo->imagePosECEF), pGeo->imagePosECEF);
+
+    // Convert ECEF image position to LLA
+    ecefToLLA(pGeo->imagePosECEF, pGeo->imagePosLLA);
+
+}// ConvertGeolocateTelemetryCore
 
 
 /*!

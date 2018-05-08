@@ -103,6 +103,9 @@ void FormGeolocateTelemetry(OrionPkt_t *pPkt, const GeolocateTelemetry_t *pGeo);
 //! Decode a GeolocateTelemetry packet
 BOOL DecodeGeolocateTelemetry(const OrionPkt_t *pPkt, GeolocateTelemetry_t *pGeo);
 
+//! Convert a GeolocateTelemetryCore_t structure to a GeolocateTelemetry_t
+void ConvertGeolocateTelemetryCore(const GeolocateTelemetryCore_t *pCore, GeolocateTelemetry_t *pGeo);
+
 //! Offset an image location according to a user click
 BOOL offsetImageLocation(const GeolocateTelemetry_t *geo, const double imagePosLLA[NLLA], float ydev, float zdev, double newPosLLA[NLLA]);
 
