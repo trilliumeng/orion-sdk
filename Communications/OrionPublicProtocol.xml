@@ -673,6 +673,7 @@ See TrilliumPacket.c (in the Orion SDK) for details.
         <Data name="LapEnabled" inMemoryType="unsigned8" comment="Local Area Processing (LAP) enable/disable flag. Set to zero to disable, or non-zero to enable."/>
         <Data name="LapGain" inMemoryType="float32" encodedType="unsigned8" min="0.5" max="4.0" comment="LAP Sharpening gain"/>
         <Data name="AgcSaturation" inMemoryType="float32" encodedType="unsigned8" min="0" max="0.1" comment="AGC histogram saturation"/>
+        <Data name="UseNucTablePresets" inMemoryType="unsigned8" default="0" comment="Set to 1 to use NUC table presets, default is 0" />
     </Packet>
 
     <Packet name="OrionHitachiSettings" ID="ORION_PKT_HITACHI_SETTINGS" comparefile="compare/compareOrionPublic" printfile="compare/printOrionPublic" comment="Hitachi-specific camera settings.">
