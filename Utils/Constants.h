@@ -18,7 +18,10 @@
 #define ISQRT_3		    0.5773503f
 #define SQRT_3          1.7320508f
 
-#define SQR(x)          ((x) * (x))
+#ifndef SQR
+# define SQR(x)          ((x) * (x))
+#endif
+
 #define SGN(x)          (((x) < 0) ? -1 : 1)
 
 #ifndef MIN
