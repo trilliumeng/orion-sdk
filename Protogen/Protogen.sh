@@ -16,5 +16,11 @@ else
     exit 1
 fi
 
-$ROOT_DIR/$ARCH/ProtoGen $@
+if [ -f $ROOT_DIR/$ARCH/ProtoGen.sh ]; then
+    CMD=$ROOT_DIR/$ARCH/ProtoGen.sh
+else
+    CMD=$ROOT_DIR/$ARCH/ProtoGen
+fi
+
+$CMD $@
 
