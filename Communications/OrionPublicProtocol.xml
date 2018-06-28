@@ -263,7 +263,7 @@ See TrilliumPacket.c (in the Orion SDK) for details.
         <Data name="imageShiftConfidence" inMemoryType="float32" encodedType="unsigned8" max="1" default="0" comment="Registration solution confidence, from 0 (no confidence) to 1 (full confidence)."/>
         <Data name="outputShifts" inMemoryType="float32" array="NUM_GIMBAL_AXES" encodedType="signed16" max="pi" default="0" comment="X (horizontal) and Y (vertical) image shifts in radians, as displayed in the video stream"/>
         <Data name="rangeSource" enum="RangeDataSrc_t" encodedType="unsigned8" default="RANGE_SRC_SKYLINK" comment="Range data source used in line of sight calculation"/>
-        <Data name="leapSeconds" default="17" inMemoryType="unsigned8" comment="Leap seconds to subtract from GPS time to compute UTC time"/>
+        <Data name="leapSeconds" default="18" inMemoryType="unsigned8" comment="Leap seconds to subtract from GPS time to compute UTC time"/>
         <Data name="panAlignment" inMemoryType="float32" encodedType="signed8" scaler="1000" default="0" comment="Pan camera alignment offsets in radian. The raw pan angle is given as pan + panAlignment."/>
         <Data name="tiltAlignment" inMemoryType="float32" encodedType="signed8" scaler="1000" default="0" comment="Tilt camera alignment offsets in radian. The raw tilt angle is given as tilt + tiltAlignment."/>
         <Enum name="InsRotationOptions" comment="Enumeration INS rotation options">
@@ -448,6 +448,7 @@ See TrilliumPacket.c (in the Orion SDK) for details.
             <Value name="novatelSource" comment="Novatel dual frequency GPS"/>
             <Value name="autopilotSource" comment="Autopilot host GPS data"/>
             <Value name="piccoloSource" value="autopilotSource" comment="Preserved for backward compatibility"/>
+            <Value name="piksiSource" comment="Piksi external GPS"/>
             <Value name="numGpsSources" comment="Number of possible GPS sources"/>
         </Enum>
 
@@ -788,6 +789,7 @@ See TrilliumPacket.c (in the Orion SDK) for details.
             <Value name="PROTOCOL_PROPRIETARY2" comment="Proprietary protocol"/>
             <Value name="PROTOCOL_FLIR" comment="FLIR pass-through protocol"/>
             <Value name="PROTOCOL_EPSON_IMU" comment="EPSON IMU protocol"/>
+            <Value name="PROTOCOL_PIKSI" comment="Swift Piksi GPS"/>
             <Value name="NUM_PROTOCOL"/>
         </Enum>        
 
