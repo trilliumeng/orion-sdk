@@ -4,7 +4,9 @@ endif
 
 TARGET ?= x86
 
-ifeq ($(TARGET), arm)
+ifeq ($(TARGET), x86)
+	CFLAGS=-fPIC
+else ifeq ($(TARGET), arm)
 	PREFIX=arm-linux-gnueabi-
     CC=$(PREFIX)gcc
     AR=$(PREFIX)ar
