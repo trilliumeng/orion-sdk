@@ -818,7 +818,7 @@ See TrilliumPacket.c (in the Orion SDK) for details.
                      First yaw about the gimbal's z-axis to create an intermediate axis. Then pitch about the intermediate y-axis to
                      create a second intermediate axis. Finally roll about the second intermediate x-axis to reach the platform orientation.
                      When using an IMU in the payload ball the enablePlatformRotation can still be used, but will only effect heading observations and the GPS lever arm, it will not rotate the IMU data.">
-        <Data name="enablePlatformRotation" inMemoryType="bifield1"
+        <Data name="enablePlatformRotation" inMemoryType="bitfield1"
               comment="The INS will be run in the platform reference frame if this is set.
                        The platform reference frame is defined by the rotation from the
                        gimbal reference frame to the platform frame. Set this if the
