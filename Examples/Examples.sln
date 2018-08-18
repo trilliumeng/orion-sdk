@@ -1,5 +1,7 @@
 Microsoft Visual Studio Solution File, Format Version 12.00
 # Visual Studio 2013
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "CameraInfo", "C:/svn/trunk_clean/Public/Examples/CameraInfo\CameraInfo.vcxproj", "{A65A2FEC-DDBA-3191-9EC4-494AB57C265A}"
+EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "EncodeDecode", "C:/svn/trunk_clean/Public/Examples/EncodeDecode\EncodeDecode.vcxproj", "{8C1BFEFE-F18C-3124-986A-1AAF24CFC0B1}"
 EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "GeoPoint", "C:/svn/trunk_clean/Public/Examples/GeoPoint\GeoPoint.vcxproj", "{6D4801CB-88DB-35F0-9454-EC5EF45DC302}"
@@ -20,6 +22,10 @@ Global
 		Release|Win32 = Release|Win32
 	EndGlobalSection
 	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{A65A2FEC-DDBA-3191-9EC4-494AB57C265A}.Debug|Win32.ActiveCfg = Debug|Win32
+		{A65A2FEC-DDBA-3191-9EC4-494AB57C265A}.Debug|Win32.Build.0 = Debug|Win32
+		{A65A2FEC-DDBA-3191-9EC4-494AB57C265A}.Release|Win32.ActiveCfg = Release|Win32
+		{A65A2FEC-DDBA-3191-9EC4-494AB57C265A}.Release|Win32.Build.0 = Release|Win32
 		{8C1BFEFE-F18C-3124-986A-1AAF24CFC0B1}.Debug|Win32.ActiveCfg = Debug|Win32
 		{8C1BFEFE-F18C-3124-986A-1AAF24CFC0B1}.Debug|Win32.Build.0 = Debug|Win32
 		{8C1BFEFE-F18C-3124-986A-1AAF24CFC0B1}.Release|Win32.ActiveCfg = Release|Win32

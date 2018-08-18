@@ -1,6 +1,7 @@
 TEMPLATE = subdirs
 
 SUBDIRS += \
+    CameraInfo \
     EncodeDecode \
     GeoPoint \
     GpsAndHeading \
