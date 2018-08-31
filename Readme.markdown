@@ -10,7 +10,6 @@ The entire protocol is implemented in a single [ProtoGen](https://github.com/bil
 
 Building the Orion SDK for linux has the following prerequisites:
 
-* Qt 5.6 (<http://qt.io>)
 * __Optional:__ MultiMarkdown (<http://fletcherpenney.net/multimarkdown>)
 
 On Ubuntu and other Debian-based distributions, MultiMarkdown can also be installed by running `sudo apt-get install libtext-multimarkdown-perl`.
@@ -23,10 +22,11 @@ The root directory contains the scripts necessary to generate the SDK code with 
 
 This directory contains the ProtoGen XML file and the Makefile/project necessary to build the SDK as a static library. Once the XML file has been processed, the directory will also contain all of the source code for the SDK. It also contains the low-level code for connecting to the gimbal over the Ethernet and/or serial port interfaces. To initiate a connection with a gimbal, one of the following functions must be used:
 
-* `OrionCommOpenSerial`
-* `OrionCommOpenNetwork`
+* `OrionCommOpenSerial` to connect to a gimbal over a specified serial port
+* `OrionCommOpenNetwork` to automatically discover and connect to a gimbal over a network connection 
+* `OrionCommOpenNetworkIp` to connect to a gimbal with a known IP address over a network connection
 
-Both functions will return `TRUE` upon a successful connection, then `OrionCommSend` and `OrionCommReceive` may be used to send and receive Orion SDK packets. `OrionCommClose` is used to close down the connection and release all the relevant resources.
+All three functions will return `TRUE` upon a successful connection, then `OrionCommSend` and `OrionCommReceive` may be used to send and receive Orion SDK packets. `OrionCommClose` is used to close down the connection and release all the relevant resources.
 
 ### Examples
 
@@ -48,93 +48,41 @@ The `Utils` directory provides additional functionality for manipulating the gim
 
 It also contains shim functions for compatibility with the legacy pre-1.3 API. These functions should be considered to be deprecated, however, as they will most likely be removed in a future release.
 
-## Building the SDK – OS X and Linux
+## Building the SDK
 
-Once the prerequisites are installed, the SDK and all the examples can be built by simply running `make` in the root directory. This process will generate two static libraries, `Communications/libOrionComm.a` and `Utils/libOrionUtils.a`, which implement the entire SDK and can be linked into any application. It will also build the example applications in the `Examples` directory which are based on those libraries.
+There are three parts to the output of `orion-sdk`'s build process: Two libriaries, `Communications/libOrionComm.a` and `Utils/libOrionUtils.a`, which implement the entire SDK and can be linked into any application, and a series of example applications in the `Examples` directory which are based on those libraries.
 
-## Building the SDK – Windows
+### Using Qt/qmake
 
-TBD
+If [Qt](https://www.qt.io) is installed on the host machine, the libraries and all the example applications can be compiled with `qmake` using the `Public.pro` project file in the root directory. Qt Creator can be used for a graphical interface to `qmake`, or the project can be built on the command line as follows:
+
+```
+qmake
+make
+```
+
+### Using `make`
+
+The SDK and all the examples can also be built by simply running `make` in the root directory. This will invoke the Makefiles in all of the subdirectories and create the libraries and their dependent example applications. It is also possible to use `make` to cross compile for other platforms. An example invocation to build the libraries and examples for an ARM-based processor might look like this:
+
+```
+make TARGET=arm CC=arm-none-linux-gnueabi-gcc AR=arm-none-linux-gnueabi-ar
+```
+
+### Using MSVC
+
+Also included are solution and project files compatible with Microsoft Visual Studio versions 2013 and later. The solution file `Public.sln` located in the root directory contains the MSVC projects to build the two libraries as well as all of the example applications that depend on those libraries.
 
 ## Example Applications
 
-The `Examples` directory contains some applications which demonstrate both the use of the packet SDK as well as the lower-level process of connecting to and exchanging data with a gimbal.
-
-### `EncodeDecode`
-
-The `EncodeDecode` application is the simplest of the examples and does not require a gimbal to run. It only demonstrates the use of the packet parsing routines by encoding and decoding packets from a static byte buffer.
-
-### `GpsAndHeading`
-
-All Orion gimbals support external GPS and heading reference data to assist the INS filter. In many use cases, there is already a GPS-enabled device (e.g., autopilot) on the vehicle and it is useful to share GPS data between that device and the gimbal in order to minimize the number of GPS antennas necessary for operation.
-
-Similarly, if another device has a better heading estimate than the gimbal, its heading data can be sent to the gimbal to be used as a correction in the INS filter. The `GpsAndHeading` application demonstrates both functions.
-
-The `GpsAndHeading` application takes several optional arguments, which are ordered and have defaults as follows:
-
-* __Serial Port__: Serial port connected to gimbal, or omit to connect via Ethernet.
-* __Lat__: GPS latitude, default is 45.7º.
-* __Lon__: GPS longitude, default is -121.5º.
-* __Alt__: GPS WGS-84 ellipsoid height, default is 300 m.
-* __Vel_N__: GPS velocity vector north component, default is 3 m/s.
-* __Vel_E__: GPS velocity vector east component, default is 22 m/s.
-* __Vel_D__: GPS velocity vector down component, default is -4 m/s.
-* __Hdg__: Platform heading, default is 270º.
-
-When the application is run, it will connect to the gimbal, send the GPS and heading data, wait for a response, then exit.
-
-### `GeoPoint`
-
-The `GeoPoint` application demonstrates the 'geopoint' operational mode, which locks the gimbal's line of sight on to a commanded LLA position. The application takes several optional arguments, which are ordered and have defaults as follows:
-
-* __Serial Port__: Serial port connected to gimbal, or omit to connect via Ethernet.
-* __Lat__: Target latitude, default is 45.7º.
-* __Lon__: Target longitude, default is -121.5º.
-* __Alt__: Target WGS-84 ellipsoid height, default is 30 m.
-* __Vel_N__: Target velocity vector north component, default is 0 m/s.
-* __Vel_E__: Target velocity vector east component, default is 0 m/s.
-* __Vel_D__: Target velocity vector down component, default is 0 m/s.
-
-When the application is run, it will connect to the gimbal, send the geopoint command, wait for a response, then exit.
-
-### `LineOfSight`
-
-The process of finding the image position via terrain intersection with the terrain is demonstrated in the `LineOfSight` example. The application will connect to a gimbal and listen for `GeolocateTelemetryCore` messages. Once the application has received that data, it will then use a ray-tracing alogrithm to find latitude, longitude and altitude of the gimbal's current image using a terrain model. Note that this example requires an internet connection to function properly. The two optional arguments are:
-
-* __Serial Port__: Serial port connected to gimbal, or omit to connect via Ethernet.
-* __LoD__: Terrain model level of detail, from 0 to 15. Note that not all levels of detail are available in all areas.
-
-Running the `LineOfSight` application will cause it to connect to the gimbal and continuously print its image position to the terminal. It will also uplink the computed slant range to the gimbal for its own internal use.
-
-### `PathTrack`
-
-The `PathTrack` example demonstrates the use of the gimbal's path tracking mode. It will send up to 15 points, as saved in a file called `path.csv`, to the gimbal for tracking along with some optional configuration parameters. The application takes several optional arguments, which are ordered and have defaults as follows:
-
-* __Serial Port__: Serial port connected to gimbal, or omit to connect via Ethernet.
-* __Step Angle__: Angle, in degrees, to step along the path, or omit to disable step-stare mode.
-* __Cross Steps__: Number of steps across the path to make when operating in step-stare mode, or omit to disable cross-track stepping.
-* __Cross Step Ratio__: Fraction of the step angle to use as a cross-track stepping angle.
-
-When the application is run, it will connect to the gimbal, send the path command and continuously print the regularly downlinked path status from the `GeolocateTelemetryCore` message.
-
-### `SendCommand`
-
-The `SendCommand` example shows the use of the `OrionCmd` packet, which sets the operational mode of the gimbal. The application takes several optional arguments, which are ordered and have defaults as follows:
-
-* __Serial Port__: Serial port connected to gimbal, or omit to connect via Ethernet.
-* __Pan Target__: Pan target position or rate, depending on mode, default is 0 deg/s.
-* __Tilt Target__: Tilt target position or rate, depending on mode, default is 0 deg/s.
-* __Mode__: Operational mode: `R` for rate, `P` for position, or `D` for disabled, default is rate.
-* __Stabilized__: Set to 1 to enable inertial stabilization, default is disabled.
-* __Impulse Time__: Time in seconds to run the command (rate only) before zeroing, or set to 0 for a continuous command. Default is 0.
-
-When the application is run, it will connect to the gimbal, send the command, wait for a response, then exit.
+The `Examples` directory contains some applications which demonstrate both the use of the packet SDK as well as the lower-level process of connecting to and exchanging data with a gimbal. For detailed information on a particular example application, please see the readme included in its subdirectory.
 
 ### `UserData`
 
 The use of user data passthrough packets is demonstrated in the `UserData` example. The application acts as both a sender and receiver, so two instances can be run to communicate with each other through the gimbal. There are two optional arguments:
 
-* __Serial Port__: Serial port connected to gimbal, or omit to connect via Ethernet.
+* __Serial Port__: Serial port connected to gimbal – omit to connect via Ethernet.
+* __IP Address__: Known IP address for Ethernet connection – omit to attempt to auto-detect.
 * __Gimbal Comm Port__: Destination serial port on the gimbal, defaults to 2. Contact support for more details on the port numbering scheme.
 
 Once the application has connected to the gimbal, the application will forward all keyboard input to the specified serial port on the gimbal and monitor the gimbal data stream for incoming user data packets.
