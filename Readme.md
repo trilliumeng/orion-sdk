@@ -30,7 +30,7 @@ All three functions will return `TRUE` upon a successful connection, then `Orion
 
 ### Examples
 
-Contains some example applications which link to the library in the `Communications` directory and demonstrate the use of the packet SDK as well as the connection process over both serial and Ethernet. See [Example Applications](#example-applications) for more details.
+The `Examples` directory contains some applications which demonstrate both the use of the packet SDK as well as the lower-level process of connecting to and exchanging data with a gimbal over both serial and Ethernet. For detailed information on a particular example application, please see the readme included in its subdirectory.
 
 ### Protogen
 
@@ -72,10 +72,6 @@ make TARGET=arm CC=arm-none-linux-gnueabi-gcc AR=arm-none-linux-gnueabi-ar
 ### Using MSVC
 
 Also included are solution and project files compatible with Microsoft Visual Studio versions 2013 and later. The solution file `Public.sln` located in the root directory contains the MSVC projects to build the two libraries as well as all of the example applications that depend on those libraries.
-
-## Example Applications
-
-The `Examples` directory contains some applications which demonstrate both the use of the packet SDK as well as the lower-level process of connecting to and exchanging data with a gimbal. For detailed information on a particular example application, please see the readme included in its subdirectory.
 
 ## Support and Documentation
 
