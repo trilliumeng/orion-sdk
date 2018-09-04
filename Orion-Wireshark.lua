@@ -917,6 +917,80 @@ function print_path_data(subtree, buffer, id, size)
 
 end
 
+function print_stare_start(subtree, buffer, id, size)
+	local name = "Stare Start"
+	subtree = make_subtree(subtree, buffer, name, id, size)
+
+	if size == 0 then
+		return name
+	end
+
+	subtree:add(buffer(0,4), "System Time: " .. buffer(0,4):uint())
+	subtree:add(buffer(4,1), "Max Stare Time: " .. buffer(4,1):uint() * 0.01)
+	subtree:add(buffer(5,1), "Along Track Stare: " .. buffer(5,1):bitfield(0,1))
+	subtree:add(buffer(5,1), "Previous Stare Timed Out: " .. buffer(5,1):bitfield(1,1))
+	subtree:add(buffer(5,1), "Stare Started by Time: " .. buffer(5,1):bitfield(2,1))
+	subtree:add(buffer(5,1), "Gimbal Data Valid: " .. buffer(5,1):bitfield(3,1))
+	subtree:add(buffer(5,1), "Stare Reset: " .. buffer(5,1):bitfield(4,1))
+	subtree:add(buffer(6,1), "Previous Stare Time: " .. buffer(6,1):uint() * 0.01)
+	subtree:add(buffer(7,1), "Stare Load: " .. buffer(7,1):uint() / 2.55 .. "%")
+
+
+	local stare = subtree:add(buffer(8,12), "Stare Position")
+	stare:add(buffer(8,4), "Latitude: " .. buffer(8,4):int() / 10000000.0)
+	stare:add(buffer(12,4), "Longitude: " .. buffer(12,4):int() / 10000000.0)
+	stare:add(buffer(16,4), "Altitude: " .. buffer(16,4):int() / 10000.0)
+
+
+	local gimbal = subtree:add(buffer(20,12), "Gimbal Position")
+	gimbal:add(buffer(20,4), "Latitude: " .. buffer(20,4):int() / 10000000.0)
+	gimbal:add(buffer(24,4), "Longitude: " .. buffer(24,4):int() / 10000000.0)
+	gimbal:add(buffer(28,4), "Altitude: " .. buffer(28,4):int() / 10000.0)
+
+	local att = subtree:add(buffer(32,8), "Gimbal Attitude")
+
+	local euler = quat_to_euler(buffer(32,2):int() / 32768.0,
+								buffer(34,2):int() / 32768.0,
+								buffer(36,2):int() / 32768.0,
+								buffer(38,2):int() / 32768.0)
+
+	att:add(buffer(32,8), string.format("Roll: %.2f", math.deg(euler[0])))
+	att:add(buffer(32,8), string.format("Pitch: %.2f", math.deg(euler[1])))
+	att:add(buffer(32,8), string.format("Yaw: %.2f", math.deg(euler[2])))
+
+	if size >= 44 then
+		subtree:add(buffer(40,2), string.format("Pan: %.1f", buffer(40,2):int() / 32768.0 * 180.0))
+		subtree:add(buffer(42,2), string.format("Tilt: %.1f", buffer(42,2):int() / 32768.0 * 180.0))
+	end
+
+	if size >= 48 then
+		subtree:add(buffer(44,1), "Range Source: " .. get_range_src_string(buffer(44,1):uint()))
+		subtree:add(buffer(45,3), "Slant Range: " .. to_uint24(buffer(45,3)) / 100.0)
+	end
+
+	if size >= 52 then
+		subtree:add(buffer(48,2), string.format("Along Stare Angle: %.1f", buffer(48,2):int() / 32768.0 * 180.0))
+		subtree:add(buffer(50,2), string.format("Cross Stare Angle: %.1f", buffer(50,2):int() / 32768.0 * 180.0))
+	end
+
+	return name
+
+end
+
+function print_stare_ack(subtree, buffer, id, size)
+	local name = "Stare Ack"
+	subtree = make_subtree(subtree, buffer, name, id, size)
+
+	if size == 0 then
+		return name
+	end
+
+	subtree:add(buffer(0,4), "System Time: " .. buffer(0,4):uint())
+
+	return name
+
+end
+
 function print_board_info(subtree, buffer, id, size)
 	local name = "Board Info"
 	subtree = make_subtree(subtree, buffer, name, id, size)
@@ -1059,6 +1133,8 @@ function print_packet(pinfo, subtree, buffer)
 	elseif id == 212 then info = print_geolocate(subtree, data, id, size)
 	elseif id == 214 then info = print_range(subtree, data, id, size)
 	elseif id == 215 then info = print_path_data(subtree, data, id, size)
+	elseif id == 217 then info = print_stare_start(subtree, data, id, size)
+	elseif id == 218 then info = print_stare_ack(subtree, data, id, size)
 	elseif id == 228 then info = print_network_settings(subtree, data, id, size)
 	else
 		local name = "Unknown packet ID 0x" .. buffer(2,1)
