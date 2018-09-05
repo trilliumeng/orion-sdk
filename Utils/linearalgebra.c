@@ -212,11 +212,11 @@ double vector3Length(const double vector[NVECTOR3])
  */
 const double* vector3ChangeLength(const double vector[NVECTOR3], double result[NVECTOR3], double newlength)
 {
-	double oldlengthSquared = vector3LengthSquared(vector);
+	double oldlength = vector3Length(vector);
 
-	if(oldlengthSquared > 0)
+	if(oldlength > 0)
 	{
-		return vector3Scale(vector, result, (newlength*newlength)/oldlengthSquared);
+		return vector3Scale(vector, result, newlength/oldlength);
 	}
 	else
 	{
@@ -1329,11 +1329,11 @@ float vector3Lengthf(const float vector[NVECTOR3])
  */
 const float* vector3ChangeLengthf(const float vector[NVECTOR3], float result[NVECTOR3], float newlength)
 {
-	float oldlengthSquared = vector3LengthSquaredf(vector);
+	float oldlength = vector3Lengthf(vector);
 
-	if(oldlengthSquared > 0)
+	if(oldlength > 0)
 	{
-		return vector3Scalef(vector, result, (newlength*newlength)/oldlengthSquared);
+		return vector3Scalef(vector, result, newlength/oldlength);
 	}
 	else
 	{
