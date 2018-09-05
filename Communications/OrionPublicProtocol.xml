@@ -135,6 +135,7 @@ See TrilliumPacket.c (in the Orion SDK) for details.
         <Value name="ORION_PKT_PRIVATE_E5" comment="Reserved packet identifier" hidden="true"/>
         <Value name="ORION_PKT_PRIVATE_E6" comment="Reserved packet identifier" hidden="true"/>
         <Value name="ORION_PKT_PRIVATE_E7" comment="Reserved packet identifier" hidden="true"/>
+        <Value name="ORION_PKT_PRIVATE_E8" comment="Reserved packet identifier" hidden="true"/>
         <Value name="ORION_PKT_PRIVATE_F0" value="0xF0" comment="Reserved packet identifier" hidden="true"/>
         <Value name="ORION_PKT_PRIVATE_F1" comment="Reserved packet identifier" hidden="true"/>
         <Value name="ORION_PKT_PRIVATE_F2" comment="Reserved packet identifier" hidden="true"/>
