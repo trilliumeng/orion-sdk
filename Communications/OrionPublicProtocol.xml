@@ -55,6 +55,7 @@ See TrilliumPacket.c (in the Orion SDK) for details.
         <Value name="ORION_PKT_LASER_STATES" comment="Laser state information" />
         <Value name="ORION_PKT_STARTUP_CMD" comment="Command to run on startup at the end of motor initialization"/>
         <Value name="ORION_PKT_PRIVATE_08" comment="Reserved packet identifier" hidden="true" />
+        <Value name="ORION_PKT_PRIVATE_09" comment="Reserved packet identifier" hidden="true" />
         <Value name="ORION_PKT_PRIVATE_1F" value="0x1F" comment="Reserved packet identifier" hidden="true"/>
         <Value name="ORION_PKT_PRIVATE_20" comment="Reserved packet identifier" hidden="true"/>
         <Value name="ORION_PKT_PRIVATE_21" comment="Reserved packet identifier" hidden="true"/>
