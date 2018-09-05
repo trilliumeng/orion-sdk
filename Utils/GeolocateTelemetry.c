@@ -197,7 +197,7 @@ BOOL offsetImageLocation(const GeolocateTelemetry_t *geo, const double imagePosL
  */
 BOOL getTerrainIntersection(const GeolocateTelemetry_t *pGeo, float (*getElevationHAE)(double, double), double PosLLA[NLLA], double *pRange)
 {
-    double UnitNED[NNED], UnitECEF[NECEF], Step, End;
+    double UnitNED[NNED], UnitECEF[NECEF], LineOfSight[NECEF], Step, End;
     float Temp[NNED] = { 1.0f, 0.0f, 0.0f };
 
     // Coarse and fine line of sight ray step distances, in meters
@@ -219,16 +219,19 @@ BOOL getTerrainIntersection(const GeolocateTelemetry_t *pGeo, float (*getElevati
     Step = StepCoarse;
     End = MaxDistance;
 
+    // Scale the unit ECEF vector to the step length
+    vector3Scale(UnitECEF, UnitECEF, Step);
+
+    // Initialize the line of sight vector with the gimbal position
+    vector3Copy(pGeo->posECEF, LineOfSight);
+
     // Loop through LOS ranges
     for (*pRange = Step; *pRange <= End; *pRange += Step)
     {
-        double LineOfSight[NECEF], GroundHeight;
+        double GroundHeight;
 
-        // Scale the unit LOS vector to the appropriate range
-        vector3Scale(UnitECEF, LineOfSight, *pRange);
-
-        // Now add the gimbal position to the line of sight vector to get ECEF position
-        vector3Sum(pGeo->posECEF, LineOfSight, LineOfSight);
+        // Increment the ECEF line of sight vector by the Step-sized unit vector
+        vector3Sum(LineOfSight, UnitECEF, LineOfSight);
 
         // Convert the ECEF line of sight position to LLA
         ecefToLLA(LineOfSight, PosLLA);
@@ -246,7 +249,7 @@ BOOL getTerrainIntersection(const GeolocateTelemetry_t *pGeo, float (*getElevati
         // If the end of this ray is under ground
         if (PosLLA[ALT] <= GroundHeight)
         {
-            // If we're using a coarse step
+            // Decrease the range by one step
             if (Step != StepFine)
             {
                 // Back up one step
@@ -255,6 +258,10 @@ BOOL getTerrainIntersection(const GeolocateTelemetry_t *pGeo, float (*getElevati
                 // Change to the fine step and loop until the current range
                 End = *pRange + Step;
                 Step = StepFine;
+
+                // Subtract one unit step from the LOS vector and rescale the unit to the new step distance
+                vector3Difference(LineOfSight, UnitECEF, LineOfSight);
+                vector3ChangeLength(UnitECEF, UnitECEF, Step);
             }
             // If we're fine stepping, we've found the terrain intersection
             else
