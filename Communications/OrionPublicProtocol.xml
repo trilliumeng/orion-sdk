@@ -232,13 +232,10 @@ See TrilliumPacket.c (in the Orion SDK) for details.
     <Documentation name="Packets sent regularly by the gimbal" paragraph="1" comment="These packets are sent by the gimbal automatically, depending on the operational mode of the gimbal."/>
 
     <Packet name="GeolocateTelemetryCore" ID="ORION_PKT_GEOLOCATE_TELEMETRY" comment=
-        "This packet is transmitted regularly by the gimbal to communicate the information needed to locate the gimbal
+        "This packet is transmitted at 10 Hz by the gimbal to communicate the information needed to locate the gimbal
         and its imagery, to determine the gimbal mode of operation, and to determine how the video output stream is
         being shifted by the gimbal. This is the primary packet that users should monitor to determine the gimbal
-        status and populate user interfaces.
-
-        For users connected via asyncrhonous serial this packet is sent by the gimbal 10 times per second. For users
-        connected via TCP/IP this packet is sent by the gimbal 30 times per second.">
+        status and populate user interfaces.">
         <Data name="systemTime" inMemoryType="unsigned32" comment="Milliseconds since system bootup"/>
         <Data name="gpsITOW" inMemoryType="unsigned32" comment="GPS time of week in milliseconds"/>
         <Data name="gpsWeek" inMemoryType="unsigned16" comment="GPS week number since Jan 6 1980"/>
