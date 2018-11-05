@@ -417,6 +417,62 @@ function print_performance(subtree, buffer, id, size)
 	return name
 end
 
+function print_retract_cmd(subtree, buffer, id, size)
+    local name = "Retract Cmd"
+    subtree = make_subtree(subtree, buffer, name, id, size)
+
+    if size == 0 then
+        return name
+    end
+
+    local cmd_enum = buffer(0,1):bitfield(1,7)
+    local cmd_string = "None"
+
+    if cmd_enum == 0 then cmd_string = "Disable"
+    elseif cmd_enum == 1 then cmd_string = "Deploy"
+    elseif cmd_enum == 2 then cmd_string = "Retract"
+    end
+
+    subtree:add(buffer(0,1), "Cmd: " .. cmd_string)
+
+    return name
+end
+
+function print_retract_status(subtree, buffer, id, size)
+    local name = "Retract Status"
+    subtree = make_subtree(subtree, buffer, name, id, size)
+
+    if size == 0 then
+        return name
+    end
+
+    local cmd_enum = buffer(0,1):bitfield(1,7)
+    local cmd_string = "None"
+
+    if cmd_enum == 0 then cmd_string = "Disable"
+    elseif cmd_enum == 1 then cmd_string = "Deploy"
+    elseif cmd_enum == 2 then cmd_string = "Retract"
+    end
+
+    local state_enum = buffer(1,2):bitfield(1,7)
+    local state_string = "Disabled"
+
+    if state_enum == 0 then state_string = "Disabled"
+    elseif state_enum == 1 then state_string = "Retracted"
+    elseif state_enum == 2 then state_string = "Retracting"
+    elseif state_enum == 3 then state_string = "Deploying"
+    elseif state_enum == 4 then state_string = "Deployed"
+    elseif state_enum == 5 then state_string = "FAULT"
+    end
+
+    subtree:add(buffer(0,1), "Cmd: " .. cmd_string)
+    subtree:add(buffer(1,2), "State: " .. state_string)
+    subtree:add(buffer(2,2), string.format("Pos: %.2f deg", math.deg(buffer(2,2):int() / 1000)) )
+    subtree:add(buffer(4,2), "Flags: " .. buffer(4,2):uint())
+
+    return name
+end
+
 function print_gps_data(subtree, buffer, id, size)
 	local name = "GPS Data"
 	subtree = make_subtree(subtree, buffer, name, id, size)
@@ -1127,7 +1183,9 @@ function print_packet(pinfo, subtree, buffer)
 	elseif id == 68  then info = print_sw_diagnostics(subtree, data, id, size)
 	elseif id == 98  then info = print_network_video(subtree, data, id, size)
 	elseif id == 99  then info = print_cameras(subtree, data, id, size)
-	elseif id == 209 then info = print_gps_data(subtree, data, id, size)
+    elseif id == 160 then info = print_retract_cmd(subtree, data, id, size)
+    elseif id == 161 then info = print_retract_status(subtree, data, id, size)
+    elseif id == 209 then info = print_gps_data(subtree, data, id, size)
 	elseif id == 210 then info = print_ext_heading(subtree, data, id, size)
 	elseif id == 211 then info = print_ins_quality(subtree, data, id, size)
 	elseif id == 212 then info = print_geolocate(subtree, data, id, size)
