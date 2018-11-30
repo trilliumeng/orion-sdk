@@ -81,7 +81,3 @@ For further assistance, please contact Trillium directly through one of the foll
 
 * __Email:__ support@trilliumeng.com
 * __Phone:__ +1 509.281.3332, ext. 2
-
-## Licensing
-
-The publicly available version of the Orion SDK is licensed under a Creative Commons Attribution-NonCommercial-NoDerivatives 4.0 International License. For commercial licensing options, please contact Trillium at <sales@trilliumeng.com>.
