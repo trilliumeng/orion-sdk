@@ -566,7 +566,7 @@ See TrilliumPacket.c (in the Orion SDK) for details.
     <Documentation comment="---"/>
     <Documentation name="Packets for gimbal control" paragraph="1" comment="These packets are sent by the user to control the gimbal."/>
 
-    <Structure name="OrionCmd" comment="Structure for holding a gimbal axis command">
+    <Structure name="OrionCmd" comparefile="compare/compareOrionPublic" printfile="compare/printOrionPublic" comment="Structure for holding a gimbal axis command">
         <Data name="Target" inMemoryType="float32" array="NUM_GIMBAL_AXES" encodedType="signed16" scaler="1000.0" comment="Pan and tilt commands in radians or radians per second. Interpretation depends on Mode."/>
         <Data name="Mode" enum="OrionMode_t" encodedType="unsigned8" comment="Operational mode of the gimbal. Note that not all modes can be directly commanded."/>
         <Data name="Stabilized" inMemoryType="unsigned8" comment="Non-zero to enable inertial stabilization. If zero then Target is with respect to the gimbal mount, otherwise Target is with respect to the inertial or image space."/>
@@ -582,7 +582,7 @@ See TrilliumPacket.c (in the Orion SDK) for details.
     </Packet>
 
 
-    <Packet name="OrionStartupCmd" ID="ORION_PKT_STARTUP_CMD" comment="Command to run upon motor initialization">
+    <Packet name="OrionStartupCmd" ID="ORION_PKT_STARTUP_CMD" comparefile="compare/compareOrionPublic" printfile="compare/printOrionPublic" comment="Command to run upon motor initialization">
         <Data name="Cmd" struct="OrionCmd" comment="Pan/tilt command. Defaults to position mode, pan/tilt of 0"/>
     </Packet>
 
