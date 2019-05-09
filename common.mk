@@ -5,7 +5,7 @@ endif
 TARGET ?= x86
 
 ifeq ($(TARGET), x86)
-	CFLAGS=-fPIC
+	CFLAGS+=-fPIC
 else ifeq ($(TARGET), arm)
 	PREFIX=arm-linux-gnueabi-
 else ifeq ($(TARGET), tegra)
