@@ -11,6 +11,8 @@ elif [ "$PLATFORM" = "x86_64" ]; then
     ARCH=Linux/x64
 elif uname -m | grep arm > /dev/null; then
     ARCH=Linux/arm
+elif [ "$PLATFORM" = "aarch64" ]; then
+    ARCH=Linux/aarch64
 else
     echo "Unrecognized platform $PLATFORM"
     exit 1
