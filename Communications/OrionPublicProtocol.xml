@@ -137,7 +137,7 @@ See TrilliumPacket.c (in the Orion SDK) for details.
         <Value name="ORION_PKT_PRIVATE_E6" comment="Reserved packet identifier" hidden="true"/>
         <Value name="ORION_PKT_PRIVATE_E7" comment="Reserved packet identifier" hidden="true"/>
         <Value name="ORION_PKT_PRIVATE_E8" comment="Reserved packet identifier" hidden="true"/>
-		<Value name="ORION_PKT_PRIVATE_E9" comment="Reserved packet identifier" hidden="true"/>
+        <Value name="ORION_PKT_PRIVATE_E9" comment="Reserved packet identifier" hidden="true"/>
         <Value name="ORION_PKT_PRIVATE_EA" comment="Reserved packet identifier" hidden="true"/>
         <Value name="ORION_PKT_PRIVATE_F0" value="0xF0" comment="Reserved packet identifier" hidden="true"/>
         <Value name="ORION_PKT_PRIVATE_F1" comment="Reserved packet identifier" hidden="true"/>
@@ -194,11 +194,12 @@ See TrilliumPacket.c (in the Orion SDK) for details.
         <Value name="ORION_MODE_GEO_RATE" value="0x11" comment="Inertial rate mode, with bulk motion compensation when valid slant range is available"/>
         <Value name="ORION_MODE_FFC_AUTO" value="0x20" comment="Commands the gimbal to perform a flat field correction, pan and tilt will drive the IR camera to look at the black body"/>
         <Value name="ORION_MODE_FFC" value="ORION_MODE_FFC_AUTO" comment="Legacy FFC mode, alias of ORION_MODE_FFC_AUTO"/>
-        <Value name="ORION_MODE_FFC_MANUAL" value="0x21" comment="Commands the gimbal to perform a flat field correction, pan and tilt will drive the IR camera to the commanded positions"/>
+        <Value name="ORION_MODE_FFC_MANUAL" value="0x21" comment="Commands the gimbal to perform a flat field correction, pan and tilt will drive the IR camera to the commanded positions. NOTE: The pan/tilt targets specify the payload position, not the boresight position, so the reported angles may not match the command target"/>
         <Value name="ORION_MODE_SCENE" value="0x30" comment="Commands give the angular rate of the image produced by the camera"/>
         <Value name="ORION_MODE_TRACK" value="0x31" comment="Commands give the angular rate of the track box in the camera image"/>
         <Value name="ORION_MODE_CALIBRATION" value="0x40" comment="Drives the pan and tilt axes to calibrate the stabilizer gyros"/>
         <Value name="ORION_MODE_POSITION" value="0x50" comment="Commands give the position of the pan and tilt axes with respect to the gimbal mount"/>
+        <Value name="ORION_MODE_POSITION_NO_LIMITS" value="0x51" comment="Commands give the position of the pan and tilt axes with respect to the gimbal mount. NOTE: This mode ignores the pan/tilt limits and can result in serious damage to the gimbal if used incorrectly"/>
         <Value name="ORION_MODE_GEOPOINT" value="0x60" comment="Gimbal is pointing toward a fixed spatial location"/>
         <Value name="ORION_MODE_PATH" value="0x70" comment="Gimbal is pointing toward a fixed path in space, and may be doing step-stare"/>
         <Value name="ORION_MODE_DOWN" value="0x71" comment="Gimbal is pointing straight down, and may be doing step-stare"/>
