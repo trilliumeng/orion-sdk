@@ -709,8 +709,13 @@ See TrilliumPacket.c (in the Orion SDK) for details.
         <Data name="Index" inMemoryType="unsigned8" comment="Index of the camera that these settings should apply to. Use 0xFF to apply to any connected KTnC camera."/>
         <Data name="IntegrationTime" inMemoryType="signed16" comment="Integration time in microseconds, or negative to disable shutter-priority mode" />
         <Data name="Aperture" inMemoryType="float32" encodedType="signed16" scaler="10" comment="Aperture f-number, or negative to disable aperture-priority mode" />
-        <Data name="Sharpness" inMemoryType="float32" encodedType="unsigned8" max="5" default="1" comment="Sharpening filter strength" />
+        <Data name="Sharpness" inMemoryType="unsigned8" max="16" default="8" comment="Sharpening adjustment" />
 		<Data name="VerticalFlip" inMemoryType="unsigned8" default="0" comment="Set to non-zero to vertically flip the video" />
+		<Data name="ExposureComp" inMemoryType="unsigned8" max="14" default="7" comment="Exposure compenstation adjustment" />
+		<Data name="Contrast" inMemoryType="unsigned8" max="32" default="8" comment="Contrast adjustment"/>
+		<Data name="Saturation" inMemoryType="unsigned8" max="32" default="14" comment="Saturation adjustment"/>
+		<Data name="NightMode" inMemoryType="bitfield1" default="0" comment="Night mode enable"/>
+		<Data name="ResetToDefaults" inMemoryType="bitfield1" default="0" comment="Reset to defaults"/>
     </Packet>
 
     <Enum name="OrionRetractCmd_t" comment="The retraction mechanism commands.">
