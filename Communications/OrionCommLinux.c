@@ -181,7 +181,7 @@ void OrionCommClose(void)
 {
     // Easy enough, just close the file descriptor
     close(Handle);
-
+    Handle = -1;
 }// OrionCommClose
 
 BOOL OrionCommSend(const OrionPkt_t *pPkt)
