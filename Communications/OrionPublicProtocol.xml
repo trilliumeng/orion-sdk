@@ -809,6 +809,7 @@ See TrilliumPacket.c (in the Orion SDK) for details.
             <Value name="PROTOCOL_FLIR" comment="FLIR pass-through protocol"/>
             <Value name="PROTOCOL_EPSON_IMU" comment="EPSON IMU protocol"/>
             <Value name="PROTOCOL_PIKSI" comment="Swift Piksi GPS"/>
+            <Value name="PROTOCOL_WEPILOT" comment="WePilot AP" />
             <Value name="NUM_PROTOCOL"/>
         </Enum>        
 
