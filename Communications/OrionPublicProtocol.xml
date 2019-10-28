@@ -182,7 +182,7 @@ See TrilliumPacket.c (in the Orion SDK) for details.
         <Value name="BOARD_NONE"     comment="Unknown board"/>
         <Value name="BOARD_CLEVIS"   comment="The clevis board (motor control)"/>
         <Value name="BOARD_CROWN"    comment="The crown board (ins and communications)"/>
-        <Value name="BOARD_PAYLOAD"  comment="The paylaod board (camera)"/>
+        <Value name="BOARD_PAYLOAD"  comment="The payload board (camera)"/>
         <Value name="BOARD_LENSCTRL" comment="The lens control board"/>
         <Value name="BOARD_MISSCOMP" comment="The mission computer"/>
     </Enum>
