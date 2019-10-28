@@ -179,8 +179,9 @@ BOOL OrionCommOpenNetworkIp(const char *pAddress)
 
 void OrionCommClose(void)
 {
-    // Easy enough, just close the file descriptor
+    // Easy enough, just close the file descriptor and invalidate it
     close(Handle);
+    Handle = -1;
 
 }// OrionCommClose
 
