@@ -690,6 +690,7 @@ See TrilliumPacket.c (in the Orion SDK) for details.
         <Data name="IntegrationTime" inMemoryType="signed16" comment="Integration time in microseconds, or negative to disable shutter-priority mode" />
         <Data name="Aperture" inMemoryType="float32" encodedType="signed16" scaler="10" comment="Aperture f-number, or negative to disable aperture-priority mode" />
         <Data name="Sharpness" inMemoryType="float32" encodedType="unsigned8" max="5" default="1" comment="Sharpening filter strength" />
+        <Data name="NightMode" inMemoryType="unsigned8" default="0" comment="Set to 1 to remove IR cut filter, or 0 to enable it" />
     </Packet>
 
     <Packet name="OrionSonySettings" ID="ORION_PKT_SONY_SETTINGS" comparefile="compare/compareOrionPublic" printfile="compare/printOrionPublic" comment="Sony-specific camera settings.">
