@@ -288,6 +288,51 @@ BOOL getTerrainIntersection(const GeolocateTelemetry_t *pGeo, float (*getElevati
  */
 BOOL getImageVelocity(const GeolocateBuffer_t* buf, uint32_t dt, float imageVel[NNED])
 {
+    GeolocateTelemetry_t Old, New;
+    int32_t diff;
+
+    if (getGeolocateBuffer(buf, dt, &Old) == FALSE)
+        return FALSE;
+    else if (getGeolocateBuffer(buf, 0, &New) == FALSE)
+        return FALSE;
+
+    // Compute time delta in milliseconds
+    diff = New.base.systemTime - Old.base.systemTime;
+
+
+    // If the newest entry has no range data, don't compute anything. Also skip internal
+    //   range estimates because they assume a velocity of zero
+    if ((New.base.rangeSource == RANGE_SRC_NONE) || (New.base.rangeSource == RANGE_SRC_INTERNAL))
+        return FALSE;
+    // Otherwise, delta time is good and the two range sources match
+    else if ((diff >= (int32_t)dt) && (Old.base.rangeSource == New.base.rangeSource))
+    {
+        double DeltaECEF[NECEF], DeltaNED[NNED];
+
+        // Compute the NED distance between the two image positions
+        vector3Difference(New.imagePosECEF, Old.imagePosECEF, DeltaECEF);
+        ecefToNEDtrig(DeltaECEF, DeltaNED, &New.llaTrig);
+        vector3Convert(DeltaNED, imageVel);
+
+        // Now convert to velocity by multiplying by 1000 / dt (in ms)
+        vector3Scalef(imageVel, imageVel, 1000.0f / diff);
+        return TRUE;
+    }
+
+    return FALSE;
+
+}// getImageVelocity
+
+
+/*!
+ * Get a buffered geolocate telemetry struct
+ * \param buf points to the geolocate buffer
+ * \param dt is the desired timer interval in milliseconds
+ * \param imageVel receives the velocity of the gimbal in North, East Down, meters
+ * \return TRUE if the velocity was computed, else FALSE
+ */
+BOOL getGeolocateBuffer(const GeolocateBuffer_t* buf, uint32_t dt, GeolocateTelemetry_t* geo)
+{
     int newest, oldest, index;
 
     if(buf->holding < 2)
@@ -297,6 +342,14 @@ BOOL getImageVelocity(const GeolocateBuffer_t* buf, uint32_t dt, float imageVel[
     newest = buf->in - 1;
     if(newest < 0)
         newest += GEOLOCATE_BUFFER_SIZE;
+
+    // If the user is asking for the newest buffer
+    if (dt == 0)
+    {
+        // Copy it out immediately and return TRUE
+        copyGeolocateTelemetry(&buf->geobuf[newest], geo);
+        return TRUE;
+    }
 
     // The oldest entry (if holding == 1, then oldest and newest are the same)
     oldest = newest - (buf->holding - 1);
@@ -314,22 +367,10 @@ BOOL getImageVelocity(const GeolocateBuffer_t* buf, uint32_t dt, float imageVel[
         const GeolocateTelemetry_t *pOld = &buf->geobuf[index], *pNew = &buf->geobuf[newest];
         int32_t diff = pNew->base.systemTime - pOld->base.systemTime;
 
-        // If the newest entry has no range data, don't compute anything. Also skip internal
-        //   range estimates because they assume a velocity of zero
-        if ((pNew->base.rangeSource == RANGE_SRC_NONE) || (pNew->base.rangeSource == RANGE_SRC_INTERNAL))
-            return FALSE;
-        // Otherwise, delta time is good and the two range sources match
-        else if ((diff >= (int32_t)dt) && (pOld->base.rangeSource == pNew->base.rangeSource))
+        // If we've got at least dt milliseconds of data
+        if (diff >= (int32_t)dt)
         {
-            double DeltaECEF[NECEF], DeltaNED[NNED];
-
-            // Compute the NED distance between the two image positions
-            vector3Difference(pNew->imagePosECEF, pOld->imagePosECEF, DeltaECEF);
-            ecefToNEDtrig(DeltaECEF, DeltaNED, &pNew->llaTrig);
-            vector3Convert(DeltaNED, imageVel);
-
-            // Now convert to velocity by multiplying by 1000 / dt (in ms)
-            vector3Scalef(imageVel, imageVel, 1000.0f / diff);
+            copyGeolocateTelemetry(pOld, geo);
             return TRUE;
         }
 
@@ -338,9 +379,10 @@ BOOL getImageVelocity(const GeolocateBuffer_t* buf, uint32_t dt, float imageVel[
             index += GEOLOCATE_BUFFER_SIZE;
     }
 
+    // Couldn't find a buffer at least dt milliseconds old
     return FALSE;
 
-}// getImageVelocity
+}// getGeolocateBuffer
 
 
 /*!

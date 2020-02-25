@@ -118,6 +118,9 @@ BOOL getImageVelocity(const GeolocateBuffer_t* buf, uint32_t dt, float imageVel[
 //! Push a new geolocate telemetry into a geolocate buffer
 void pushGeolocateBuffer(GeolocateBuffer_t* buf, const GeolocateTelemetry_t* geo);
 
+//! Get a buffered geolocate telemetry structure
+BOOL getGeolocateBuffer(const GeolocateBuffer_t* buf, uint32_t dt, GeolocateTelemetry_t* geo);
+
 //! Copy a geolocate structure, which cannot be done with simple assignment due to the DCM pointers
 void copyGeolocateTelemetry(const GeolocateTelemetry_t* source, GeolocateTelemetry_t* dest);
 
