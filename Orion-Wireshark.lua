@@ -359,15 +359,15 @@ function print_sw_diagnostics(subtree, buffer, id, size)
 	local j = 4
 
 	for i=1,buffer(1,1):uint() do
-
-		local size = 5 + buffer(j + 4,1):uint() * 6
+		local threads = math.min(buffer(j+4,1):uint()-1,9)
+		local size = 5 + threads * 6
 		local core = subtree:add(buffer(j, size), "Core " .. i - 1 .. " Loading")
 
 		core:add(buffer(j+0,1), string.format("CPU Load: %.0f%%", buffer(j+0,1):uint() / 2.55))
 		core:add(buffer(j+1,1), string.format("Heap Load: %.0f%%", buffer(j+1,1):uint() / 2.55))
 		core:add(buffer(j+2,1), string.format("Stack Load: %.0f%%", buffer(j+2,1):uint() / 2.55))
 
-		for k=0,buffer(j+4,1):uint()-1 do
+		for k=0,threads do
 			local thread = core:add(buffer(j + 5 + k * 6, 6), "Thread " .. k .. " Loading")
 			local load = buffer(j + 5 + k * 6 + 0, 1):uint() / 255.0
 			local iter = buffer(j + 5 + k * 6 + 4, 1):uint()
@@ -1078,6 +1078,22 @@ function print_board_info(subtree, buffer, id, size)
 	return name
 end
 
+function print_camera_state(subtree, buffer, id, size)
+	local name = "Camera State"
+	subtree = make_subtree(subtree, buffer, name, id, size)
+
+	if size == 0 then
+		return name
+	end
+
+	subtree:add(buffer(0,2), "Zoom: " .. buffer(0,2):int() * 0.01)
+	subtree:add(buffer(2,2), "Focus: " .. buffer(2,2):int() * 0.0001)
+	subtree:add(buffer(4,1), "Index: " .. buffer(4,1):uint())
+
+	return name
+
+end
+
 function print_cameras(subtree, buffer, id, size)
 	local name = "Cameras"
 	subtree = make_subtree(subtree, buffer, name, id, size)
@@ -1181,6 +1197,7 @@ function print_packet(pinfo, subtree, buffer)
 	elseif id == 67  then info = print_performance(subtree, data, id, size)
 	elseif id == 70  then info = print_network_diagnostics(subtree, data, id, size)
 	elseif id == 68  then info = print_sw_diagnostics(subtree, data, id, size)
+	elseif id == 97  then info = print_camera_state(subtree, data, id, size)
 	elseif id == 98  then info = print_network_video(subtree, data, id, size)
 	elseif id == 99  then info = print_cameras(subtree, data, id, size)
     elseif id == 160 then info = print_retract_cmd(subtree, data, id, size)
