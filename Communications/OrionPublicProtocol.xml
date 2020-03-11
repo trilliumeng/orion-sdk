@@ -870,13 +870,16 @@ See TrilliumPacket.c (in the Orion SDK) for details.
         <Data name="enableSensonorMV" inMemoryType="bitfield1" comment="If set, and if enablePayloadIns is set, the Sensonor IMU inputs to the INS are coming from the payload ball in the HD80MV orientation."/>
         <Data name="enableHD25PayloadINS" inMemoryType="bitfield1" comment="If set, and if enablePayloadIns is set, the IMU inputs to the INS are coming from the payload ball in the HD25 special orientation."/>
         <Data name="opticalFlowSetting" inMemoryType="bitfield4" comment="Non-zero to enable optical flow."/>
-        <Data name="reserved" inMemoryType="null" encodedType="bitfield8" comment="reserved space for future expansion"/>
+        <Data name="enableCustomIMURotation" inMemoryType="bitfield1" comment="Set to enable a custom rotation from IMU axis to INS axis. Should not be set at the same time as `enableSensonorMV`."/>
+        <Data name="reserved" inMemoryType="null" encodedType="bitfield7" comment="reserved space for future expansion"/>
+        
         <Data name="gimbalToPlatformEuler" inMemoryType="float32" array="NUM_AXES" encodedType="signed16" max="pi" printscaler="180/pi" comment="Roll, Pitch, Yaw angles in radians from -pi to pi. The angles give the Euler rotation (yaw first, then pitch, then roll) from the platform reference frame into the gimbal reference frame."/>
         <Data name="initialHeading" inMemoryType="float32" encodedType="signed16" max="pi" printscaler="180/pi" comment="Initial heading angle in radians for the INS"/>
         <Data name="gpsLeverArm" inMemoryType="float32" array="3" encodedType="signed16" scaler="1000" default="0" comment="X, Y, Z meters from first (primary) GPS antenna to IMU in the gimbal reference frame, or the platform reference frame if enablePlatformRotation is on"/>
         <Data name="headingObservationBiasAngle" inMemoryType="float32" encodedType="signed16" default="0" max="pi" printscaler="180/pi" comment="For external heading observations (including magnetometer) subtract this angle in radians from the heading observation to get the heading in INS or platform frame"/>
         <Data name="secondGPSLeverArm" inMemoryType="float32" array="3" encodedType="signed16" scaler="1000" default="0" comment="X, Y, Z meters from second GPS antenna to IMU in the gimbal reference frame, or the platform reference frame if enablePlatformRotation is on. This only applies if Novatel Align data are being received."/>
         <Data name="alignHeadingNoise" inMemoryType="float32" encodedType="unsigned16" default="0" max="pi" printscaler="180/pi" comment="Sensor noise in radians for align heading observation. Use zero for the default sensor noise from the Align hardware."/>
+        <Data name="imuToInsEuler" inMemoryType="float32" array="NUM_AXES" default="0" encodedType="signed16" max="pi" printscaler="180/pi" comment="Roll, Pitch, Yaw angles in radians from -pi to pi. The angles give the Euler rotation (yaw first, then pitch, then roll) from the INS reference frame into the IMU reference frame."/>
     </Packet>
 
     <Packet name="OrionNetworkSettings" ID="ORION_PKT_NETWORK_SETTINGS" comment="Change the IP network settings in the gimbal.">
