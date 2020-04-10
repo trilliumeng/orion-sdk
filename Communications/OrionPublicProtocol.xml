@@ -56,6 +56,7 @@ See TrilliumPacket.c (in the Orion SDK) for details.
         <Value name="ORION_PKT_STARTUP_CMD" comment="Command to run on startup at the end of motor initialization"/>
         <Value name="ORION_PKT_PRIVATE_08" comment="Reserved packet identifier" hidden="true" />
         <Value name="ORION_PKT_PRIVATE_09" comment="Reserved packet identifier" hidden="true" />
+        <Value name="ORION_PKT_POSITIONS" comment="Stored gimbal positions"/>
         <Value name="ORION_PKT_PRIVATE_1F" value="0x1F" comment="Reserved packet identifier" hidden="true"/>
         <Value name="ORION_PKT_PRIVATE_20" comment="Reserved packet identifier" hidden="true"/>
         <Value name="ORION_PKT_PRIVATE_21" comment="Reserved packet identifier" hidden="true"/>
@@ -590,6 +591,28 @@ See TrilliumPacket.c (in the Orion SDK) for details.
 
     <Packet name="OrionStartupCmd" ID="ORION_PKT_STARTUP_CMD" comparefile="compare/compareOrionPublic" printfile="compare/printOrionPublic" comment="Command to run upon motor initialization">
         <Data name="Cmd" struct="OrionCmd" comment="Pan/tilt command. Defaults to position mode, pan/tilt of 0"/>
+    </Packet>
+
+    <Packet name="OrionPositions" ID="ORION_PKT_POSITIONS" comment="Stored gimbal positions">
+
+        <Enum name="PositionList">
+            <Value name="POSITION_HOME" comment="Home position, used on startup" />
+            <Value name="POSITION_STOW" comment="Stow position, currently unused" />
+            <Value name="POSITION_RETRACT" comment="Position to stow the gimbal at prior to retracting" />
+            <Value name="POSITION_FFC" comment="FFC position, currently unused" />
+            <Value name="POSITION_USER_0" comment="User-defined position 0" />
+            <Value name="POSITION_USER_1" comment="User-defined position 1" />
+            <Value name="NUM_POSITIONS"/>
+        </Enum>
+
+        <Data name="NumPositions" inMemoryType="unsigned8" comment="Number of pre-defined positions included in the packet"/>
+
+        <Structure name="Position" array="NUM_POSITIONS" variableArray="NumPositions">
+            <Data name="Pan" inMemoryType="float32" encodedType="signed16" max="pi" comment="Pan angle"/>
+            <Data name="Tilt" inMemoryType="float32" encodedType="unsigned16" min="-3*pi/2" max="pi/2" comment="Tilt angle"/>
+            <Data name="Enabled" inMemoryType="unsigned32" encodedType="bitfield1" comment="Set to 1 to enable this position"/>
+            <Data name="Reserved" inMemoryType="null" encodedType="bitfield31" constant="0"/>
+        </Structure>
     </Packet>
 
     <Packet name="GeopointCmd" ID="ORION_PKT_GEOPOINT_CMD" parameterInterface="true"
