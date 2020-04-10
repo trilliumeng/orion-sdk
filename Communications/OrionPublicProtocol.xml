@@ -607,7 +607,7 @@ See TrilliumPacket.c (in the Orion SDK) for details.
 
         <Data name="NumPositions" inMemoryType="unsigned8" comment="Number of pre-defined positions included in the packet"/>
 
-        <Structure name="Position" array="NUM_POSITIONS" variableArray="NumPositions">
+        <Structure name="PosPreset" array="NUM_POSITIONS" variableArray="NumPositions">
             <Data name="Pan" inMemoryType="float32" encodedType="signed16" max="pi" comment="Pan angle"/>
             <Data name="Tilt" inMemoryType="float32" encodedType="unsigned16" min="-3*pi/2" max="pi/2" comment="Tilt angle"/>
             <Data name="Enabled" inMemoryType="unsigned32" encodedType="bitfield1" comment="Set to 1 to enable this position"/>
