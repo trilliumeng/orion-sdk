@@ -593,7 +593,7 @@ See TrilliumPacket.c (in the Orion SDK) for details.
         <Data name="Cmd" struct="OrionCmd" comment="Pan/tilt command. Defaults to position mode, pan/tilt of 0"/>
     </Packet>
 
-    <Packet name="OrionPositions" ID="ORION_PKT_POSITIONS" comment="Stored gimbal positions">
+    <Packet name="OrionPositions" ID="ORION_PKT_POSITIONS" comparefile="compare/compareOrionPublic" printfile="compare/printOrionPublic" comment="Stored gimbal positions">
 
         <Enum name="PositionList">
             <Value name="POSITION_HOME" comment="Home position, used on startup" />
