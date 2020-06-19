@@ -310,6 +310,8 @@ See TrilliumPacket.c (in the Orion SDK) for details.
         <Data name="Current24Var" inMemoryType="float32" encodedType="unsigned16" scaler="100000" comment="Current variance in Amps of the 24-volt rail"/>
         <Data name="Current12Var" inMemoryType="float32" encodedType="unsigned16" scaler="100000" comment="Current variance in Amps of the 12-volt rail"/>
         <Data name="Current3v3Var" inMemoryType="float32" encodedType="unsigned16" scaler="100000" comment="Current variance in Amps of the 3.3-volt rail"/>
+        <Data name="PayloadTemp" inMemoryType="float32" encodedType="signed8" scaler="1.0" default="-127" />
+        <Data name="PayloadHumidity" inMemoryType="float32" encodedType="unsigned8" max="100" default="0" />
     </Packet>
 
     <Packet name="OrionSoftwareDiagnostics" ID="ORION_PKT_SOFTWARE_DIAGNOSTICS" comment="Diagnostic information related to software performance for a specific board in the Orion Gimbal. This packet is sent by the gimbal once per second.">
