@@ -82,8 +82,11 @@ BOOL OrionCommIpStringValid(const char *pAddress)
 {
     uint32_t Address = inet_addr(pAddress);
 
+	BOOL not_any = (Address != INADDR_ANY);
+	//BOOL not_none = (Address != INADDR_NONE); // Apparently on some implementations INADDR_NONE and INADDR_BROADCAST (which is valid!) are the same...
+
     // Return TRUE if this is a valid IP address
-    return (Address != INADDR_ANY) && (Address != INADDR_NONE);
+	return not_any;// && not_none;
 
 }// OrionCommIpStringValid
 
@@ -110,7 +113,9 @@ BOOL OrionCommOpenNetworkIp(const char *pAddress)
     else
     {
         // Close the discovery handle and return a failure
-        close(UdpHandle);
+		if (UdpHandle != INVALID_SOCKET)
+          close(UdpHandle);
+
         return FALSE;
     }
 
