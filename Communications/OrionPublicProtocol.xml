@@ -106,6 +106,13 @@ See TrilliumPacket.c (in the Orion SDK) for details.
         <Value name="ORION_PKT_PRIVATE_94" value="0x94" comment="Reserved packet identifier" hidden="true"/>
         <Value name="ORION_PKT_RETRACT_CMD" value="0xA0" comment="Retract or deploy command for a gimbal retraction mechanism"/>
         <Value name="ORION_PKT_RETRACT_STATUS" comment="Current gimbal retraction mechanism status"/>
+        <Value name="ORION_PKT_RETRACT_VERSION" comment="Software version for the retract board (if present)"/>
+        <Value name="ORION_PKT_SNPY_A8" value="0xA8" comment="Reserved Snoopy Board packet identifier" hidden="true"/>
+        <Value name="ORION_PKT_SNPY_A9" comment="Reserved Snoopy Board packet identifier" hidden="true"/>
+        <Value name="ORION_PKT_SNPY_AA" comment="Reserved Snoopy Board packet identifier" hidden="true"/>
+        <Value name="ORION_PKT_SNPY_AB" comment="Reserved Snoopy Board packet identifier" hidden="true"/>
+        <Value name="ORION_PKT_SNPY_AC" comment="Reserved Snoopy Board packet identifier" hidden="true"/>
+        <Value name="ORION_PKT_SNPY_AD" comment="Reserved Snoopy Board packet identifier" hidden="true"/>
         <Value name="ORION_PKT_PRIVATE_B0" value="0xB0" comment="Reserved packet identifier" hidden="true"/>
         <Value name="ORION_PKT_DEBUG_STRING" comment="A human readable text string which is typically used for debugging purposes"/>
         <Value name="ORION_PKT_USER_DATA" comment="Packet for sending user data to a serial port in the gimbal" />
@@ -150,7 +157,6 @@ See TrilliumPacket.c (in the Orion SDK) for details.
         <Value name="ORION_PKT_PRIVATE_F5" comment="Reserved packet identifier" hidden="true"/>
         <Value name="ORION_PKT_PRIVATE_F6" comment="Reserved packet identifier" hidden="true"/>
         <Value name="ORION_PKT_PRIVATE_F7" comment="Reserved packet identifier" hidden="true"/>
-        <Value name="ORION_PKT_RETRACT_VERSION" comment="Software version for the retract board (if present)"/>
         <Value name="ORION_PKT_LENSCTL_VERSION" comment="Software version for the lens control board (if present)"/>
     </Enum>
 
