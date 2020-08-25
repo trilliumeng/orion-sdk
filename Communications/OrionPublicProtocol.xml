@@ -686,77 +686,77 @@ See TrilliumPacket.c (in the Orion SDK) for details.
         <Data name="DisableSffc" inMemoryType="bitfield1" />
         <Data name="Palette" inMemoryType="bitfield3" />
         <Data name="NucType" enum="FlirNucType_t" encodedType="bitfield3" comment="NUC type setting" />
-        <Data name="BlackHot" inMemoryType="bitfield1" comment="Image polarity setting - set to 0 for white hot or 1 for black hot. This field is ignored if Palette is non-zero"/>
-        <Data name="MaxAgcGain" inMemoryType="unsigned8" comment="Maximum AGC output gain"/>
-        <Data name="AceLevel" inMemoryType="signed8" comment="Active Contrast Enhancement (ACE) level"/>
-        <Data name="DdeThreshold" inMemoryType="unsigned8" comment="DDE spatial threshold"/>
-        <Data name="AgcMidpoint" inMemoryType="unsigned8" default="128" comment="AGC output midpoint, from 0 to 255"/>
-        <Data name="IntegrationTime" inMemoryType="float32" encodedType="unsigned8" min="1" max="30" default="8" comment="Integration time, in milliseconds"/>
+        <Data name="BlackHot" inMemoryType="bitfield1" comment="Image polarity setting - set to 0 for white hot or 1 for black hot. This field is ignored if Palette is non-zero, (default=0, effective min=0, effective max=1)"/>
+        <Data name="MaxAgcGain" inMemoryType="unsigned8" comment="Maximum AGC output gain, (effective min=1, effective max=50)"/>
+        <Data name="AceLevel" inMemoryType="signed8" comment="Active Contrast Enhancement (ACE) level, (default=1, effective min=-8, effective max=8)"/>
+        <Data name="DdeThreshold" inMemoryType="unsigned8" comment="DDE spatial threshold, (default=24, effective min=1, effective max=100)"/>
+        <Data name="AgcMidpoint" inMemoryType="unsigned8" default="128" min="0" max="255" comment="AGC output midpoint, (default=128, effective min=0, effective max=255)"/>
+        <Data name="IntegrationTime" inMemoryType="float32" encodedType="unsigned8" min="1" max="30" default="8" comment="Integration time, in milliseconds, (default=8, effective min=2, effective max=12)"/>
 
         <Enum name="FlirAgcType_t" comment="FLIR AGC type enumeration">
             <Value name="AGC_TYPE_DEFAULT" />
             <Value name="AGC_TYPE_AUTO_LINEAR" />
         </Enum>
 
-        <Data name="AgcType" enum="FlirAgcType_t" encodedType="unsigned8" default="AGC_TYPE_DEFAULT" />
+        <Data name="AgcType" enum="FlirAgcType_t" encodedType="unsigned8" default="AGC_TYPE_DEFAULT"/>
     </Packet>
 
     <Packet name="OrionAptinaSettings" ID="ORION_PKT_APTINA_SETTINGS" comparefile="compare/compareOrionPublic" printfile="compare/printOrionPublic" comment="Aptina-specific camera settings.">
         <Data name="Index" inMemoryType="unsigned8" comment="Index of the camera that these settings should apply to. Use 0xFF to apply to any connected Aptina camera."/>
-        <Data name="MinExposure" inMemoryType="float32" encodedType="unsigned16" comment="Minimum exposure time in microseconds" min="0.05" max="33"/>
-        <Data name="MaxExposure" inMemoryType="float32" encodedType="unsigned16" comment="Maximum exposure time in milliseconds" min="0.05" max="33"/>
-        <Data name="MinGain" inMemoryType="float32" encodedType="unsigned16" comment="Minimum sensor luminance gain" min="1" max="32"/>
-        <Data name="MaxGain" inMemoryType="float32" encodedType="unsigned16" comment="Maximum sensor luminance gain" min="1" max="32"/>
-        <Data name="Brightness" inMemoryType="signed8" comment="Brightness adjustment"/>
-        <Data name="Contrast" inMemoryType="float32" encodedType="signed8" max="1" comment="Contrast adjustment"/>
-        <Data name="Saturation" inMemoryType="float32" encodedType="signed8" max="1" comment="Saturation adjustment"/>
-        <Data name="Sharpness" inMemoryType="float32" encodedType="unsigned8" max="5" comment="Sharpening filter strength" />
-        <Data name="DebugEnable" inMemoryType="bitfield1" default="0" comment="Set to 1 to enable AGC debugging information" />
-        <Data name="Hue" inMemoryType="signed8" default="0" comment="Hue adjustment" />
+        <Data name="MinExposure" inMemoryType="float32" encodedType="unsigned16" comment="Minimum exposure time in milliseconds, (default=0.1, effective min=0.05, effective max=33.0)" min="0.05" max="33"/>
+        <Data name="MaxExposure" inMemoryType="float32" encodedType="unsigned16" comment="Maximum exposure time in milliseconds, (default=8.0, effective min=0.05, effective max=33.0)" min="0.05" max="33"/>
+        <Data name="MinGain" inMemoryType="float32" encodedType="unsigned16" comment="Minimum sensor luminance gain, (default=1, effective min=1, effective max=32)" min="1" max="32"/>
+        <Data name="MaxGain" inMemoryType="float32" encodedType="unsigned16" comment="Maximum sensor luminance gain, (default=32, effective min=1, effective max=32)" min="1" max="32"/>
+        <Data name="Brightness" inMemoryType="signed8" comment="Brightness adjustment, (default=-8, effective min=-100, effective max=110)"/>
+        <Data name="Contrast" inMemoryType="float32" encodedType="signed8" max="1" comment="Contrast adjustment, (default=-0.4, effective min=-1.0, effective max=1.0)"/>
+        <Data name="Saturation" inMemoryType="float32" encodedType="signed8" max="1" comment="Saturation adjustment, (default=0.3, effective min=-1.0, effective max=1.0)"/>
+        <Data name="Sharpness" inMemoryType="float32" encodedType="unsigned8" max="5" comment="Sharpening filter strength, (default=2.0, effective min=0.0, effective max=5.0)" />
+        <Data name="DebugEnable" inMemoryType="bitfield1" default="0" comment="Set to 1 to enable AGC debugging information, (default=0, effective min=0, effective max=1)" />
+        <Data name="Hue" inMemoryType="signed8" default="0" comment="Hue adjustment, (default=0, effective min=-10, effective max=10)" />
     </Packet>
 
     <Packet name="OrionZafiroSettings" ID="ORION_PKT_ZAFIRO_SETTINGS" comparefile="compare/compareOrionPublic" printfile="compare/printOrionPublic" comment="Zafiro-specific camera settings.">
         <Data name="Index" inMemoryType="unsigned8" comment="Index of the camera that these settings should apply to. Use 0xFF to apply to any connected Zafiro camera."/>
-        <Data name="BlackHot" inMemoryType="unsigned8" comment="Image polarity setting - set to 0 for white hot or 1 for black hot"/>
-        <Data name="IntegrationTime" inMemoryType="float32" encodedType="unsigned8" min="1" max="30" comment="Integration time, in milliseconds"/>
-        <Data name="LapEnabled" inMemoryType="unsigned8" comment="Local Area Processing (LAP) enable/disable flag. Set to zero to disable, or non-zero to enable."/>
-        <Data name="LapGain" inMemoryType="float32" encodedType="unsigned8" min="0.5" max="4.0" comment="LAP Sharpening gain"/>
-        <Data name="AgcSaturation" inMemoryType="float32" encodedType="unsigned8" min="0" max="0.1" comment="AGC histogram saturation"/>
-        <Data name="UseNucTablePresets" inMemoryType="unsigned8" default="0" comment="Set to 1 to use NUC table presets, default is 0" />
+        <Data name="BlackHot" inMemoryType="unsigned8" comment="Image polarity setting - set to 0 for white hot or 1 for black hot, (default=0, effective min=0, effective max=1)"/>
+        <Data name="IntegrationTime" inMemoryType="float32" encodedType="unsigned8" min="1" max="30" comment="Integration time, in milliseconds, (default=10.0, effective min=1.0, effective max=30.0)"/>
+        <Data name="LapEnabled" inMemoryType="unsigned8" comment="Local Area Processing (LAP) enable/disable flag. Set to zero to disable, or non-zero to enable, (default=1, effective min=0, effective max=1)"/>
+        <Data name="LapGain" inMemoryType="float32" encodedType="unsigned8" min="0.5" max="4.0" comment="LAP Sharpening gain, (default=2.0, effective min=0.5, effective max=4.0)"/>
+        <Data name="AgcSaturation" inMemoryType="float32" encodedType="unsigned8" min="0" max="0.1" comment="AGC histogram saturation, (default=0.01, effective min=0.0, effective max=0.1)"/>
+        <Data name="UseNucTablePresets" inMemoryType="unsigned8" default="0" comment="Set to 1 to use NUC table presets, (default=0, effective min=0, effective max=1)" />
     </Packet>
 
     <Packet name="OrionHitachiSettings" ID="ORION_PKT_HITACHI_SETTINGS" comparefile="compare/compareOrionPublic" printfile="compare/printOrionPublic" comment="Hitachi-specific camera settings.">
         <Data name="Index" inMemoryType="unsigned8" comment="Index of the camera that these settings should apply to. Use 0xFF to apply to any connected Hitachi camera."/>
-        <Data name="IntegrationTime" inMemoryType="signed16" comment="Integration time in microseconds, or negative to disable shutter-priority mode" />
-        <Data name="Aperture" inMemoryType="float32" encodedType="signed16" scaler="10" comment="Aperture f-number, or negative to disable aperture-priority mode" />
-        <Data name="Sharpness" inMemoryType="float32" encodedType="unsigned8" max="5" default="1" comment="Sharpening filter strength" />
-        <Data name="NightMode" inMemoryType="unsigned8" default="0" comment="Set to 1 to remove IR cut filter, or 0 to enable it" />
+        <Data name="IntegrationTime" inMemoryType="signed16" comment="Integration time in microseconds, or negative to disable shutter-priority mode, (default=-1, effective min=100, effective max=16667)" />
+        <Data name="Aperture" inMemoryType="float32" encodedType="signed16" scaler="10" comment="Aperture f-number, or negative to disable aperture-priority mode, (default=1.4, effective min=-3276.6, effective max=3276.7)" />
+        <Data name="Sharpness" inMemoryType="float32" encodedType="unsigned8" max="5" default="1" comment="Sharpening filter strength, (default=1.0, effective min=0.0, effective max=5.0)" />
+        <Data name="NightMode" inMemoryType="unsigned8" default="0" comment="Set to 1 to remove IR cut filter, or 0 to enable it, (default=0, effective min=0, effective max=1)" />
     </Packet>
 
     <Packet name="OrionSonySettings" ID="ORION_PKT_SONY_SETTINGS" comparefile="compare/compareOrionPublic" printfile="compare/printOrionPublic" comment="Sony-specific camera settings.">
         <Data name="Index" inMemoryType="unsigned8" comment="Index of the camera that these settings should apply to. Use 0xFF to apply to any connected Sony camera."/>
-        <Data name="MinExposure" inMemoryType="float32" encodedType="unsigned16" comment="Minimum exposure time in milliseconds" min="0.05" max="33"/>
-        <Data name="MaxExposure" inMemoryType="float32" encodedType="unsigned16" comment="Maximum exposure time in milliseconds" min="0.05" max="33"/>
-        <Data name="MinGain" inMemoryType="unsigned8" comment="Minimum sensor luminance gain, in dB"/>
-        <Data name="MaxGain" inMemoryType="unsigned8" comment="Maximum sensor luminance gain, in dB"/>
-        <Data name="Brightness" inMemoryType="unsigned8" comment="Brightness target, from 0 to 255"/>
-        <Data name="Contrast" inMemoryType="float32" encodedType="signed8" max="1" comment="Contrast adjustment"/>
-        <Data name="Saturation" inMemoryType="float32" encodedType="signed8" max="1" comment="Saturation adjustment"/>
-        <Data name="Sharpness" inMemoryType="float32" encodedType="unsigned8" max="5" comment="Sharpening filter strength" />
-        <Data name="FrameRate" inMemoryType="float32" encodedType="unsigned8" max="30" comment="Camera frame rate, in Hertz"/>
+        <Data name="MinExposure" inMemoryType="float32" encodedType="unsigned16" comment="Minimum exposure time in milliseconds, (default=0.1, effective min=0.05, effective max=33.0)" min="0.05" max="33"/>
+        <Data name="MaxExposure" inMemoryType="float32" encodedType="unsigned16" comment="Maximum exposure time in milliseconds, (default=0.1, effective min=0.05, effective max=33.0)" min="0.05" max="33"/>
+        <Data name="MinGain" inMemoryType="unsigned8" comment="Minimum sensor luminance gain, in dB, (default=1)"/>
+        <Data name="MaxGain" inMemoryType="unsigned8" comment="Maximum sensor luminance gain, in dB, (default=18)"/>
+        <Data name="Brightness" inMemoryType="unsigned8" comment="Brightness target, from 0 to 255, (default=128, effective min=0, effective max=255)"/>
+        <Data name="Contrast" inMemoryType="float32" encodedType="signed8" max="1" comment="Contrast adjustment, (default=-0.3, effective min=-1.0, effective max=1.0)"/>
+        <Data name="Saturation" inMemoryType="float32" encodedType="signed8" max="1" comment="Saturation adjustment, (default=0.5, effective min=-1.0, effective max=1.0)"/>
+        <Data name="Sharpness" inMemoryType="float32" encodedType="unsigned8" max="5" comment="Sharpening filter strength, (default=3.0, effective min=0.0, effective max=5.0)" />
+        <Data name="FrameRate" inMemoryType="float32" encodedType="unsigned8" max="30" comment="Camera frame rate, in Hertz, (default=30.0, effective min=1.0, effective max=30.0)"/>
     </Packet>
     
     <Packet name="OrionKtncSettings" ID="ORION_PKT_KTNC_SETTINGS" comparefile="compare/compareOrionPublic" printfile="compare/printOrionPublic" comment="KTnC-specific camera settings.">
         <Data name="Index" inMemoryType="unsigned8" comment="Index of the camera that these settings should apply to. Use 0xFF to apply to any connected KTnC camera."/>
-        <Data name="IntegrationTime" inMemoryType="signed16" comment="Integration time in microseconds, or negative to disable shutter-priority mode" />
-        <Data name="Aperture" inMemoryType="float32" encodedType="signed16" scaler="10" comment="Aperture f-number, or negative to disable aperture-priority mode" />
-        <Data name="Sharpness" inMemoryType="unsigned8" scaler="15" default="8" comment="Sharpening adjustment" />
-        <Data name="VerticalFlip" inMemoryType="unsigned8" default="0" comment="Set to non-zero to vertically flip the video" />
-        <Data name="ExposureComp" inMemoryType="unsigned8" scaler="17" default="7" comment="Exposure compenstation adjustment" />
-        <Data name="Contrast" inMemoryType="unsigned8" scaler="7" default="8" comment="Contrast adjustment"/>
-        <Data name="Saturation" inMemoryType="unsigned8" scaler="7" default="14" comment="Saturation adjustment"/>
-        <Data name="NightMode" inMemoryType="bitfield1" default="0" comment="Night mode enable"/>
-        <Data name="ResetToDefaults" inMemoryType="bitfield1" default="0" comment="Reset to defaults"/>
+        <Data name="IntegrationTime" inMemoryType="signed16" default="-1" comment="Integration time in microseconds, or negative to disable shutter-priority mode, (default=-1, auto=-1, effective min=100, effective max=16667)" />
+        <Data name="Aperture" inMemoryType="float32" encodedType="signed16" scaler="10" default="-1" comment="Aperture f-number, or negative to disable aperture-priority mode, (default=-1, auto=-1, effective min=1.6, effective max=32)" />
+        <Data name="Sharpness" inMemoryType="unsigned8" scaler="15" default="8" comment="Sharpening adjustment, (default=8, effective min=0, effective max=16)" />
+        <Data name="VerticalFlip" inMemoryType="unsigned8" default="0" comment="Set to non-zero to vertically flip the video, (default=0, effective min=0, effective max=1)" />
+        <Data name="ExposureComp" inMemoryType="unsigned8" scaler="17" default="7" comment="Exposure compenstation adjustment, (default=7, effective min=0, effective max=14)" />
+        <Data name="Contrast" inMemoryType="unsigned8" scaler="7" default="8" comment="Contrast adjustment, (default=8 effective min=0, effective max=32)"/>
+        <Data name="Saturation" inMemoryType="unsigned8" scaler="7" default="14" comment="Saturation adjustment, (default=14, effective min=0, effective max=32)"/>
+        <Data name="NightMode" inMemoryType="bitfield1" default="0" comment="Night mode enable, (default=0, effective min=0, effective max=1)"/>
+        <Data name="ResetToDefaults" inMemoryType="bitfield1" default="0" comment="Reset to defaults, (default=0, effective min=0, effective max=1)"/>
     </Packet>
 
     <Enum name="OrionRetractCmd_t" comment="The retraction mechanism commands.">
