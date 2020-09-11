@@ -30,6 +30,7 @@ BOOL OrionCommIpStringValid(const char *pAddress);
 void OrionCommClose(void);
 BOOL OrionCommSend(const OrionPkt_t *pPkt);
 BOOL OrionCommReceive(OrionPkt_t *pPkt);
+BOOL OrionCommIsOpen(void);
 
 #ifdef __cplusplus
 }

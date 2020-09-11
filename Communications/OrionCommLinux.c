@@ -214,6 +214,13 @@ BOOL OrionCommReceive(OrionPkt_t *pPkt)
 
 }// OrionCommReceive
 
+BOOL OrionCommIsOpen(void)
+{
+    // Return TRUE if the file descriptor is valid
+    return (Handle >= 0);
+
+}// OrionCommIsOpen
+
 // Quickly and easily constructs a sockaddr pointer for a bunch of different functions.
 //   Call this function with Address == Port == 0 to access the pointer, or pass in
 //   actual values to construct a new sockaddr.
