@@ -6,7 +6,7 @@
 #include <stdint.h>
 
 #ifdef WIN32
-# include <WTypes.h>
+#include <WTypes.h>
 #else
 typedef unsigned long BOOL;
 #endif
