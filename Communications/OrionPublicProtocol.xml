@@ -690,7 +690,7 @@ See TrilliumPacket.c (in the Orion SDK) for details.
         <Data name="MaxAgcGain" inMemoryType="unsigned8" comment="Maximum AGC output gain, (effective min=1, effective max=50)"/>
         <Data name="AceLevel" inMemoryType="signed8" comment="Active Contrast Enhancement (ACE) level, (default=1, effective min=-8, effective max=8)"/>
         <Data name="DdeThreshold" inMemoryType="unsigned8" comment="DDE spatial threshold, (default=24, effective min=1, effective max=100)"/>
-        <Data name="AgcMidpoint" inMemoryType="unsigned8" default="128" min="0" max="255" comment="AGC output midpoint, (default=128, effective min=0, effective max=255)"/>
+        <Data name="AgcMidpoint" inMemoryType="unsigned8" default="128" comment="AGC output midpoint, (default=128, effective min=0, effective max=255)"/>
         <Data name="IntegrationTime" inMemoryType="float32" encodedType="unsigned8" min="1" max="30" default="8" comment="Integration time, in milliseconds, (default=8, effective min=2, effective max=12)"/>
 
         <Enum name="FlirAgcType_t" comment="FLIR AGC type enumeration">
@@ -748,8 +748,8 @@ See TrilliumPacket.c (in the Orion SDK) for details.
     
     <Packet name="OrionKtncSettings" ID="ORION_PKT_KTNC_SETTINGS" comparefile="compare/compareOrionPublic" printfile="compare/printOrionPublic" comment="KTnC-specific camera settings.">
         <Data name="Index" inMemoryType="unsigned8" comment="Index of the camera that these settings should apply to. Use 0xFF to apply to any connected KTnC camera."/>
-        <Data name="IntegrationTime" inMemoryType="signed16" default="-1" comment="Integration time in microseconds, or negative to disable shutter-priority mode, (default=-1, auto=-1, effective min=100, effective max=16667)" />
-        <Data name="Aperture" inMemoryType="float32" encodedType="signed16" scaler="10" default="-1" comment="Aperture f-number, or negative to disable aperture-priority mode, (default=-1, auto=-1, effective min=1.6, effective max=32)" />
+        <Data name="IntegrationTime" inMemoryType="signed16" comment="Integration time in microseconds, or negative to disable shutter-priority mode, (default=-1, auto=-1, effective min=100, effective max=16667)" />
+        <Data name="Aperture" inMemoryType="float32" encodedType="signed16" scaler="10" comment="Aperture f-number, or negative to disable aperture-priority mode, (default=-1, auto=-1, effective min=1.6, effective max=32)" />
         <Data name="Sharpness" inMemoryType="unsigned8" scaler="15" default="8" comment="Sharpening adjustment, (default=8, effective min=0, effective max=16)" />
         <Data name="VerticalFlip" inMemoryType="unsigned8" default="0" comment="Set to non-zero to vertically flip the video, (default=0, effective min=0, effective max=1)" />
         <Data name="ExposureComp" inMemoryType="unsigned8" scaler="17" default="7" comment="Exposure compenstation adjustment, (default=7, effective min=0, effective max=14)" />
