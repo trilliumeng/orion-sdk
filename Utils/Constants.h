@@ -46,8 +46,6 @@
 
 #define SATURATE(value, max)  BOUND(-(max), (value), (max))
 
-#define EQUAL(a,b,tol) (fabs((a)-(b)) < (tol))
-
 #define rad2deg(rad)  ((rad)*180.0/PId)
 #define rad2degf(rad) ((rad)*180.0f/PIf)
 #define deg2rad(deg)  ((deg)*PId/180.0)
