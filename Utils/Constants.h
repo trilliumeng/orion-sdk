@@ -44,7 +44,13 @@
  */
 #define BOUND(min,value,max)    MAX(min, MIN(value, max))
 
-#define SATURATE(value, max)  BOUND(-(max), (value), (max))
+#define SATURATE(value,max)  BOUND(-(max), (value), (max))
+
+#define EQUAL(a,b,tol) ( (((a)-(b)) < tol) && (((b)-(a)) < tol) )
+#define NOTEQUAL(a,b,tol) ( !EQUAL(a,b,tol) )
+
+#define INSIDE(a,x,b) ( ((x)>=(a)) && ((x)<=(b)) )
+#define OUTSIDE(a,x,b) ( !INSIDE(a,x,b) )
 
 #define rad2deg(rad)  ((rad)*180.0/PId)
 #define rad2degf(rad) ((rad)*180.0f/PIf)
