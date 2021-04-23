@@ -22,8 +22,6 @@
 # define SQR(x)          ((x) * (x))
 #endif
 
-#define SGN(x)          (((x) < 0) ? -1 : 1)
-
 #ifndef MIN
 # define MIN(x,y)       (((x) < (y)) ? (x) : (y))
 #endif
