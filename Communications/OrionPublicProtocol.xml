@@ -631,6 +631,7 @@ See TrilliumPacket.c (in the Orion SDK) for details.
             <Value name="geopointStare" value="0x01" comment="If set this geopoint will issue a stare packet when it is pointing at the target location. This option is ignored if joystickRange is non-zero."/>
             <Value name="geopointClosure" value="0x02" comment="If set this geopoint command will cause the gimbal to enter closure mode, in which it will drive at maximum performance to achieve the desired pointing. This option is ignored if the joystickRange is non-zero."/>
             <Value name="geopointStareClosure" value="0x03" comment="Logical OR of geopointStare and geopointClosure."/>
+            <Value name="geopointReturnToMode" value="0x04" comment="Set this bit to return to the current operation mode after the closure threshold is reached" />
         </Enum>
         <Data name="targetLat" inMemoryType="float64" encodedType="signed32" scaler="180*10000000/pi" comment="Geodetic latitude of the target in radians, positive North"/>
         <Data name="targetLon" inMemoryType="float64" encodedType="signed32" scaler="180*10000000/pi" comment="Longitude of the target in radians, positive East"/>
