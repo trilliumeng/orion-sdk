@@ -940,7 +940,8 @@ See TrilliumPacket.c (in the Orion SDK) for details.
         <Data name="Mask" inMemoryType="unsigned8" array="4" comment="IPv4 network mask"/>
         <Data name="Gateway" inMemoryType="unsigned8" array="4" comment="IPv4 gateway address"/>
         <Data name="LowDelay" inMemoryType="unsigned8" default="0" comment="Set to 1 to use low-delay TCP mode (i.e. disable Nagle's Algorithm)."/>
-        <Data name="Mtu" inMemoryType="unsigned16" default="0" comment="Ethernet MTU size, set to zero for hardware default" />
+        <Data name="Mtu" inMemoryType="unsigned16" default="0" comment="Ethernet MTU size, set to zero for hardware default"/>
+        <Data name="SecondaryTcpPort" inMemoryType="unsigned16" default="0" comment="Port number for secondary TCP server port; set to zero to disable"/>
     </Packet>
 
     <Packet name="OrionNetworkVideo" ID="ORION_PKT_NETWORK_VIDEO" comment="Change the IP settings for video delivery.">
