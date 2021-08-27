@@ -207,6 +207,7 @@ See TrilliumPacket.c (in the Orion SDK) for details.
         <Value name="ORION_MODE_FFC_MANUAL" value="0x21" comment="Commands the gimbal to perform a flat field correction, pan and tilt will drive the IR camera to the commanded positions. NOTE: The pan/tilt targets specify the payload position, not the boresight position, so the reported angles may not match the command target"/>
         <Value name="ORION_MODE_SCENE" value="0x30" comment="Commands give the angular rate of the image produced by the camera"/>
         <Value name="ORION_MODE_TRACK" value="0x31" comment="Commands give the angular rate of the track box in the camera image"/>
+        <Value name="ORION_MODE_NUDGE_TRACK" value="0x32" comment="Nudge the track box by a percentage of FOV"/>
         <Value name="ORION_MODE_CALIBRATION" value="0x40" comment="Drives the pan and tilt axes to calibrate the stabilizer gyros"/>
         <Value name="ORION_MODE_POSITION" value="0x50" comment="Commands give the position of the pan and tilt axes with respect to the gimbal mount"/>
         <Value name="ORION_MODE_POSITION_NO_LIMITS" value="0x51" comment="Commands give the position of the pan and tilt axes with respect to the gimbal mount. NOTE: This mode ignores the pan/tilt limits and can result in serious damage to the gimbal if used incorrectly"/>
