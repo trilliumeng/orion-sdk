@@ -228,6 +228,7 @@ See TrilliumPacket.c (in the Orion SDK) for details.
         <Value name="LASER_TYPE_LIGHTWARE" comment="LightWare LRF" />
         <Value name="LASER_TYPE_JENOPTIK_DLEM" comment="Jenoptik DLEM LRF" />
         <Value name="LASER_TYPE_VECTRONIX" comment="Vectronix LRF" />
+        <Value name="LASER_TYPE_DESIGNATOR" comment="Laser designator" />
     </Enum>
 
     <Structure name="Date" comparefile="compare/compareOrionPublic" printfile="compare/printOrionPublic"  comment="Compresssed date format.">
@@ -720,6 +721,9 @@ See TrilliumPacket.c (in the Orion SDK) for details.
         <Data name="Sharpness" inMemoryType="float32" encodedType="unsigned8" max="5" comment="Sharpening filter strength, (default=2.0, effective min=0.0, effective max=5.0)" />
         <Data name="DebugEnable" inMemoryType="bitfield1" default="0" comment="Set to 1 to enable AGC debugging information, (default=0, effective min=0, effective max=1)" />
         <Data name="Hue" inMemoryType="signed8" default="0" comment="Hue adjustment, (default=0, effective min=-10, effective max=10)" />
+        <Data name="Aperture" inMemoryType="float32" encodedType="unsigned8" max="32" default="0" comment="Aperture command, set to 0 for auto" />
+        <Data name="MinAperture" inMemoryType="float32" encodedType="unsigned8" max="32" default="0" comment="Minimum aperture setting, or 0 for not supported" />
+        <Data name="MaxAperture" inMemoryType="float32" encodedType="unsigned8" max="32" default="0" comment="Maximum aperture setting, or 0 for not supported" />
     </Packet>
 
     <Packet name="OrionZafiroSettings" ID="ORION_PKT_ZAFIRO_SETTINGS" comparefile="compare/compareOrionPublic" printfile="compare/printOrionPublic" comment="Zafiro-specific camera settings.">
@@ -764,6 +768,8 @@ See TrilliumPacket.c (in the Orion SDK) for details.
         <Data name="Saturation" inMemoryType="unsigned8" scaler="7" default="14" comment="Saturation adjustment, (default=14, effective min=0, effective max=32)"/>
         <Data name="NightMode" inMemoryType="bitfield1" default="0" comment="Night mode enable, (default=0, effective min=0, effective max=1)"/>
         <Data name="ResetToDefaults" inMemoryType="bitfield1" default="0" comment="Reset to defaults, (default=0, effective min=0, effective max=1)"/>
+        <Data name="Reserved" inMemoryType="null" encodedType="bitfield6" default="0" comment="Reserved bits, set to 0" />
+        <Data name="MaxExposure" inMemoryType="float" encodedType="unsigned16" scaler="10000" default="0.008" comment="Max integration time in seconds for AGC algorithm" />
     </Packet>
 
     <Enum name="OrionRetractCmd_t" comment="The retraction mechanism commands.">
@@ -866,6 +872,7 @@ See TrilliumPacket.c (in the Orion SDK) for details.
         <Data name="baud" inMemoryType="unsigned32" encodedType="unsigned24" comment="Baud rate bits per second. Use 0 to select the default baud rate for this port and protocol."/>
         <Data name="protocol" enum="OrionProtocols_t" encodedType="unsigned8" comment="The protocol to use for this port. If PROTOCOL_NO_CHANGE or PROTOCOL_DEFAULT are used the reply to this packet will contain the actual protocol in use"/>
         <Data name="temporary" inMemoryType="unsigned8" default="0" comment="A value of 0 indicates that the settings should persist across power cycles. Non-zero values will cause the new setting to be lost after power cycle"/>
+        <Data name="param" inMemoryType="unsigned32" default="0" comment="Protocol-specific parameter, default is zero" />
     </Packet>
 
     <Packet name="OrionLimitsData" ID="ORION_PKT_LIMITS" comparefile="compare/compareOrionPublic" printfile="compare/printOrionPublic" comment=
@@ -952,7 +959,9 @@ See TrilliumPacket.c (in the Orion SDK) for details.
             <Value name="STREAM_TYPE_MJPEG" comment="MJPEG multipart video stream" />
             <Value name="STREAM_TYPE_RAW" comment="Raw multipart video stream" />
             <Value name="STREAM_TYPE_YUV" comment="YUV (NV12) multipart video stream" />
+            <Value name="STREAM_TYPE_H265" comment="h.265+KLV stream in an MPEG transport stream" />
             <Value name="NUM_STREAM_TYPES" comment="Number of video stream type IDs" />
+            <Value name="STREAM_TYPE_NONE" value="255" comment="Disable video streaming" />
         </Enum>
 
         <Data name="DestIp" inMemoryType="unsigned32" comment="destination IPv4 address"/>
@@ -963,6 +972,7 @@ See TrilliumPacket.c (in the Orion SDK) for details.
         <Data name="MjpegQuality" inMemoryType="unsigned8" default="30" comment="MJPEG quality value, from 10 to 95" />
         <Data name="SaveSettings" inMemoryType="bitfield1" default="0" comment="Set to 1 to make h.264 settings non-volatile, or 0 to reset to defaults on startup" />
         <Data name="TsPacketCount" inMemoryType="bitfield4" default="0" comment="Number of TS packets per UDP packet, or 0 for no change" />
+        <Data name="FramePeriod" inMemoryType="bitfield3" default="0" comment="Set to 0 for no change, or set to N, where the encoder will only render every Nth input frame" />
     </Packet>
 
 
@@ -976,6 +986,7 @@ See TrilliumPacket.c (in the Orion SDK) for details.
         <Data name="MjpegQuality" inMemoryType="unsigned8" default="30" comment="MJPEG quality value, from 10 to 95" />
         <Data name="SaveSettings" inMemoryType="bitfield1" default="0" comment="Set to 1 to make h.264 settings non-volatile, or 0 to reset to defaults on startup" />
         <Data name="TsPacketCount" inMemoryType="bitfield4" default="0" comment="Number of TS packets per UDP packet, or 0 for no change" />
+        <Data name="FramePeriod" inMemoryType="bitfield3" default="0" comment="Set to 0 for no change, or set to N, where the encoder will only render every Nth input frame" />
     </Packet>
 
     <Packet name="OrionCameras" ID="ORION_PKT_CAMERAS" comparefile="compare/compareOrionPublic" printfile="compare/printOrionPublic" comment="Camera definitions for the Orion gimbal">
@@ -990,6 +1001,7 @@ See TrilliumPacket.c (in the Orion SDK) for details.
             <Value name="CAMERA_TYPE_SWIR" comment="Short wave infrared camera"/>
             <Value name="CAMERA_TYPE_MWIR" comment="Mid wave infrared camera"/>
             <Value name="CAMERA_TYPE_LWIR" comment="Long wave infrared camera"/>
+            <Value name="CAMERA_TYPE_SPOTTER" comment="Visible light spotter camera"/>
         </Enum>
 
         <Enum name="OrionCameraProtocol_t" comment="The camera communications protocol">

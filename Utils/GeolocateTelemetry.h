@@ -107,7 +107,24 @@ BOOL DecodeGeolocateTelemetry(const OrionPkt_t *pPkt, GeolocateTelemetry_t *pGeo
 void ConvertGeolocateTelemetryCore(const GeolocateTelemetryCore_t *pCore, GeolocateTelemetry_t *pGeo);
 
 //! Offset an image location according to a user click
-BOOL offsetImageLocation(const GeolocateTelemetry_t *geo, const double imagePosLLA[NLLA], float ydev, float zdev, double newPosLLA[NLLA]);
+BOOL offsetImageLocation(const GeolocateTelemetry_t *geo, const double imagePosLLA[NLLA], float ydev, float zdev, double newPosLLA[NLLA], double* slantRangeM);
+
+//! Returns the approximate distance to the horizon based on MSL altitude and latitude.
+double distanceToHorizonM(double latRad, double altMSLMeters);
+
+/*!
+ * Assuming the gimbal is over the ocean, compute an image location based on
+ * angular deviation in camera frame (i.e. user click).
+ *
+ * \param geo is the geolocate telemetry from the gimbal.
+ * \param deltaYawDeg is the angular deviation in radians from the image location in
+ *        right camera direction. *
+ * \param deltaPitchRad is the angular deviation in radians from the image location in
+ *        up camera direction.
+ * \param newPosLLA receives the position of the user click. If the click is above the
+ *        horizon, a point above the ocean at the distance to horizon will be returned.
+ */
+void offsetImageLocationOcean(const GeolocateTelemetry_t *geoloc, float deltaYawRad, float deltaPitchRad, double newPosLLA[NLLA], double* slantRangeM);
 
 //! Get the terrain intersection based on the current telemetry
 BOOL getTerrainIntersection(const GeolocateTelemetry_t *pGeo, float (*getElevationHAE)(double, double), double PosLLA[NLLA], double *pRange);

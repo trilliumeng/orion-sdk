@@ -122,8 +122,9 @@ void ConvertGeolocateTelemetryCore(const GeolocateTelemetryCore_t *pCore, Geoloc
  * \param zdev is the angular deviation in radians from the image location in
  *        up camera direction.
  * \param newPosLLA receives the position of the user click
+ * \param slantRangeM Slant Range to point in Meters
  */
-BOOL offsetImageLocation(const GeolocateTelemetry_t *geo, const double imagePosLLA[NLLA], float ydev, float zdev, double newPosLLA[NLLA])
+BOOL offsetImageLocation(const GeolocateTelemetry_t *geo, const double imagePosLLA[NLLA], float ydev, float zdev, double newPosLLA[NLLA], double* slantRangeM)
 {
     float range, down;
     float vectorNED[NNED];
@@ -148,6 +149,9 @@ BOOL offsetImageLocation(const GeolocateTelemetry_t *geo, const double imagePosL
 
     // Range from gimbal to image position.
     range = vector3Lengthf(vectorNED);
+
+    // Return Slant Range in meters
+    *slantRangeM = (double)range;
 
     // Adjust the angular deviations to be deviations in meters
     ydev = tanf(ydev)*range;
@@ -185,6 +189,121 @@ BOOL offsetImageLocation(const GeolocateTelemetry_t *geo, const double imagePosL
 
 }// offsetImageLocation
 
+//! Returns the approximate distance to the horizon based on MSL altitude and latitude.
+double distanceToHorizonM(double latRad, double altMSLMeters)
+{
+    double earth_radius_m = datum_meanRadius; //avg earth radius.
+
+    return earth_radius_m * acos( earth_radius_m / (earth_radius_m + altMSLMeters) );
+
+}// distanceToHorizonM
+
+/*!
+ * Assuming the gimbal is over the ocean, compute an image location based on
+ * angular deviation in camera frame (i.e. user click).
+ *
+ * \param geo is the geolocate telemetry from the gimbal.
+ * \param deltaYawDeg is the angular deviation in radians from the image location in
+ *        right camera direction.
+ * \param deltaPitchRad is the angular deviation in radians from the image location in
+ *        up camera direction.
+ * \param newPosLLA receives the position of the user click. If the click is above the
+ *        horizon, a point above the ocean at the distance to horizon will be returned.
+ * \param slantRangeM Slant Range to point in Meters
+ */
+void offsetImageLocationOcean( const GeolocateTelemetry_t *geoloc, float deltaYawRad, float deltaPitchRad, double newPosLLA[NLLA], double* slantRangeM)
+{
+    // Get the DCM to rotate from the delta position in FOV to camera centerline
+    stackAllocateDCM(deltaDcm);
+    setDCMBasedOnPanTilt(&deltaDcm, deltaYawRad, deltaPitchRad);
+
+    // Get the total rotation from the delta position to NED
+    stackAllocateDCM(dcmDeltaToNED);
+    dcmMultiply(&geoloc->cameraDcm, &deltaDcm, &dcmDeltaToNED);
+
+    // The line-of-sight unit vector from the gimbal is the first column (note switch to [N,E,UP]
+    double u = -(double)dcmGet(&dcmDeltaToNED,2,0);
+
+    // Use the geocentric radius of the earth at the gimbal
+    double geocentric[NLLA] = {geoloc->base.posLat, geoloc->base.posLon, 0};
+    geodeticToGeocentric(geocentric, geocentric);
+
+    // The gimbal position is the origin in x,y and z is relative to center of sphere: [0,0,geocentricAlt]
+    double wgsradius_m = radiusOfEWCurv(geoloc->base.posLat);
+    double gimbal_alt_msl_m = geoloc->base.posAlt - geoloc->base.geoidUndulation;
+    double g = wgsradius_m + gimbal_alt_msl_m;
+
+    double ug = u*g;
+
+    // Check for a possible solution
+    double q = ug*ug - g*g + SQR(wgsradius_m);
+    // if q < 0 no solution
+    double range_to_intercept = -1;
+    // if q == 0 the solution will be the horizon, numerically this is unlikely to happen
+    // but handle it anyway, d is in meters so use a "small" epsilon relative to the radius of earth
+    if(fabs(q) < 10.)
+        range_to_intercept = -ug;
+    // if q > 0 take the smaller (positive result) of the two solutions
+    else if( q > 0 )
+    {
+        q = sqrt(q);
+        double s1 = -ug - q;
+        double s2 = -ug + q;
+        if( s1 > 0 && s2 > 0 )
+            range_to_intercept = MIN(s1, s2);
+        else if( s1 > 0 )
+            range_to_intercept = s1;
+        else if( s2 > 0 )
+            range_to_intercept = s2;
+        else
+        {
+            // Error: no solution
+            // If we are above the horizon, use range to horizon.
+            range_to_intercept = distanceToHorizonM( geoloc->base.posLat, gimbal_alt_msl_m );
+        }
+    }
+    else
+    {
+        // If we are above the horizon, use range to horizon.
+        range_to_intercept = distanceToHorizonM( geoloc->base.posLat, gimbal_alt_msl_m );
+    }
+
+    *slantRangeM = range_to_intercept;
+
+    // Now that we have the range to the sea (or a point in the sky out at the range to horizon), project a
+    // vector from the gimbal along our offset at the given range to get its LLA.
+    double GimbalLla[NLLA] = { geoloc->base.posLat, geoloc->base.posLon, geoloc->base.posAlt };
+
+    double GimbalEcef[NECEF], ImgPosECEF[NECEF];
+    float LineOfSight[NECEF], Ecef[NECEF];
+    stackAllocateDCM(Dcm);
+    llaTrig_t Trig;
+
+    // Create a line of sight vector looking north.
+    LineOfSight[ECEFX] = range_to_intercept;
+    LineOfSight[ECEFY] = 0.0f;
+    LineOfSight[ECEFZ] = 0.0f;
+
+    // Now rotate that vector into the nav frame
+    setDCMBasedOnEuler(&Dcm, dcmYaw(&dcmDeltaToNED), dcmPitch(&dcmDeltaToNED), dcmRoll(&dcmDeltaToNED));
+    dcmApplyRotation(&Dcm, LineOfSight, LineOfSight);
+
+    // Get gimbal pos in ECEF
+    llaToECEFandTrig(GimbalLla, GimbalEcef, &Trig);
+
+    // Rotate from the nav frame to ECEF
+    nedToECEFtrigf(LineOfSight, Ecef, &Trig);
+
+    // Add the line of sight vector to the gimbal ECEF position to get image pos in
+    // ECEF.
+    ImgPosECEF[ECEFX] = Ecef[ECEFX] + GimbalEcef[ECEFX];
+    ImgPosECEF[ECEFY] = Ecef[ECEFY] + GimbalEcef[ECEFY];
+    ImgPosECEF[ECEFZ] = Ecef[ECEFZ] + GimbalEcef[ECEFZ];
+
+    // Convert img ECEF to LLA and store result in parameter from caller.
+    ecefToLLA( ImgPosECEF, newPosLLA );
+
+}// offsetImageLocationOcean
 
 /*! Get the terrain intersection of the current line of sight given gimbal geolocate telemetry data.
  *  \param pGeo[in] A pointer to incoming geolocate telemetry data
