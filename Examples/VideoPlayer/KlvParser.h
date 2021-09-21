@@ -110,4 +110,6 @@ int64_t KlvGetValueInt(KlvUasDataElement_t Element, int *pResult);
 uint64_t KlvGetValueUInt(KlvUasDataElement_t Element, int *pResult);
 const char *KlvGetValueString(KlvUasDataElement_t Element);
 
+void KlvPrintData(void);
+
 #endif // KLVPARSER_H

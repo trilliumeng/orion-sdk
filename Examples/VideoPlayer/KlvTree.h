@@ -4,6 +4,8 @@
 #include <stdint.h>
 
 int KlvTreeSetValue(uint8_t Key, uint32_t Length, const uint8_t *pData);
+const uint8_t *KlvTreeGetValue(uint8_t Key, uint32_t *pLength);
+int KlvTreeHasKey(uint8_t Key);
 
 double KlvTreeGetValueDouble(uint8_t Key, double Min, double Max, int *pResult);
 int64_t KlvTreeGetValueInt(uint8_t Key, int *pResult);

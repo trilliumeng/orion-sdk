@@ -19,7 +19,7 @@ typedef struct KlvTag_t
 
 static KlvTag_t *pHeadTag = NULL;
 
-KlvTag_t *KlvCTrereateTag(void)
+KlvTag_t *KlvCreateTag(void)
 {
     KlvTag_t *pTag = (KlvTag_t *)calloc(1, sizeof(KlvTag_t)), *pHead = pHeadTag;
 
@@ -32,7 +32,7 @@ KlvTag_t *KlvCTrereateTag(void)
     // Return a pointer to the new tag
     return pTag;
 
-}// KlvCTrereateTag
+}// KlvCreateTag
 
 KlvTag_t *KlvFindTag(uint8_t Key)
 {
@@ -60,7 +60,7 @@ int KlvTreeSetValue(uint8_t Key, uint32_t Length, const uint8_t *pData)
     KlvTag_t *pTag = KlvFindTag(Key);
 
     // If we found an existing tag or are able to create a new one
-    if (pTag || (pTag = KlvCTrereateTag()))
+    if (pTag || (pTag = KlvCreateTag()))
     {
         // Copy in the key and length, and also try to allocate enough space for the data
         pTag->Key = Key;
@@ -84,6 +84,13 @@ int KlvTreeSetValue(uint8_t Key, uint32_t Length, const uint8_t *pData)
     return 0;
     
 }// KlvTreeSetValue
+
+int KlvTreeHasKey(uint8_t Key)
+{
+    // Return 1 if a tag with this key was parsed, or 0 if not
+    return (KlvFindTag(Key) != NULL);
+
+}// KlvTreeHasKey
 
 double KlvTreeGetValueDouble(uint8_t Key, double Min, double Max, int *pResult)
 {
@@ -239,9 +246,45 @@ const char *KlvTreeGetValueString(uint8_t Key)
 {
     // If we can find the right tag, just cast its value data to a string and return
     KlvTag_t *pTag = KlvFindTag(Key);
-    return (pTag && pTag->pData) ? (const char *)pTag->pData : 0;
+
+    // If this is a valid tag with a valid data pointer
+    if (pTag && pTag->pData)
+    {
+        // If the string is not null terminated
+        if (pTag->pData[pTag->Length - 1] != 0)
+        {
+            // Add a null byte to the end
+            pTag->pData = (uint8_t *)realloc(pTag->pData, pTag->Length + 1);
+            pTag->pData[pTag->Length++] = 0;
+        }
+
+        // Return a C string
+        return (const char *)pTag->pData;
+    }
+    else
+        return NULL;
 
 }// KlvTreeGetValueString
+
+const uint8_t *KlvTreeGetValue(uint8_t Key, uint32_t *pLength)
+{
+    // If we can find the right tag, just cast its value data to a string and return
+    KlvTag_t *pTag = KlvFindTag(Key);
+
+    // If this is a valid tag with a valid data pointer
+    if (pTag && pTag->pData)
+    {
+        // Fill out the length and return the data pointer
+        *pLength = pTag->Length;
+        return pTag->pData;
+    }
+    else
+    {
+        *pLength = 0;
+        return NULL;
+    }
+
+}
 
 void KlvTreePrint(void)
 {
