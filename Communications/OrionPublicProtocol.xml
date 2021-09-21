@@ -770,6 +770,9 @@ See TrilliumPacket.c (in the Orion SDK) for details.
         <Data name="ResetToDefaults" inMemoryType="bitfield1" default="0" comment="Reset to defaults, (default=0, effective min=0, effective max=1)"/>
         <Data name="Reserved" inMemoryType="null" encodedType="bitfield6" default="0" comment="Reserved bits, set to 0" />
         <Data name="MaxExposure" inMemoryType="float" encodedType="unsigned16" scaler="10000" default="0.008" comment="Max integration time in seconds for AGC algorithm" />
+        <Data name="VersionMajor" inMemoryType="unsigned8" default="0" comment="Major version number of the firmware loaded on the camera" />
+        <Data name="VersionMinor" inMemoryType="unsigned8" default="0" comment="Minor version number of the firmware loaded on the camera" />
+        <Data name="VersionPatch" inMemoryType="unsigned8" default="0" comment="Patch version number of the firmware loaded on the camera" />
     </Packet>
 
     <Enum name="OrionRetractCmd_t" comment="The retraction mechanism commands.">
