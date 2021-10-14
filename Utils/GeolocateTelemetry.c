@@ -150,9 +150,6 @@ BOOL offsetImageLocation(const GeolocateTelemetry_t *geo, const double imagePosL
     // Range from gimbal to image position.
     range = vector3Lengthf(vectorNED);
 
-    // Return Slant Range in meters
-    *slantRangeM = (double)range;
-
     // Adjust the angular deviations to be deviations in meters
     ydev = tanf(ydev)*range;
     zdev = tanf(zdev)*range;
@@ -184,6 +181,13 @@ BOOL offsetImageLocation(const GeolocateTelemetry_t *geo, const double imagePosL
     newPosLLA[LAT] = addAngles(geo->base.posLat, vectorNED[NORTH]/datum_meanRadius);
     newPosLLA[LON] = addAngles(geo->base.posLon, vectorNED[EAST]/(datum_meanRadius*geo->llaTrig.cosLat));
     newPosLLA[ALT] = geo->base.posAlt - vectorNED[DOWN];
+
+    // Recalcualte slant range after we get the new location.
+    // Range from gimbal to image position.
+    range = vector3Lengthf(vectorNED);
+
+    // Return Slant Range in meters
+    *slantRangeM = (double)range;
 
     return TRUE;
 
