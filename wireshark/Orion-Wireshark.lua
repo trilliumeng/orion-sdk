@@ -328,20 +328,25 @@ function print_diagnostics(subtree, buffer, id, size)
 	local v24 = subtree:add(buffer, "24 Vdc Statistics")
 	v24:add(buffer(0,2), "Voltage: " .. buffer(0,2):uint() / 1000.0)
 	v24:add(buffer(6,2), "Current: " .. buffer(6,2):uint() / 1000.0)
-	v24:add(buffer(16,2), "RMS Voltage: " .. buffer(16,2):uint() / 1000.0)
-	v24:add(buffer(22,2), "RMS Current: " .. buffer(22,2):uint() / 1000.0)
+	v24:add(buffer(16,2), "RMS Voltage: " .. buffer(16,2):uint() / 1000000.0)
+	v24:add(buffer(22,2), "RMS Current: " .. buffer(22,2):uint() / 1000000.0)
 
 	local v12 = subtree:add(buffer, "12 Vdc Statistics")
 	v12:add(buffer(2,2), "Voltage: " .. buffer(2,2):uint() / 1000.0)
 	v12:add(buffer(8,2), "Current: " .. buffer(8,2):uint() / 1000.0)
-	v12:add(buffer(18,2), "RMS Voltage: " .. buffer(18,2):uint() / 1000.0)
-	v12:add(buffer(24,2), "RMS Current: " .. buffer(24,2):uint() / 1000.0)
+	v12:add(buffer(18,2), "RMS Voltage: " .. buffer(18,2):uint() / 1000000.0)
+	v12:add(buffer(24,2), "RMS Current: " .. buffer(24,2):uint() / 1000000.0)
 
 	local v33 = subtree:add(buffer, "3.3 Vdc Statistics")
 	v33:add(buffer(4,2), "Voltage: " .. buffer(4,2):uint() / 1000.0)
 	v33:add(buffer(10,2), "Current: " .. buffer(10,2):uint() / 1000.0)
-	v33:add(buffer(20,2), "RMS Voltage: " .. buffer(20,2):uint() / 1000.0)
-	v33:add(buffer(26,2), "RMS Current: " .. buffer(26,2):uint() / 1000.0)
+	v33:add(buffer(20,2), "RMS Voltage: " .. buffer(20,2):uint() / 1000000.0)
+	v33:add(buffer(26,2), "RMS Current: " .. buffer(26,2):uint() / 1000000.0)
+
+	if size > 28 then
+		subtree:add(buffer(28,1), "Payload Temp: " .. buffer(28,1):int())
+		subtree:add(buffer(29,1), "Payload Humidity: " .. buffer(29,1):uint() / 2.55)
+	end
 
 	return name
 end
@@ -796,6 +801,28 @@ function print_geolocate(subtree, buffer, id, size)
 
 end
 
+function print_geopoint_cmd(subtree, buffer, id, size)
+	local name = "Geopoint Cmd"
+	subtree = make_subtree(subtree, buffer, name, id, size)
+
+	if size == 0 then
+		return name
+	end
+
+	subtree:add(buffer(0,4), string.format("Latitude: %.6f", buffer(0,4):int() / 10000000.0))
+	subtree:add(buffer(4,4), string.format("Longitude: %.6f", buffer(4,4):int() / 10000000.0))
+	subtree:add(buffer(8,4), string.format("Altitude: %.1f", buffer(8,4):int() / 10000.0))
+
+
+	local vel = subtree:add(buffer(12,6), "Velocity")
+
+	vel:add(buffer(12,2), "North: " .. buffer(12,2):int() / 100.0)
+	vel:add(buffer(14,2), "East: " .. buffer(14,2):int() / 100.0)
+	vel:add(buffer(16,2), "Down: " .. buffer(16,2):int() / 100.0)
+
+	return name
+end
+
 function print_network_video(subtree, buffer, id, size)
 	local name = "Network Video"
 	subtree = make_subtree(subtree, buffer, name, id, size)
@@ -1207,6 +1234,7 @@ function print_packet(pinfo, subtree, buffer)
 	elseif id == 210 then info = print_ext_heading(subtree, data, id, size)
 	elseif id == 211 then info = print_ins_quality(subtree, data, id, size)
 	elseif id == 212 then info = print_geolocate(subtree, data, id, size)
+	elseif id == 213 then info = print_geopoint_cmd(subtree, data, id, size)
 	elseif id == 214 then info = print_range(subtree, data, id, size)
 	elseif id == 215 then info = print_path_data(subtree, data, id, size)
 	elseif id == 217 then info = print_stare_start(subtree, data, id, size)
@@ -1247,5 +1275,5 @@ end
 
 DissectorTable.get("udp.port"):add(8745,orion)
 DissectorTable.get("udp.port"):add(8746,orion)
-DissectorTable.get("tcp.port"):add(4096,orion)
+DissectorTable.get("tcp.port"):add(8747,orion)
 DissectorTable.get("udp.port"):add(8748,orion)
