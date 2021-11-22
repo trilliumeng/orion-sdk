@@ -1062,6 +1062,7 @@ See TrilliumPacket.c (in the Orion SDK) for details.
     <Packet name="OrionTrackerVersion" ID="ORION_PKT_TRACKER_VERSION" parameterInterface="true" comparefile="compare/compareOrionPublic" printfile="compare/printOrionPublic" comment="Software version for the tracker board in the Orion Gimbal (if applicable)">
         <Data name="Version" inMemoryType="fixedstring" array="16" comment="Version of the tracker board software"/>
         <Data name="PartNumber" inMemoryType="fixedstring" array="16" comment="Hardware details of the tracker board"/>
+        <Data name="AppBits" inMemoryType="unsigned32" default="0" comment="Tracker application license bitfield" />
     </Packet>
     
     <Packet name="OrionRetractVersion" ID="ORION_PKT_RETRACT_VERSION" parameterInterface="true" comparefile="compare/compareOrionPublic" printfile="compare/printOrionPublic" comment="Software version for the retract board in the Retract Unit (if applicable)">
