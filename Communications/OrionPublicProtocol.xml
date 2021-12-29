@@ -229,6 +229,7 @@ See TrilliumPacket.c (in the Orion SDK) for details.
         <Value name="LASER_TYPE_JENOPTIK_DLEM" comment="Jenoptik DLEM LRF" />
         <Value name="LASER_TYPE_VECTRONIX" comment="Vectronix LRF" />
         <Value name="LASER_TYPE_DESIGNATOR" comment="Laser designator" />
+        <Value name="LASER_TYPE_JENOPTIK_DLEM_TEST" comment="Jenoptik DLEM LRF test mode" />
     </Enum>
 
     <Structure name="Date" comparefile="compare/compareOrionPublic" printfile="compare/printOrionPublic"  comment="Compresssed date format.">
