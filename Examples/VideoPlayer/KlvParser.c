@@ -81,7 +81,7 @@ KlvTagInfo_t TagInfo[KLV_UAS_NUM_ELEMENTS] = {
     { "KLV_UAS_TARGET_CE90", /* = 45 */           KLV_TYPE_UINT, 0, 4096 }, // NOTE: POORLY DEFINED BY SPEC
     { "KLV_UAS_TARGET_LE90", /* = 46 */           KLV_TYPE_UINT, 0, 4096 }, // NOTE: POORLY DEFINED BY SPEC
     { "KLV_UAS_GENERIC_FLAG", /* = 47 */          KLV_TYPE_UINT },
-    { "KLV_UAS_SECURITY", /* = 48 */              KLV_TYPE_DOUBLE, CONVERT_ANGLE(-20), CONVERT_ANGLE(20) },
+    { "KLV_UAS_SECURITY", /* = 48 */              KLV_TYPE_OTHER },
     { "KLV_UAS_DYNAMIC_PRESSURE", /* = 49 */      KLV_TYPE_DOUBLE, 0, 500000 },
     { "KLV_UAS_ANGLE_OF_ATTACK_SHORT", /* = 50 */ KLV_TYPE_OTHER },
     { "KLV_UAS_VERTICAL_VELOCITY", /* = 51 */     KLV_TYPE_DOUBLE, -180, 180 },
@@ -302,6 +302,7 @@ const char *KlvGetValueString(KlvUasDataElement_t Element)
 void KlvPrintData(void)
 {
     int Result, i;
+    uint32_t Length;
 
     // Loop through all of the different tags we know about
     for (i = 0; i < KLV_UAS_NUM_ELEMENTS; i++)
@@ -309,8 +310,11 @@ void KlvPrintData(void)
         // If we found one of these elements
         if (KlvTreeHasKey(i))
         {
-            // Print the key and enumeration name
-            printf("Key %3d (%-32s), value: ", i, TagInfo[i].Name);
+            // Grab the length of this tag
+            KlvTreeGetValue(i, &Length);
+
+            // Print the key, enumeration name, and length
+            printf("Key %3d (%-32s), length: %d, value: ", i, TagInfo[i].Name, Length);
 
             // Switch on tag type
             switch (TagInfo[i].Type)
