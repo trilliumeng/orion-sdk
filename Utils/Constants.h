@@ -32,6 +32,10 @@
 # define MAX(x,y)       (((x) > (y)) ? (x) : (y))
 #endif
 
+#ifndef ROUND
+# define ROUND(x)       ((x) + (((x) >= 0.0f) ? 0.5f : -0.5f))
+#endif
+
 // Leap seconds as of 12/31/2016
 #define LEAP_SECONDS    18
 
