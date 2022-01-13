@@ -21,6 +21,15 @@ void nedToECEFtrig(const double ned[NNED], double ecef[NECEF], const llaTrig_t* 
 //! Convert an ECEF vector to NED using trig data
 void ecefToNEDtrig(const double ecef[NECEF], double ned[NNED], const llaTrig_t* trig);
 
+//! Fill out a dcm that rotates from NED to ECEF
+void nedToECEFdcmd(DCMd_t* dcm, const llaTrig_t* trig);
+
+//! Fill out a dcm that rotates from ECEF to NED
+void ecefToNEDdcmd(DCMd_t* dcm, const llaTrig_t* trig);
+
+//! Compute the gravity vector in the ECEF frame given the strength of gravity.
+void gravityToECEFd(double gravityDown, double gravityEcef[NECEF], const llaTrig_t* trig);
+
 //! Convert an NED vector to ECEF
 void nedToECEFf(const float ned[NNED], float ecef[NECEF], const double lla[NLLA]);
 
