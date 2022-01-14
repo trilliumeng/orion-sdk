@@ -483,9 +483,6 @@ See TrilliumPacket.c (in the Orion SDK) for details.
             <Value name="timeOnly" comment="Time only, no position or velocity"/>
         </Enum>
 
-		<Include name="GpsDataReceive.h" comment="For postUpdate() functions"/>
-		<Include name="mathutilities.h" comment="For computeDateAndTimeFromWeekAndItow() function"/>
-
         <Data name="multiAntHeadingValid" inMemoryType="bitfield1" comment="Set if the GPS has a multi antenna heading solution"/>
         <Data name="reserved" inMemoryType="null" encodedType="bitfield3"/>
         <Data name="FixType" inMemoryType="bitfield4" comment="uBlox fix type"/>
@@ -506,10 +503,8 @@ See TrilliumPacket.c (in the Orion SDK) for details.
         <Data name="source" enum="gpsSource_t" encodedType="unsigned8" comment="The source of the GPS data"/>
         <Data name="reserved" inMemoryType="null" encodedType="bitfield6"/>
         <Data name="detailedAccuracyValid" inMemoryType="bitfield1" comment="Set if detailed accuracy information (posAccuracy and velAccuracy) are included in this packet"/>
-        <Data name="verticalVelocityValid" inMemoryType="bitfield1" comment="0 if vertical velocity data are not valid"/> 
-		<Code name="postReceiptUpdate1" decode="constructGpsEcefPosVel(user);" comment="Fill out non-encoded ECEF position and velocity fields"/>
-        <Data name="leapSeconds" inMemoryType="unsigned8" comment="Leap seconds to subtract from GPS time to compute UTC time"/>
-        <Code name="computeTime" decode="computeDateAndTimeFromWeekAndItow(user->Week, user->ITOW, user->leapSeconds, &amp;user->Year, &amp;user->Month, &amp;user->Day, &amp;user->Hour, &amp;user->Minute, &amp;user->Second);" comment="Compute calendar time"/>
+        <Data name="verticalVelocityValid" inMemoryType="bitfield1" comment="0 if vertical velocity data are not valid"/>
+        <Data name="leapSeconds" default="17" inMemoryType="unsigned8" comment="Leap seconds to subtract from GPS time to compute UTC time"/>
         <Data name="multiAntHeading" default="0" dependsOn="multiAntHeadingValid" inMemoryType="float32" encodedType="signed16" max="pi" comment="The heading in radians from the multi antenna solution from -pi to pi"/>
         <Data name="posAccuracy" default="0" dependsOn="detailedAccuracyValid" inMemoryType="float32" array="3" encodedType="unsigned16" scaler="1000" comment="North, East, Down position accuracy estimate in meters"/>
         <Data name="velAccuracy" default="0" dependsOn="detailedAccuracyValid" inMemoryType="float32" array="3" encodedType="unsigned16" scaler="1000" comment="North, East, Down velocity accuracy estimate in meters per second"/>
@@ -527,7 +522,6 @@ See TrilliumPacket.c (in the Orion SDK) for details.
         <Data name="GroundSpeed" inMemoryType="float32" encodedType="null" comment="Ground speed in meters per second"/>
         <Data name="GroundHeading" inMemoryType="float32" encodedType="null" comment="Course over ground in radians"/>
         <Data name="valid3DFix" inMemoryType="unsigned8" encodedType="null" comment="Nonzero if position solution is valid and 3D"/>
-        <Code name="postReceiptUpdate2" decode="constructGpsEcefUncertainty(user);" comment="Fill out non-encoded ECEF uncertainty fields of this structure" />
     </Packet>
 
     <Packet name="InsQuality" ID="ORION_PKT_INS_QUALITY"
@@ -1074,6 +1068,7 @@ See TrilliumPacket.c (in the Orion SDK) for details.
     <Packet name="OrionTrackerVersion" ID="ORION_PKT_TRACKER_VERSION" parameterInterface="true" comparefile="compare/compareOrionPublic" printfile="compare/printOrionPublic" comment="Software version for the tracker board in the Orion Gimbal (if applicable)">
         <Data name="Version" inMemoryType="fixedstring" array="16" comment="Version of the tracker board software"/>
         <Data name="PartNumber" inMemoryType="fixedstring" array="16" comment="Hardware details of the tracker board"/>
+        <Data name="AppBits" inMemoryType="unsigned32" default="0" comment="Tracker application license bitfield" />
     </Packet>
     
     <Packet name="OrionRetractVersion" ID="ORION_PKT_RETRACT_VERSION" parameterInterface="true" comparefile="compare/compareOrionPublic" printfile="compare/printOrionPublic" comment="Software version for the retract board in the Retract Unit (if applicable)">
