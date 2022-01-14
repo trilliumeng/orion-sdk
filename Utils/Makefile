@@ -5,7 +5,7 @@ SRC = $(wildcard *.c)
 OBJ = $(SRC:%.c=$(OBJ_DIR)/%.o)
 
 $(OBJ_DIR)/%.o:%.c
-	$(V)$(CC) -c $(CFLAGS) $< -o $@ $(QOUT) -I../Communications -I./
+	$(V)$(CC) -c $(CFLAGS) $< -o $@ $(QOUT) -I../Communications
 
 build: $(LIB)
 $(LIB): $(OBJ)

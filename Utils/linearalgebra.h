@@ -1,17 +1,6 @@
 #ifndef LINEARALGEBRA_H
 #define LINEARALGEBRA_H
 
-/*!
- * \file
- * This module contains routine for doing linear algebra in C. There are six types of data here:
- * - Vectors whose length are 3 elements (a simple array). "vector3"
- * - Vectors whose length is arbitrary. "Vector_t"
- * - Matrices whose row and column dimensions are arbitrary. "Matrix_t"
- * - And single precision versions of the above.
- * To avoid unnecessary dynamic memory allocation special macros are used to
- * declare and initialize the Vector_t and Matrix_t types.
- */
-
 #include "Types.h"
 
 // C++ compilers: don't mangle us
@@ -82,106 +71,6 @@ const double *vector3Abs(const double vector[NVECTOR3], double result[NVECTOR3])
 //! Get the smallest element in a vector
 #define vector3Min(vector)  MIN(vector[VECTOR3X], MIN(vector[VECTOR3Y], vector[VECTOR3Z]))
 
-
-//! The vector structure
-typedef struct
-{
-    uint32_t num;   //!< number of elements of the vector
-    double* data;   //!< pointer to the vector data
-
-}Vector_t;
-
-
-/*! Macro to allocate a vector statically. The vector elements are not initialized.
- * \param V is the name used to refer to the vector.
- * \param num is the number of elements.
- */
-#define staticAllocateVector(V, num) static double V##data[(num)]; static Vector_t V = {(num), V##data}
-
-/*! Macro to allocate a vector on the stack. The vector elements are not initialized.
- * \param V is the name used to refer to the vector.
- * \param num is the number of elements.
- */
-#define stackAllocateVector(V, num) double V##data[(num)]; Vector_t V = {(num), V##data}
-
-/*! Macro to allocate a vector as part of a structure. The vector MUST be setup with structInitVector()
- * \param V is the name used to refer to the vector.
- * \param num is the number of elements.
- */
-#define structAllocateVector(V, num) double V##data[(num)]; Vector_t V
-
-/*! Macro to setup a vector that was previously named in a struct using structAllocateVector()
- * \param V is the name used to refer to the vector.
- * \param num is the number of elements.
- */
-#define structInitVector(V, num) V.data = V##data; V.num = (num)
-
-//! Get a specific element of a vector
-double vectorGet(const Vector_t* V, uint32_t index);
-
-//! Set a specific element of a vector
-Vector_t* vectorSet(Vector_t* V, uint32_t index, double value);
-
-//! Add a scalar to a specific element of the vector
-Vector_t* vectorAddToElement(Vector_t* V, uint32_t index, double value);
-
-//! Set the contents of a vector
-Vector_t* vectorSetAll(Vector_t* V, double value);
-
-//! Allocate a vector, initializing its memory
-Vector_t* vectorAllocate(uint32_t num);
-
-//! Change the size of a dynamically allocated vector
-Vector_t* vectorChangeAllocateSize(Vector_t* v, uint32_t num, double initial);
-
-//! Change the size of a vector
-void vectorChangeSize(Vector_t* v, uint32_t num, double initial);
-
-//! Set all elements of a vector to zero
-Vector_t* vectorZero(Vector_t* V);
-
-//! Copy a vector
-Vector_t* vectorCopy(const Vector_t* A, Vector_t* B);
-
-//! Multiply and accumulate two vectors as result = a + b*scale.
-Vector_t* vectorMultiplyAccumulate(const Vector_t* a, const Vector_t* b, double scale, Vector_t* result);
-
-//! Sum two three dimensional vectors together.
-Vector_t* vectorSum(const Vector_t* a, const Vector_t* b, Vector_t* result);
-
-//! Subtract one three dimensional vector from another.
-Vector_t* vectorDifference(const Vector_t* left, const Vector_t* right, Vector_t* result);
-
-//! Multiply two vectors together element-wise
-Vector_t* vectorMultiply(const Vector_t* a, const Vector_t* b, Vector_t* result);
-
-//! Compute the dot product of two three dimensional vectors
-double vectorDot(const Vector_t* a, const Vector_t* b);
-
-//! Compute the square of the length of a three dimensional vector
-double vectorLengthSquared(const Vector_t* v);
-
-//! Compute the length of a three dimensional vector
-double vectorLength(const Vector_t* v);
-
-//! Change the length of a vector. This is faster than making a unit vector and then scaling.
-Vector_t* vectorChangeLength(const Vector_t* v, Vector_t* result, double newlength);
-
-//! Scale a three dimensional vector
-Vector_t* vectorScale(const Vector_t* v, Vector_t* result, double scale);
-
-//! Scale a three dimensional vector to unit length.
-Vector_t* vectorUnit(const Vector_t* v, Vector_t* result);
-
-//! Compute the absolute value of all three elements in a vector
-Vector_t* vectorAbs(const Vector_t* v, Vector_t* result);
-
-//! Get the largest element in a vector
-double vectorMax(const Vector_t* v);
-
-//! Get the smallest element in a vector
-double vectorMin(const Vector_t* v);
-
 //! The matrix structure which holds data in row major format
 typedef struct
 {
@@ -238,12 +127,6 @@ void matrixSetColumn(Matrix_t* M, uint32_t col, double value);
 //! Allocate a matrix, initializing its memory
 Matrix_t* matrixAllocate(uint32_t rows, uint32_t cols);
 
-//! Change the size of a matrix
-Matrix_t* matrixChangeAllocateSize(Matrix_t* M, uint32_t rows, uint32_t cols, double initial);
-
-//! Change the size of a matrix
-void matrixChangeSize(Matrix_t* M, uint32_t rows, uint32_t cols, double initial);
-
 //! Set all elements of a matrix to zero
 void matrixZero(Matrix_t* M);
 
@@ -261,12 +144,6 @@ BOOL matrixMultiplyTransA(const Matrix_t* A, const Matrix_t* B, Matrix_t* C);
 
 //! Multiply the left matrix against the transpose of the right matrix
 BOOL matrixMultiplyTransB(const Matrix_t* A, const Matrix_t* B, Matrix_t* C);
-
-//! Multiply a vector against a matrix
-BOOL matrixVectorMultiply(const Matrix_t* A, const Vector_t* B, Vector_t* C);
-
-//! Multiply a vector against the transpose of a matrix
-BOOL matrixVectorMultiplyTransA(const Matrix_t* A, const Vector_t* B, Vector_t* C);
 
 //! Add two matrices together
 BOOL matrixAdd(const Matrix_t* A, const Matrix_t* B, Matrix_t* C);
@@ -367,101 +244,6 @@ const float *vector3Absf(const float vector[NVECTOR3], float result[NVECTOR3]);
 //! Get the smallest element in a vector
 #define vector3Minf(vector) MIN(vector[VECTOR3X], MIN(vector[VECTOR3Y], vector[VECTOR3Z]))
 
-
-//! The vector structure
-typedef struct
-{
-    uint32_t num;   //!< number of elements of the vector
-    float* data;   //!< pointer to the vector data
-
-}Vectorf_t;
-
-
-/*! Macro to allocate a vector statically. The vector elements are not initialized.
- * \param V is the name used to refer to the vector.
- * \param num is the number of elements.
- */
-#define staticAllocateVectorf(V, num) static float V##data[(num)]; static Vectorf_t V = {(num), V##data}
-
-/*! Macro to allocate a vector on the stack. The vector elements are not initialized.
- * \param V is the name used to refer to the vector.
- * \param num is the number of elements.
- */
-#define stackAllocateVectorf(V, num) float V##data[(num)]; Vectorf_t V = {(num), V##data}
-
-/*! Macro to allocate a vector as part of a structure. The vector MUST be setup with structInitVector()
- * \param V is the name used to refer to the vector.
- * \param num is the number of elements.
- */
-#define structAllocateVectorf(V, num) float V##data[(num)]; Vectorf_t V
-
-//! Get a specific element of a vector
-float vectorGetf(const Vectorf_t* V, uint32_t index);
-
-//! Set a specific element of a vector
-Vectorf_t* vectorSetf(Vectorf_t* V, uint32_t index, float value);
-
-//! Add a scalar to a specific element of the vector
-Vectorf_t* vectorAddToElementf(Vectorf_t* V, uint32_t index, float value);
-
-//! Set the contents of a vector
-Vectorf_t* vectorSetAllf(Vectorf_t* V, float value);
-
-//! Allocate a vector, initializing its memory
-Vectorf_t* vectorAllocatef(uint32_t num);
-
-//! Set all elements of a vector to zero
-Vectorf_t* vectorZerof(Vectorf_t* V);
-
-//! Copy a vector
-Vectorf_t* vectorCopyf(const Vectorf_t* A, Vectorf_t* B);
-
-//! Multiply and accumulate two vectors as result = a + b*scale.
-Vectorf_t* vectorMultiplyAccumulatef(const Vectorf_t* a, const Vectorf_t* b, float scale, Vectorf_t* result);
-
-//! Sum two three dimensional vectors together.
-Vectorf_t* vectorSumf(const Vectorf_t* a, const Vectorf_t* b, Vectorf_t* result);
-
-//! Subtract one three dimensional vector from another.
-Vectorf_t* vectorDifferencef(const Vectorf_t* left, const Vectorf_t* right, Vectorf_t* result);
-
-//! Multiply two vectors together element-wise
-Vectorf_t* vectorMultiplyf(const Vectorf_t* a, const Vectorf_t* b, Vectorf_t* result);
-
-//! Compute the dot product of two three dimensional vectors
-float vectorDotf(const Vectorf_t* a, const Vectorf_t* b);
-
-//! Compute the square of the length of a three dimensional vector
-float vectorLengthSquaredf(const Vectorf_t* v);
-
-//! Compute the length of a three dimensional vector
-float vectorLengthf(const Vectorf_t* v);
-
-//! Change the length of a vector. This is faster than making a unit vector and then scaling.
-Vectorf_t* vectorChangeLengthf(const Vectorf_t* v, Vectorf_t* result, float newlength);
-
-//! Scale a three dimensional vector
-Vectorf_t* vectorScalef(const Vectorf_t* v, Vectorf_t* result, float scale);
-
-//! Scale a three dimensional vector to unit length.
-Vectorf_t* vectorUnitf(const Vectorf_t* v, Vectorf_t* result);
-
-//! Compute the absolute value of all three elements in a vector
-Vectorf_t* vectorAbsf(const Vectorf_t* v, Vectorf_t* result);
-
-//! Get the largest element in a vector
-float vectorMaxf(const Vectorf_t* v);
-
-//! Get the smallest element in a vector
-float vectorMinf(const Vectorf_t* v);
-
-//! Change the size of a dynamically allocated vector
-Vectorf_t* vectorChangeAllocateSizef(Vectorf_t* v, uint32_t num, float initial);
-
-//! Change the size of a vector
-void vectorChangeSizef(Vectorf_t* v, uint32_t num, float initial);
-
-
 //! The matrix structure which holds data in row major format
 typedef struct
 {
@@ -510,12 +292,6 @@ void matrixSetColumnf(Matrixf_t* M, uint32_t col, float value);
 //! Allocate a matrix, initializing its memory
 Matrixf_t* matrixAllocatef(uint32_t rows, uint32_t cols);
 
-//! Change the size of a matrix
-Matrixf_t* matrixChangeAllocateSizef(Matrixf_t* M, uint32_t rows, uint32_t cols, float initial);
-
-//! Change the size of a matrix
-void matrixChangeSizef(Matrixf_t* M, uint32_t rows, uint32_t cols, float initial);
-
 //! Set all elements of a matrix to zero
 void matrixZerof(Matrixf_t* M);
 
@@ -533,12 +309,6 @@ BOOL matrixMultiplyTransAf(const Matrixf_t* A, const Matrixf_t* B, Matrixf_t* C)
 
 //! Multiply the left matrix against the transpose of the right matrix
 BOOL matrixMultiplyTransBf(const Matrixf_t* A, const Matrixf_t* B, Matrixf_t* C);
-
-//! Multiply a vector against a matrix
-BOOL matrixVectorMultiplyf(const Matrixf_t* A, const Vectorf_t* B, Vectorf_t* C);
-
-//! Multiply a vector against the transpose of a matrix
-BOOL matrixVectorMultiplyTransAf(const Matrixf_t* A, const Vectorf_t* B, Vectorf_t* C);
 
 //! Add two matrices together
 BOOL matrixAddf(const Matrixf_t* A, const Matrixf_t* B, Matrixf_t* C);
@@ -575,18 +345,6 @@ float testForIdentityf(const Matrixf_t* M);
 
 //! Test a matrix for its error to null
 float testForZeroMatrixf(const Matrixf_t* M);
-
-//! Compute the transpose of a matrix, copying from Matrixf_t to Matrix_t
-BOOL matrixTranspose_ftod(const Matrixf_t* A, Matrix_t* B);
-
-//! Compute the transpose of a matrix, copying from Matrix_t to Matrixf_t
-BOOL matrixTranspose_dtof(const Matrix_t* A, Matrixf_t* B);
-
-//! Copy a matrix, copying from Matrixf_t to Matrix_t
-BOOL matrixCopy_ftod(const Matrixf_t* A, Matrix_t* B);
-
-//! Copy a matrix, copying from Matrix_t to Matrixf_t
-BOOL matrixCopy_dtof(const Matrix_t* A, Matrixf_t* B);
 
 //! Evaluate the derivative of quadratic equation at x
 float quadraticDerivativeEvaluationf(const float cba[3], float x);

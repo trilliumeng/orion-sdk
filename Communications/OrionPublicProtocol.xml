@@ -508,10 +508,6 @@ See TrilliumPacket.c (in the Orion SDK) for details.
         <Data name="multiAntHeading" default="0" dependsOn="multiAntHeadingValid" inMemoryType="float32" encodedType="signed16" max="pi" comment="The heading in radians from the multi antenna solution from -pi to pi"/>
         <Data name="posAccuracy" default="0" dependsOn="detailedAccuracyValid" inMemoryType="float32" array="3" encodedType="unsigned16" scaler="1000" comment="North, East, Down position accuracy estimate in meters"/>
         <Data name="velAccuracy" default="0" dependsOn="detailedAccuracyValid" inMemoryType="float32" array="3" encodedType="unsigned16" scaler="1000" comment="North, East, Down velocity accuracy estimate in meters per second"/>
-		<Data name="posEcef" inMemoryType="float64" array="3" encodedType="null" comment="Position in ECEF x,y,z meters"/>
-        <Data name="velEcef" inMemoryType="float32" array="3" encodedType="null" comment="Velocity in ECEF x,y,z meters per second"/>
-        <Data name="posEcefAccuracy" inMemoryType="float32" array="3" encodedType="null" comment="ECEF x,y,z position accuracy estimate in meters"/>
-        <Data name="velEcefAccuracy" inMemoryType="float32" array="3" encodedType="null" comment="ECEF x,y,z accuracy estimate in meters per second"/>
         <Data name="Year" inMemoryType="unsigned16" encodedType="null" comment="Year of the date"/>
         <Data name="Month" inMemoryType="unsigned8" encodedType="null" comment="Month of the year from 1 to 12"/>
         <Data name="Day" inMemoryType="unsigned8" encodedType="null" comment="Day of the month from 1 to 31"/>

@@ -28,27 +28,21 @@ typedef   signed char  int8_t;
 typedef unsigned char uint8_t;
 #endif // !UINT8_MAX
 
-#ifndef xdc_std__include
-
-// These types conflict with the XDC Tools std.h, so don't include them when building with XDC tools
-typedef uint8_t  UInt8;
-typedef uint16_t UInt16;
-typedef uint32_t UInt32;
-
-    #ifdef UINT64_MAX
-    typedef uint64_t UInt64;
-    #endif // UINT64_MAX
-
-#endif // xdc_std__include
-
 typedef int8_t   SInt8;
+typedef uint8_t  UInt8;
+
 typedef int16_t  SInt16;
-typedef uint32_t UInt24;
+typedef uint16_t UInt16;
+
 typedef int32_t  SInt24;
+typedef uint32_t UInt24;
+
 typedef int32_t  SInt32;
+typedef uint32_t UInt32;
 
 #ifdef UINT64_MAX
 typedef int64_t  SInt64;
+typedef uint64_t UInt64;
 #endif // UINT64_MAX
 
 #endif // TYPES_H

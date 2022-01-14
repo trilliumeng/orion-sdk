@@ -74,56 +74,6 @@ void ecefToNEDtrig(const double ecef[NECEF], double ned[NNED], const llaTrig_t* 
 
 
 /*!
- * Fill out a dcm that rotates from NED to ECEF
- * \param dcm is filled out with the rotation
- * \param trig are the LLA trig values that go into the rotation
- */
-void nedToECEFdcmd(DCMd_t* dcm, const llaTrig_t* trig)
-{
-    double* dcmdata = dcm->data;
-
-    dcmdata[0] = (-trig->sinLat*trig->cosLon); dcmdata[1] = (-trig->sinLon); dcmdata[2] = (-trig->cosLat*trig->cosLon);
-    dcmdata[3] = (-trig->sinLat*trig->sinLon); dcmdata[4] = ( trig->cosLon); dcmdata[5] = (-trig->cosLat*trig->sinLon);
-    dcmdata[6] = ( trig->cosLat);              dcmdata[7] =  0.0;            dcmdata[8] = (-trig->sinLat);
-
-}// nedToECEFdcmd
-
-
-/*!
- * Fill out a dcm that rotates from ECEF to NED
- * \param dcm is filled out with the rotation
- * \param trig are the LLA trig values that go into the rotation
- */
-void ecefToNEDdcmd(DCMd_t* dcm, const llaTrig_t* trig)
-{
-    double* dcmdata = dcm->data;
-
-    // Notice the indices are transposed compared to above
-    dcmdata[0] = (-trig->sinLat*trig->cosLon); dcmdata[3] = (-trig->sinLon); dcmdata[6] = (-trig->cosLat*trig->cosLon);
-    dcmdata[1] = (-trig->sinLat*trig->sinLon); dcmdata[4] = ( trig->cosLon); dcmdata[7] = (-trig->cosLat*trig->sinLon);
-    dcmdata[2] = ( trig->cosLat);              dcmdata[5] =  0.0;            dcmdata[8] = (-trig->sinLat);
-
-}// ecefToNEDdcmd
-
-
-/*!
- * Compute the gravity vector in the ECEF frame given the strength of gravity
- * in the NED frame. Gravity in NED has one component, DOWN, which is positive.
- * \param gravityDown is the strenght of gravity in m/s/s.
- * \param gravityEcef receives the gravity vector in ECEF.
- * \param trig are the LLA trig values that go into the rotation.
- */
-void gravityToECEFd(double gravityDown, double gravityEcef[NECEF], const llaTrig_t* trig)
-{
-    // This is the NED to ECEF rotation assuming NORTH and EAST are zero.
-    gravityEcef[ECEFX] = (-gravityDown*trig->cosLat*trig->cosLon);
-    gravityEcef[ECEFY] = (-gravityDown*trig->cosLat*trig->sinLon);
-    gravityEcef[ECEFZ] = (-gravityDown*trig->sinLat);
-
-}// gravityToECEFd
-
-
-/*!
  * Convert a vector in North, East, Down to Earth Centered Earth Fixed.
  * \param ned is the NED vector to convert
  * \param ecef receives the equivalent ECEF vector
@@ -160,9 +110,9 @@ void ecefToNEDf(const float ecef[NECEF], float ned[NNED], const double lla[NLLA]
 void nedToECEFtrigf(const float ned[NNED], float ecef[NECEF], const llaTrig_t* trig)
 {
     // Doing it this way allows ned and ecef to point to the same array
-    float x = (float)(-ned[NORTH]*trig->sinLat*trig->cosLon - ned[EAST]*trig->sinLon - ned[DOWN]*trig->cosLat*trig->cosLon);
-    float y = (float)(-ned[NORTH]*trig->sinLat*trig->sinLon + ned[EAST]*trig->cosLon - ned[DOWN]*trig->cosLat*trig->sinLon);
-    float z = (float)( ned[NORTH]*trig->cosLat                                       - ned[DOWN]*trig->sinLat);
+    double x = (float)(-ned[NORTH]*trig->sinLat*trig->cosLon - ned[EAST]*trig->sinLon - ned[DOWN]*trig->cosLat*trig->cosLon);
+    double y = (float)(-ned[NORTH]*trig->sinLat*trig->sinLon + ned[EAST]*trig->cosLon - ned[DOWN]*trig->cosLat*trig->sinLon);
+    double z = (float)(ned[NORTH]*trig->cosLat                                        - ned[DOWN]*trig->sinLat);
 
     ecef[ECEFX] = x;
     ecef[ECEFY] = y;

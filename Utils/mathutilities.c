@@ -302,7 +302,7 @@ float rateOfChangeLimitf(float prev, float value, float limit, float sampleTime)
 void computeDateAndTimeFromWeekAndItow(uint16_t week, uint32_t itow, uint8_t leapsecs, uint16_t* pyear, uint8_t* pmonth, uint8_t* pday, uint8_t* phour, uint8_t* pmin, uint8_t* psec)
 {
     // Watch for wrap when we subtract the leap seconds
-    if(itow < leapsecs*1000u)
+    if(itow < leapsecs*1000)
     {
         week--;
         itow += 86400000*7;

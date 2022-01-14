@@ -59,8 +59,6 @@ void ConvertGeolocateTelemetryCore(const GeolocateTelemetryCore_t *pCore, Geoloc
     computeDateAndTimeFromWeekAndItow(pGeo->base.gpsWeek, pGeo->base.gpsITOW, pGeo->base.leapSeconds, &pGeo->Year, &pGeo->Month, &pGeo->Day, &pGeo->Hour, &pGeo->Minute, &pGeo->Second);
 
     // convert tilt from -180 to 180 into -270 to 90
-    if(pGeo->base.tilt > deg2radf(90))
-        pGeo->base.tilt -= deg2radf(360);
 
     // Construct the data that was not transmitted
     structInitDCM(pGeo->gimbalDcm);
@@ -82,8 +80,8 @@ void ConvertGeolocateTelemetryCore(const GeolocateTelemetryCore_t *pCore, Geoloc
     Pan  = subtractAnglesf(pGeo->base.pan,  pGeo->base.outputShifts[GIMBAL_AXIS_PAN]);
     Tilt = subtractAnglesf(pGeo->base.tilt, pGeo->base.outputShifts[GIMBAL_AXIS_TILT]);
 
-    // Convert tilt from -180 to 180 into -270 to 90
-    pGeo->base.tilt = wrapAngle90f(pGeo->base.tilt);
+    // Wrap into -PI to PI
+    pGeo->base.tilt = wrapAnglef(pGeo->base.tilt);
 
     // Rotation from camera to gimbal, note that this only works if pan
     // is over tilt (pan first, then tilt, just like Euler)
@@ -135,8 +133,8 @@ BOOL offsetImageLocation(const GeolocateTelemetry_t *geo, const double imagePosL
         return FALSE;
 
     // Vector from the gimbal to the image location in NED, notice that Altitue and Down have different signs
-    vectorNED[NORTH] = (float)((imagePosLLA[LAT] - geo->base.posLat)*datum_meanRadius);
-    vectorNED[EAST]  = (float)((imagePosLLA[LON] - geo->base.posLon)*datum_meanRadius*geo->llaTrig.cosLat);
+    vectorNED[NORTH] = (float)(imagePosLLA[LAT] - geo->base.posLat)*datum_meanRadius;
+    vectorNED[EAST]  = (float)(imagePosLLA[LON] - geo->base.posLon)*datum_meanRadius*geo->llaTrig.cosLat;
     vectorNED[DOWN]  = (float)(geo->base.posAlt - imagePosLLA[ALT]);
 
     // Remember this value
