@@ -9,7 +9,7 @@ extern "C" {
 #endif
 
 //! 1D interpolation
-#define interpolate(ref, ind0, ind1, dep0, dep1) (((ref)-(ind0))*((dep1)-(dep0))/((ind1)-(ind0)) + (dep0))
+#define math_interpolate(ref, ind0, ind1, dep0, dep1) (((ref)-(ind0))*((dep1)-(dep0))/((ind1)-(ind0)) + (dep0))
 
 //! Add two angles together accounting for circular wrap
 double addAngles(double first, double second);
