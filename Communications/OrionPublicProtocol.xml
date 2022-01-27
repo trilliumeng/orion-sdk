@@ -293,7 +293,7 @@ See TrilliumPacket.c (in the Orion SDK) for details.
         </Enum>
         <Data name="insRotationOption" enum="InsRotationOptions" default="insInGimbalNative" comment="This flag indicates special INS options. If insSpecialOption is 1 the INS is running in the gimbal crown, but is rotated from the gimbal native axis. If insSpecialOption is 2 the INS is running in the ball of the gimbal."/>
         <Data name="insQuat" inMemoryType="float32" array="4" encodedType="signed16" default="0" dependsOn="insRotationOption" max="1" comment="The rotation of the INS from its native frame to the North, East, Down navigation frame. If insSpecialOption is 0 then this rotation is the same as the gimbalQuat"/>
-        
+        <Data name="imageRotation" inMemoryType="float32" encodedType="signed16" max="pi" default="0" />        
     </Packet>
 
     <Packet name="OrionPerformance" ID="ORION_PKT_PERFORMANCE" comment="Measurements related to stabilization performance. This packet is sent by the gimbal 4 times per second.">
