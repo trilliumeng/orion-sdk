@@ -1030,6 +1030,7 @@ See TrilliumPacket.c (in the Orion SDK) for details.
             <Value name="CAMERA_PROTO_BAE" comment="BAE camera"/>
             <Value name="CAMERA_PROTO_SONY" comment="Sony camera"/>
             <Value name="CAMERA_PROTO_KTNC" comment="KTnC camera"/>
+            <Value name="CAMERA_PROTO_ATTOLLO" comment="Attollo camera"/>
             <Value name="NUM_CAMERA_PROTOS" comment="Number of available camera protocols"/>
         </Enum>
 
