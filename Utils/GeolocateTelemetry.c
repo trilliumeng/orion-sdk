@@ -87,7 +87,10 @@ void ConvertGeolocateTelemetryCore(const GeolocateTelemetryCore_t *pCore, Geoloc
 
     // Rotation from camera to gimbal, note that this only works if pan
     // is over tilt (pan first, then tilt, just like Euler)
-    setDCMBasedOnPanTilt(&tempDcm, Pan, Tilt);
+    if (fabsf(pGeo->base.imageRotation) > 0.1f)
+        setDCMBasedOnEuler(&tempDcm, Pan, Tilt, pGeo->base.imageRotation);
+    else
+        setDCMBasedOnPanTilt(&tempDcm, Pan, Tilt);
 
     // Now create the rotation from camera to nav.
     matrixMultiplyf(&pGeo->gimbalDcm, &tempDcm, &pGeo->cameraDcm);
