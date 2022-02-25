@@ -959,6 +959,7 @@ See TrilliumPacket.c (in the Orion SDK) for details.
         <Data name="LowDelay" inMemoryType="unsigned8" default="0" comment="Set to 1 to use low-delay TCP mode (i.e. disable Nagle's Algorithm)."/>
         <Data name="Mtu" inMemoryType="unsigned16" default="0" comment="Ethernet MTU size, set to zero for hardware default" />
         <Data name="SecondaryTcpPort" inMemoryType="unsigned16" default="0" comment="Port number for secondary TCP server port; set to zero to disable"/>
+        <Data name="LowBandwidth" inMemoryType="unsigned8" default="0" comment="Set to 1 to use low-bandwidth mode (i.e., disable geolocate telemetry downlink" />
     </Packet>
 
     <Packet name="OrionNetworkByteSettings" ID="ORION_PKT_NETWORK_SETTINGS" comparefile="compare/compareOrionPublic" printfile="compare/printOrionPublic" comment="Change the IP network settings in the gimbal.">
@@ -968,6 +969,7 @@ See TrilliumPacket.c (in the Orion SDK) for details.
         <Data name="LowDelay" inMemoryType="unsigned8" default="0" comment="Set to 1 to use low-delay TCP mode (i.e. disable Nagle's Algorithm)."/>
         <Data name="Mtu" inMemoryType="unsigned16" default="0" comment="Ethernet MTU size, set to zero for hardware default"/>
         <Data name="SecondaryTcpPort" inMemoryType="unsigned16" default="0" comment="Port number for secondary TCP server port; set to zero to disable"/>
+        <Data name="LowBandwidth" inMemoryType="unsigned8" default="0" comment="Set to 1 to use low-bandwidth mode (i.e., minimize geolocate telemetry downlink" />
     </Packet>
 
     <Packet name="OrionNetworkVideo" ID="ORION_PKT_NETWORK_VIDEO" comment="Change the IP settings for video delivery.">
