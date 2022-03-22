@@ -8,6 +8,7 @@ SUBDIRS += \
     LineOfSight \
     PathTrack \
     SendCommand \
+    SendConfig \
     UserData
 
 unix:SUBDIRS += \
