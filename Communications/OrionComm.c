@@ -7,7 +7,7 @@ BOOL OrionCommOpen(int *pArgc, char ***pArgv)
     if (*pArgc >= 2)
     {
         // Serial port...?
-        if (((*pArgv)[1][0] == '/') || ((*pArgv)[1][0] == '\\'))
+        if (OrionCommSerialPathValid((*pArgv)[1]))
         {
             // Decrement the number of arguments and push the pointer up one arg
             (*pArgc)--;

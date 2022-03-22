@@ -27,6 +27,7 @@ BOOL OrionCommOpen(int *pArgc, char ***pArgv);
 BOOL OrionCommOpenSerial(const char *pPath);
 BOOL OrionCommOpenNetworkIp(const char *pAddress);
 BOOL OrionCommIpStringValid(const char *pAddress);
+BOOL OrionCommSerialPathValid(const char *pPath);
 void OrionCommClose(void);
 BOOL OrionCommSend(const OrionPkt_t *pPkt);
 BOOL OrionCommReceive(OrionPkt_t *pPkt);

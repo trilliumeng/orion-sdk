@@ -90,6 +90,13 @@ BOOL OrionCommIpStringValid(const char *pAddress)
 
 }// OrionCommIpStringValid
 
+BOOL OrionCommSerialPathValid(const char *pPath)
+{
+    // Return TRUE if the path starts with /dev/tty
+    return strncmp(pPath, "\\\\.\\COM", 7) == 0;
+
+}// OrionCommSerialPathValid
+
 BOOL OrionCommOpenNetworkIp(const char *pAddress)
 {
     // Open a new UDP socket for auto-discovery
