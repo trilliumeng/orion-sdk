@@ -13,6 +13,7 @@ CONFIG += staticlib
 SOURCES += dcm.c \
     earthposition.c \
     earthrotation.c \
+    GpsDataReceive.c \
     GeolocateTelemetry.c \
     linearalgebra.c \
     mathutilities.c \
@@ -24,6 +25,7 @@ SOURCES += dcm.c \
 HEADERS += dcm.h \
     earthposition.h \
     earthrotation.h \
+    GpsDataReceive.h \
     GeolocateTelemetry.h \
     linearalgebra.h \
     mathutilities.h \
