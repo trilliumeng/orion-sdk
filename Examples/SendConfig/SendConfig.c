@@ -69,6 +69,10 @@ int main(int argc, char **argv)
         // This packet timed out
         else
         {
+            // Update the pointer to the list of all packets if we are removing the first element.
+            if (pIterator == pPktList)
+                pPktList = pIterator->pNext;
+
             // Pull the node from the list and add it to the list of failed packets
             InsertNode(&pFailedPkts, TakeNode(&pIterator));
             continue;
@@ -91,11 +95,18 @@ int main(int argc, char **argv)
     // Start at the root node now that the list has (maybe) been populated by ProcessArgs
     pIterator = pFailedPkts;
 
-    // As long as we have a node to process
-    while (pIterator != NULL)
+    if (pIterator == NULL)
+        printf("All packets sent successfully!\n");
+    else
     {
-        printf("Failed to send packet 0x%02x\n", pIterator->Pkt.ID);
-        pIterator = pIterator->pNext;
+        // Print the packets that weren't acked.
+        printf("The following packet IDs failed to send:\n");
+        while (pIterator != NULL)
+        {
+            printf("0x%02x\n", pIterator->Pkt.ID);
+            pIterator = pIterator->pNext;
+        }
+
     }
 
     // Get out of here!
@@ -114,7 +125,11 @@ static BOOL ProcessData(void)
         // If this is a valid response
         if (pNode != NULL)
         {
-            // Pull the corresponding node from the list, free it, and increment the number of valid acks 
+            // Update the pointer to the list of all packets if we are removing the first element.
+            if (pNode == pPktList)
+                pPktList = pNode->pNext;
+
+            // Pull the corresponding node from the list, free it, and increment the number of valid acks
             free(TakeNode(&pNode));
             PktsDone++;
         }
@@ -172,6 +187,8 @@ static void ProcessArgs(int argc, char **argv)
                 // If this byte completes a packet
                 if (LookForOrionPacketInByte(&pNode->Pkt, Byte))
                 {
+                    printf("Found OrionPacket ID 0x%02x in file\n", pNode->Pkt.ID);
+
                     // Add the current node to the list
                     InsertNode(&pPktList, pNode);
 
