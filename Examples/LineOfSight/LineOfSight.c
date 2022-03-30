@@ -43,8 +43,6 @@ int main(int argc, char **argv)
         // Pull all queued up packets off the comm interface
         while (OrionCommReceive(&PktIn))
         {
-            printf("PKT\n");
-
             // If this packet is a geolocate telemetry packet
             if (DecodeGeolocateTelemetry(&PktIn, &Geo))
             {
