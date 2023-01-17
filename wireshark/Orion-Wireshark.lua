@@ -1194,9 +1194,9 @@ function print_network_settings(subtree, buffer, id, size)
 		return name
 	end
 
-	subtree:add(buffer(0,4), "IP Address: " .. get_ip_string(buffer(0,4):uint()))
-	subtree:add(buffer(4,4), "Subnet Mask: " .. get_ip_string(buffer(4,4):uint()))
-	subtree:add(buffer(8,4), "Gateway: " .. get_ip_string(buffer(8,4):uint()))
+	subtree:add(buffer(0,4), "IP Address: " .. get_ip_string(buffer(0,4)))
+	subtree:add(buffer(4,4), "Subnet Mask: " .. get_ip_string(buffer(4,4)))
+	subtree:add(buffer(8,4), "Gateway: " .. get_ip_string(buffer(8,4)))
 
 	if size >= 15 then
 		subtree:add(buffer(13,2), "MTU: " .. buffer(13,2):uint())

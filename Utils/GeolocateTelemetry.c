@@ -345,19 +345,19 @@ BOOL getTerrainIntersection(const GeolocateTelemetry_t *pGeo, float (*getElevati
     Step = StepCoarse;
     End = MaxDistance;
 
-    // Scale the unit ECEF vector to the step length
-    vector3Scale(UnitECEF, UnitECEF, Step);
-
     // Initialize the line of sight vector with the gimbal position
     vector3Copy(pGeo->posECEF, LineOfSight);
 
     // Loop through LOS ranges
     for (*pRange = Step; *pRange <= End; *pRange += Step)
     {
-        double GroundHeight;
+        double StepECEF[NECEF], GroundHeight;
+
+        // Scale the ECEF unit vector to the step length
+        vector3Scale(UnitECEF, StepECEF, Step);
 
         // Increment the ECEF line of sight vector by the Step-sized unit vector
-        vector3Sum(LineOfSight, UnitECEF, LineOfSight);
+        vector3Sum(LineOfSight, StepECEF, LineOfSight);
 
         // Convert the ECEF line of sight position to LLA
         ecefToLLA(LineOfSight, PosLLA);
@@ -386,8 +386,7 @@ BOOL getTerrainIntersection(const GeolocateTelemetry_t *pGeo, float (*getElevati
                 Step = StepFine;
 
                 // Subtract one unit step from the LOS vector and rescale the unit to the new step distance
-                vector3Difference(LineOfSight, UnitECEF, LineOfSight);
-                vector3ChangeLength(UnitECEF, UnitECEF, Step);
+                vector3Difference(LineOfSight, StepECEF, LineOfSight);
             }
             // If we're fine stepping, we've found the terrain intersection
             else

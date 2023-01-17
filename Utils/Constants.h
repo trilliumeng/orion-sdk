@@ -7,12 +7,24 @@
 # define PI              3.1415926535897932384626433832795f
 #endif
 
+#ifndef PI2
+# define PI2             (2.*PI)
+#endif
+
 #ifndef PIf
 # define PIf             3.1415926535897932384626433832795f
 #endif
 
+#ifndef PI2f
+# define PI2f             (2.f*PIf)
+#endif
+
 #ifndef PId
 # define PId             3.1415926535897932384626433832795
+#endif
+
+#ifndef PI2d
+# define PI2d            (2.*PId)
 #endif
 
 #define ISQRT_3		    0.5773503f

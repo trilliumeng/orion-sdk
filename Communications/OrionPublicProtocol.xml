@@ -73,7 +73,9 @@ See TrilliumPacket.c (in the Orion SDK) for details.
         <Value name="ORION_PKT_TRACKER_VERSION" comment="Software version for the tracker board (if present)"/>
         <Value name="ORION_PKT_PRIVATE_2D" comment="Reserved packet identifier" hidden="true"/>
         <Value name="ORION_PKT_PRIVATE_30" comment="Reserved packet identifier" hidden="true"/>
-        <Value name="ORION_PKT_PRIVATE_33" comment="Reserved packet identifier" hidden="true"/>        
+        <Value name="ORION_PKT_PRIVATE_31" comment="Reserved packet identifier" hidden="true"/>
+        <Value name="ORION_PKT_PRIVATE_32" comment="Reserved packet identifier" hidden="true"/>
+        <Value name="ORION_PKT_PRIVATE_33" comment="Reserved packet identifier" hidden="true"/>  
         <Value name="ORION_PKT_PRIVATE_40" value="0x40" comment="Reserved packet identifier" hidden="true"/>
         <Value name="ORION_PKT_DIAGNOSTICS" comment="Electrical diagnostic data"/>
         <Value name="ORION_PKT_FAULTS"/>
@@ -98,6 +100,7 @@ See TrilliumPacket.c (in the Orion SDK) for details.
         <Value name="ORION_PKT_BAE_SETTINGS" comment="BAE-specific camera settings"/>
         <Value name="ORION_PKT_SONY_SETTINGS" comment="Sony-specific camera settings"/>
         <Value name="ORION_PKT_KTNC_SETTINGS" comment="KTnC-specific camera settings"/>
+        <Value name="ORION_PKT_ATTOLLO_SETTINGS" comment="Attollo-specific camera settings"/>
         <Value name="ORION_PKT_PRIVATE_70" value="0x70" comment="Reserved packet identifier" hidden="true"/>
         <Value name="ORION_PKT_PRIVATE_71" comment="Reserved packet identifier" hidden="true"/>
         <Value name="ORION_PKT_AUTOPILOT_DATA" value="0x80" comment="Autopilot state data, if available"/>
@@ -220,7 +223,7 @@ See TrilliumPacket.c (in the Orion SDK) for details.
     </Enum>
 
     <Enum name="OrionMaxLasers_t" comment="The maximum number of lasers in an Orion gimbal.">
-        <Value name="MAX_LASERS" value="2" comment="Maximum number of lasers in an Orion gimbal."/>
+        <Value name="MAX_LASERS" value="3" comment="Maximum number of lasers in an Orion gimbal."/>
     </Enum>
 
     <Enum name="OrionLaserType_t" comment="Laser type identifiers.">
@@ -294,7 +297,8 @@ See TrilliumPacket.c (in the Orion SDK) for details.
         </Enum>
         <Data name="insRotationOption" enum="InsRotationOptions" default="insInGimbalNative" comment="This flag indicates special INS options. If insSpecialOption is 1 the INS is running in the gimbal crown, but is rotated from the gimbal native axis. If insSpecialOption is 2 the INS is running in the ball of the gimbal."/>
         <Data name="insQuat" inMemoryType="float32" array="4" encodedType="signed16" default="0" dependsOn="insRotationOption" max="1" comment="The rotation of the INS from its native frame to the North, East, Down navigation frame. If insSpecialOption is 0 then this rotation is the same as the gimbalQuat"/>
-        <Data name="imageRotation" inMemoryType="float32" encodedType="signed16" max="pi" default="0" />        
+        <Data name="imageRotation" inMemoryType="float32" encodedType="signed16" max="pi" default="0" />
+        <Data name="cameraIndex" inMemoryType="signed8" default="-1" comment="Current camera index, or -1 if the gimbal does not include this field" />
     </Packet>
 
     <Packet name="OrionPerformance" ID="ORION_PKT_PERFORMANCE" comment="Measurements related to stabilization performance. This packet is sent by the gimbal 4 times per second.">
@@ -324,6 +328,37 @@ See TrilliumPacket.c (in the Orion SDK) for details.
         <Data name="Current3v3Var" inMemoryType="float32" encodedType="unsigned16" scaler="100000" comment="Current variance in Amps of the 3.3-volt rail"/>
         <Data name="PayloadTemp" inMemoryType="float32" encodedType="signed8" scaler="1.0" default="-127" />
         <Data name="PayloadHumidity" inMemoryType="float32" encodedType="unsigned8" max="100" default="0" />
+    </Packet>
+
+    <Packet name="OrionFault" ID="ORION_PKT_FAULTS" comment="Let someone know when a fault occurs">
+    
+        <Enum name="OrionFaultType_t" comment="The type of fault">
+            <Value name="FAULT_TYPE_NONE"/>
+            <Value name="FAULT_TYPE_CLEVIS_RESET_COMMANDED"/>
+            <Value name="FAULT_TYPE_INVALID_GYRO_CALIBRATION"/>
+            <Value name="FAULT_TYPE_VELOCITY_LIMIT_EXCEEDED"/>
+            <Value name="FAULT_TYPE_ACCELERATION_LIMIT_EXCEEDED"/>
+        </Enum>
+
+        <Enum name="OrionFaultLevel_t" comment="The level of fault">
+            <Value name="FAULT_LEVEL_LOG"/>
+            <Value name="FAULT_LEVEL_INFO"/>
+            <Value name="FAULT_LEVEL_WARNING"/>
+            <Value name="FAULT_LEVEL_ERROR"/>
+            <Value name="FAULT_LEVEL_FATAL"/>
+        </Enum>
+
+        <Enum name="OrionFaultComponent_t" comment="The component in fault">
+            <Value name="FAULT_COMPONENT_PAN_AXIS"/>
+            <Value name="FAULT_COMPONENT_TILT_AXIS"/>
+            <Value name="FAULT_COMPONENT_PAYLOAD_GYROS"/>
+        </Enum>
+
+        <Data name="Type" enum="OrionFaultType_t" encodedType="unsigned8" comment="Fault type enum"/>
+        <Data name="Level" enum="OrionFaultLevel_t" encodedType="unsigned8" comment="Fault level enum"/>
+        <Data name="Component" enum="OrionFaultComponent_t" encodedType="unsigned8" comment="Fault component enum"/>
+        <Data name="Code" inMemoryType="unsigned32" encodedType="unsigned32" comment="Fault code is fault type dependent"/>
+        <Data name="Value" inMemoryType="float32" encodedType="unsigned32" comment="Fault value is fault type dependent"/>
     </Packet>
 
     <Packet name="OrionSoftwareDiagnostics" ID="ORION_PKT_SOFTWARE_DIAGNOSTICS" comment="Diagnostic information related to software performance for a specific board in the Orion Gimbal. This packet is sent by the gimbal once per second.">
@@ -529,6 +564,7 @@ See TrilliumPacket.c (in the Orion SDK) for details.
         <Data name="GroundHeading" inMemoryType="float32" encodedType="null" comment="Course over ground in radians"/>
         <Data name="valid3DFix" inMemoryType="unsigned8" encodedType="null" comment="Nonzero if position solution is valid and 3D"/>
         <Code name="postReceiptUpdate2" decode="constructGpsEcefUncertainty(user);" comment="Fill out non-encoded ECEF uncertainty fields of this structure" />
+        <Data name="multiAntHeadingAccuracy" default="0" inMemoryType="float32" encodedType="signed32" scaler="5729578" comment="Multi-antenna heading accuracy in radians"/>
     </Packet>
 
     <Packet name="InsQuality" ID="ORION_PKT_INS_QUALITY"
@@ -688,10 +724,11 @@ See TrilliumPacket.c (in the Orion SDK) for details.
         <Data name="Index" inMemoryType="unsigned8" comment="The index of the camera to switch to, counting from 0"/>
     </Packet>
 
-    <Packet name="OrionCameraState" ID="ORION_PKT_CAMERA_STATE" parameterInterface="true" comment="Command a camera in the gimbal.">
+    <Packet name="OrionCameraState" ID="ORION_PKT_CAMERA_STATE" comment="Command a camera in the gimbal.">
         <Data name="Zoom" inMemoryType="float32" encodedType="signed16" scaler="100" comment="Digital zoom ratio"/>
         <Data name="Focus" inMemoryType="float32" encodedType="signed16" scaler="10000" default="-1" comment="Focus command/position"/>
-        <Data name="Index" inMemoryType="unsigned8" default="0" comment="The index of the camera to command"/>
+        <Data name="KeepActiveCamera" inMemoryType="unsigned8" encodedType="bitfield1" default="0" comment="Set to 1 to maintain the currently active camera. If this bit is set to zero and the Index field does not match the currently active camera index, the gimbal will switch cameras"/>
+        <Data name="Index" inMemoryType="unsigned8" encodedType="bitfield7" default="0" comment="The index of the camera to command"/>
     </Packet>
 
     <Packet name="OrionFlirSettings" ID="ORION_PKT_FLIR_SETTINGS" comparefile="compare/compareOrionPublic" printfile="compare/printOrionPublic" comment="FLIR-specific camera settings.">
@@ -789,6 +826,16 @@ See TrilliumPacket.c (in the Orion SDK) for details.
         <Data name="VersionPatch" inMemoryType="unsigned8" default="0" comment="Patch version number of the firmware loaded on the camera" />
     </Packet>
 
+    <Packet name="OrionAttolloSettings" ID="ORION_PKT_ATTOLLO_SETTINGS" comparefile="compare/compareOrionPublic" printfile="compare/printOrionPublic" comment="Attollo-specific camera settings.">
+        <Data name="Index" inMemoryType="unsigned8" comment="Index of the camera that these settings should apply to. Use 0xFF to apply to any connected Attollo camera."/>
+        <Data name="MinGain" inMemoryType="float32" encodedType="unsigned16" scaler="100" comment="Minimum AGC gain" />
+        <Data name="MaxGain" inMemoryType="float32" encodedType="unsigned16" scaler="100" comment="Maximum AGC gain" />
+        <Data name="MinExposure" inMemoryType="float32" encodedType="unsigned16" scaler="100" comment="Minimum AEC integration time" />
+        <Data name="MaxExposure" inMemoryType="float32" encodedType="unsigned16" scaler="100" comment="Maximum AEC integration time" />
+        <Data name="BlackHot" inMemoryType="unsigned8" default="0" comment="Image polarity setting - set to 0 for white hot or 1 for black hot" />
+        <Data name="Sharpness" inMemoryType="float32" encodedType="unsigned8" max="5" default="0" comment="Sharpening filter strength" />
+    </Packet>
+
     <Enum name="OrionRetractCmd_t" comment="The retraction mechanism commands.">
         <Value name="RETRACT_CMD_DISABLE" comment="Disable the retract motor"/>
         <Value name="RETRACT_CMD_DEPLOY" comment="Move the gimbal to a deployed position"/>
@@ -832,7 +879,8 @@ See TrilliumPacket.c (in the Orion SDK) for details.
         <Data name="ApFlyingLock" inMemoryType="bitfield1" comment="Set to 1 if the laser is locked because the autopilot is not in a 'flying' state, otherwise 0" />
         <Data name="BypassEnabled" inMemoryType="bitfield1" comment="Set to 1 if the current command is bypassing the safety interlocks, otherwise 0" />
         <Data name="PitchAngleLock" inMemoryType="bitfield1" comment="Set to 1 if the laser is locked due to a positive pitch angle, otherwise 0" />
-        <Data name="Reserved" inMemoryType="bitfield14" constant="0" comment="Reserved for future use" />
+        <Data name="WatchdogLock" inMemoryType="bitfield1" comment="Set to 1 if the laser was locked due to laser command comm timeout. A new command will clear this lock" />
+        <Data name="Reserved" inMemoryType="bitfield13" constant="0" comment="Reserved for future use" />
         <Data name="WaitTimer" inMemoryType="unsigned16" comment="Time remaining, in milliseconds, before the laser will accept another command" />
     </Structure>
 
@@ -866,7 +914,7 @@ See TrilliumPacket.c (in the Orion SDK) for details.
             <Value name="PROTOCOL_CLEVIS" comment="Orion packet communications protocol specific to the clevis"/>
             <Value name="PROTOCOL_CLEVIS_RAW" comment="Clevis raw communications mode"/>
             <Value name="PROTOCOL_NMEA_GPS" comment="GPS input over NMEA"/>
-            <Value name="PROTOCOL_UBLOX_GPS" comment="uBox GPS"/>
+            <Value name="PROTOCOL_UBLOX_GPS" comment="uBlox GPS"/>
             <Value name="PROTOCOL_NOVATEL_GPS" comment="Novatel GPS"/>
             <Value name="PROTOCOL_MAVLINK_GPS" comment="Mavlink GPS"/>
             <Value name="PROTOCOL_UM7_MAG" comment="CH Robotics UM7 magnetometer"/>
@@ -883,6 +931,7 @@ See TrilliumPacket.c (in the Orion SDK) for details.
             <Value name="PROTOCOL_WEPILOT" comment="WePilot AP" />
             <Value name="PROTOCOL_ETHERNET" comment="Ethernet serial pass-through" />
             <Value name="PROTOCOL_VECTORNAV" comment="VectorNav IMU" />
+            <Value name="PROTOCOL_UBLOX_HDG" comment="uBlox relative heading" />
             <Value name="NUM_PROTOCOL"/>
         </Enum>        
 
@@ -960,6 +1009,7 @@ See TrilliumPacket.c (in the Orion SDK) for details.
         <Data name="Mtu" inMemoryType="unsigned16" default="0" comment="Ethernet MTU size, set to zero for hardware default" />
         <Data name="SecondaryTcpPort" inMemoryType="unsigned16" default="0" comment="Port number for secondary TCP server port; set to zero to disable"/>
         <Data name="LowBandwidth" inMemoryType="unsigned8" default="0" comment="Set to 1 to use low-bandwidth mode (i.e., disable geolocate telemetry downlink" />
+        <Data name="MaxTcpClients" inMemoryType="unsigned8" default="0" comment="Maximum number of TCP telemetry clients; set to zero for 'no change'" />
     </Packet>
 
     <Packet name="OrionNetworkByteSettings" ID="ORION_PKT_NETWORK_SETTINGS" comparefile="compare/compareOrionPublic" printfile="compare/printOrionPublic" comment="Change the IP network settings in the gimbal.">
@@ -970,6 +1020,7 @@ See TrilliumPacket.c (in the Orion SDK) for details.
         <Data name="Mtu" inMemoryType="unsigned16" default="0" comment="Ethernet MTU size, set to zero for hardware default"/>
         <Data name="SecondaryTcpPort" inMemoryType="unsigned16" default="0" comment="Port number for secondary TCP server port; set to zero to disable"/>
         <Data name="LowBandwidth" inMemoryType="unsigned8" default="0" comment="Set to 1 to use low-bandwidth mode (i.e., minimize geolocate telemetry downlink" />
+        <Data name="MaxTcpClients" inMemoryType="unsigned8" default="0" comment="Maximum number of TCP telemetry clients; set to zero for 'no change'" />
     </Packet>
 
     <Packet name="OrionNetworkVideo" ID="ORION_PKT_NETWORK_VIDEO" comment="Change the IP settings for video delivery.">
@@ -1012,7 +1063,7 @@ See TrilliumPacket.c (in the Orion SDK) for details.
     <Packet name="OrionCameras" ID="ORION_PKT_CAMERAS" comparefile="compare/compareOrionPublic" printfile="compare/printOrionPublic" comment="Camera definitions for the Orion gimbal">
 
         <Enum name="OrionNumberOfCameras_t" comment="The maximum number of cameras in an Orion Gimbal">
-            <Value name="NUM_CAMERAS" value="2"/>
+            <Value name="NUM_CAMERAS" value="3"/>
         </Enum>
 
         <Enum name="OrionCameraType_t" comment="The type of camera">
@@ -1102,9 +1153,14 @@ See TrilliumPacket.c (in the Orion SDK) for details.
     <Documentation name="Packets for external sensor inputs" paragraph="1" comment="These optional packets can be sent to the gimbal to provide external sensor information."/>
 
     <Packet name="OrionAutopilotData" ID="ORION_PKT_AUTOPILOT_DATA" comment="Autopilot state data. The gimbal will use this information to limit certain operations, for example some lasers will not fire unless the autopilot is flying with sufficient altitude above ground.">
-        <Data name="IsFlying" inMemoryType="unsigned8" comment="Set to 1 if flying, otherwise 0" />
+        <Data name="Reserved" inMemoryType="null" encodedType="bitfield5" constant="0" comment="Reserved bits, set to zero" />
+        <Data name="HasIAS" inMemoryType="bitfield1" comment="Set to 1 if this message includes IAS, otherwise set to zero" />
+        <Data name="HasTAS" inMemoryType="bitfield1" comment="Set to 1 if this message includes TAS, otherwise set to zero" />
+        <Data name="IsFlying" inMemoryType="bitfield1" comment="Set to 1 if flying, otherwise 0" />
         <Data name="CommGood" inMemoryType="unsigned8" comment="Set to 1 if AP comms are good, otherwise 0" />
         <Data name="Agl" inMemoryType="signed16" comment="Altitude above ground level in meters. Invalid if less than zero" />
+        <Data name="IAS" inMemoryType="float32" encodedType="unsigned8" scaler="1" dependsOn="HasIAS" comment="Indicated airspeed (IAS), in m/s" />
+        <Data name="TAS" inMemoryType="float32" encodedType="unsigned8" scaler="1" dependsOn="HasTAS" comment="True airspeed (TAS), in m/s" />
     </Packet>
 
     <Packet name="OrionExtHeadingData" ID="ORION_PKT_EXT_HEADING_DATA" parameterInterface="true"
