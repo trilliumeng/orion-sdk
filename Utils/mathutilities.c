@@ -28,7 +28,7 @@ double addAngles(double first, double second)
 /*!
  * Subtract one angle from another accounting for circular wrap
  * \param left is the first angle in radians in the range -PI to PI
- * \param serightcond is the second angle in radians in the range -PI to PI
+ * \param right is the second angle in radians in the range -PI to PI
  * \return the correctly wrapped difference of left minus right, in the range -PI to PI
  */
 double subtractAngles(double left, double right)
@@ -101,7 +101,7 @@ float addAnglesf(float first, float second)
 /*!
  * Subtract one angle from another accounting for circular wrap
  * \param left is the first angle in radians in the range -PI to PI
- * \param serightcond is the second angle in radians in the range -PI to PI
+ * \param right is the second angle in radians in the range -PI to PI
  * \return the correctly wrapped difference of left minus right, in the range -PI to PI
  */
 float subtractAnglesf(float left, float right)

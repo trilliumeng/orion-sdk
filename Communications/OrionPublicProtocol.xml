@@ -21,6 +21,18 @@ The Orion gimbal communicates to users with packets of data transported over asy
 | Length+5     | Fletch1 | Least significant byte of the 16-bit checksum          |
 \verbatim
 
+Every time a packet is sent to change a setting the gimbal will echo the updated packet to all clients.
+To request the current state of a packet send a zero length packet of that ID. For example to get current camera settings:
+
+\verbatim
+
+
+    OrionPkt_t Pkt;
+    MakeOrionPacket(&amp;Pkt, ORION_PKT_CAMERAS, 0);
+    m_pCommsThread->sendOrionPacket(&amp;Pkt);
+
+ \verbatim
+
 The checksum of the packet is a modified 16-bit Fletcher's checksum, using an initial value of 1
 and modulo 251 instead of modulo 255. The checksum starts on byte 0 and goes through all data bytes.
 See TrilliumPacket.c (in the Orion SDK) for details.
@@ -211,7 +223,7 @@ See TrilliumPacket.c (in the Orion SDK) for details.
         <Value name="ORION_MODE_FFC" value="ORION_MODE_FFC_AUTO" comment="Legacy FFC mode, alias of ORION_MODE_FFC_AUTO"/>
         <Value name="ORION_MODE_FFC_MANUAL" value="0x21" comment="Commands the gimbal to perform a flat field correction, pan and tilt will drive the IR camera to the commanded positions. NOTE: The pan/tilt targets specify the payload position, not the boresight position, so the reported angles may not match the command target"/>
         <Value name="ORION_MODE_SCENE" value="0x30" comment="Commands give the angular rate of the image produced by the camera"/>
-        <Value name="ORION_MODE_TRACK" value="0x31" comment="Commands give the angular rate of the track box in the camera image"/>
+        <Value name="ORION_MODE_TRACK" value="0x31" comment="Commands give the angular position of the track box in the camera image as fraction from center, bound these numbers -0.5 to 0.5"/>
         <Value name="ORION_MODE_NUDGE_TRACK" value="0x32" comment="Nudge the track box by a percentage of FOV"/>
         <Value name="ORION_MODE_CALIBRATION" value="0x40" comment="Drives the pan and tilt axes to calibrate the stabilizer gyros"/>
         <Value name="ORION_MODE_POSITION" value="0x50" comment="Commands give the position of the pan and tilt axes with respect to the gimbal mount"/>
@@ -235,6 +247,7 @@ See TrilliumPacket.c (in the Orion SDK) for details.
         <Value name="LASER_TYPE_VECTRONIX" comment="Vectronix LRF" />
         <Value name="LASER_TYPE_DESIGNATOR" comment="Laser designator" />
         <Value name="LASER_TYPE_JENOPTIK_DLEM_TEST" comment="Jenoptik DLEM LRF test mode" />
+        <Value name="LASER_TYPE_DESIGNATOR_6x" comment="Laser Designator Extender 6x" />
     </Enum>
 
     <Structure name="Date" comparefile="compare/compareOrionPublic" printfile="compare/printOrionPublic"  comment="Compresssed date format.">
@@ -252,6 +265,15 @@ See TrilliumPacket.c (in the Orion SDK) for details.
         <Value name="RANGE_SRC_INTERNAL_DTED" comment="Range information estimated by the gimbal based on a DTED model" />
         <Value name="NUM_RANGE_SRCS" />
     </Enum>
+
+    <Structure name="PrimaryTrackData" comment="Track position data">
+        <Data name="Pos" inMemoryType="float32" array="NUM_GIMBAL_AXES" encodedType="signed16" max="pi" comment="Track box offset from the line of sight in radians" />
+        <Data name="Size" inMemoryType="float32" encodedType="unsigned8" scaler="1000" comment="Track box size in percent of image width" />
+        <Data name="Confidence" inMemoryType="float32" encodedType="unsigned8" scaler="100" comment="Tracker confidence, from 0 to 1" />
+        <Data name="Reserved0" inMemoryType="null" encodedType="bitfield6" constant="0" />
+        <Data name="Coasting" inMemoryType="unsigned32" encodedType="bitfield1" />
+        <Data name="Active" inMemoryType="unsigned32" encodedType="bitfield1" comment="Set to 1 if the track is active, or 0 if it is currently inactive" />
+    </Structure>
 
     <Documentation comment="---"/>
     <Documentation name="Packets sent regularly by the gimbal" paragraph="1" comment="These packets are sent by the gimbal automatically, depending on the operational mode of the gimbal."/>
@@ -299,6 +321,10 @@ See TrilliumPacket.c (in the Orion SDK) for details.
         <Data name="insQuat" inMemoryType="float32" array="4" encodedType="signed16" default="0" dependsOn="insRotationOption" max="1" comment="The rotation of the INS from its native frame to the North, East, Down navigation frame. If insSpecialOption is 0 then this rotation is the same as the gimbalQuat"/>
         <Data name="imageRotation" inMemoryType="float32" encodedType="signed16" max="pi" default="0" />
         <Data name="cameraIndex" inMemoryType="signed8" default="-1" comment="Current camera index, or -1 if the gimbal does not include this field" />
+
+        <Data name="hasTrackData" inMemoryType="unsigned8" default="0" comment="Set to 1 if this packet includes object track data, otherwise 0" />
+        <Data name="primaryTrackData" struct="PrimaryTrackData" dependsOn="hasTrackData" default="0" comment="Primary object track metadata" />
+
     </Packet>
 
     <Packet name="OrionPerformance" ID="ORION_PKT_PERFORMANCE" comment="Measurements related to stabilization performance. This packet is sent by the gimbal 4 times per second.">
@@ -588,6 +614,7 @@ See TrilliumPacket.c (in the Orion SDK) for details.
             <Value name="imuTypeDmu11" comment="DMU-11 IMU"/>
             <Value name="imuTypeExternal" comment="Other external IMU"/>
             <Value name="imuTypeEpson" comment="Epson IMU"/>
+            <Value name="imuTypeSBGPulse" comment="SBG Pulse IMU"/>
             <Value name="imuTypeVectorNav" comment="VectorNav IMU"/>
             <Value name="numImuTypes" comment="Number of known IMU types" />
         </Enum>
@@ -724,9 +751,11 @@ See TrilliumPacket.c (in the Orion SDK) for details.
         <Data name="Index" inMemoryType="unsigned8" comment="The index of the camera to switch to, counting from 0"/>
     </Packet>
 
-    <Packet name="OrionCameraState" ID="ORION_PKT_CAMERA_STATE" comment="Command a camera in the gimbal.">
-        <Data name="Zoom" inMemoryType="float32" encodedType="signed16" scaler="100" comment="Digital zoom ratio"/>
-        <Data name="Focus" inMemoryType="float32" encodedType="signed16" scaler="10000" default="-1" comment="Focus command/position"/>
+    <Packet name="OrionCameraState" ID="ORION_PKT_CAMERA_STATE" comment=
+        "Command a camera in the gimbal.">
+        <Data name="Zoom" inMemoryType="float32" encodedType="signed16" scaler="100" comment="Zoom is calculated from fov as: Zoom = PixelPitch*ArrayWidth*0.5/(MinFocalLength*tan(FOV*0.5)) array width and pixel pitch come from the OrionCameras packet
+                                                                                                Sending 0 or less commands current zoom, 1 is full wide."/>
+        <Data name="Focus" inMemoryType="float32" encodedType="signed16" scaler="10000" default="-1" comment="Focus command/position on imagers with manual focus control, expected between 0 and 1.0, exactly 0 commands autofocus, -1 is don't change"/>
         <Data name="KeepActiveCamera" inMemoryType="unsigned8" encodedType="bitfield1" default="0" comment="Set to 1 to maintain the currently active camera. If this bit is set to zero and the Index field does not match the currently active camera index, the gimbal will switch cameras"/>
         <Data name="Index" inMemoryType="unsigned8" encodedType="bitfield7" default="0" comment="The index of the camera to command"/>
     </Packet>
@@ -758,6 +787,7 @@ See TrilliumPacket.c (in the Orion SDK) for details.
         </Enum>
 
         <Data name="AgcType" enum="FlirAgcType_t" encodedType="unsigned8" default="AGC_TYPE_DEFAULT"/>
+        <Data name="AgcGamma" inMemoryType="float32" encodedType="unsigned8" default="1.0" min="0.5" max="4.0" comment="Agc Gamma (default = 1.0, effective min = 0.5, effective max = 4.0)"/>
     </Packet>
 
     <Packet name="OrionAptinaSettings" ID="ORION_PKT_APTINA_SETTINGS" comparefile="compare/compareOrionPublic" printfile="compare/printOrionPublic" comment="Aptina-specific camera settings.">
@@ -834,6 +864,8 @@ See TrilliumPacket.c (in the Orion SDK) for details.
         <Data name="MaxExposure" inMemoryType="float32" encodedType="unsigned16" scaler="100" comment="Maximum AEC integration time" />
         <Data name="BlackHot" inMemoryType="unsigned8" default="0" comment="Image polarity setting - set to 0 for white hot or 1 for black hot" />
         <Data name="Sharpness" inMemoryType="float32" encodedType="unsigned8" max="5" default="0" comment="Sharpening filter strength" />
+        <Data name="MeanTargetRange" inMemoryType="unsigned8" encodedType="unsigned8" default="4" comment="valid(0-5) corisponding to 0-2000, ... , 10000-12000" />
+        <Data name="BlackPoint" inMemoryType="unsigned8" encodedType="unsigned8" default="0" comment="Sets Minimum Offset Range(x1000)" />
     </Packet>
 
     <Enum name="OrionRetractCmd_t" comment="The retraction mechanism commands.">
@@ -932,6 +964,7 @@ See TrilliumPacket.c (in the Orion SDK) for details.
             <Value name="PROTOCOL_ETHERNET" comment="Ethernet serial pass-through" />
             <Value name="PROTOCOL_VECTORNAV" comment="VectorNav IMU" />
             <Value name="PROTOCOL_UBLOX_HDG" comment="uBlox relative heading" />
+            <Value name="PROTOCOL_SBG_PULSE_IMU" comment="SBG Pulse IMU" />
             <Value name="NUM_PROTOCOL"/>
         </Enum>        
 
@@ -1124,6 +1157,8 @@ See TrilliumPacket.c (in the Orion SDK) for details.
         <Data name="Version" inMemoryType="fixedstring" array="24" comment="Version of the payload board software"/>
         <Data name="PartNumber" inMemoryType="fixedstring" array="16" comment="Hardware details of the payload board"/>
         <Data name="OnTime" inMemoryType="unsigned32" default="0" comment="Board on time in minutes"/>
+        <Data name="HwType" inMemoryType="signed8" default="-1" comment="Hardware type identifier, or -1 if unknown"/>
+        <Data name="HwRevision" inMemoryType="signed8" default="-1" comment="Hardware revision identifier, or -1 if unknown"/>
     </Packet>
 
     <Packet name="OrionTrackerVersion" ID="ORION_PKT_TRACKER_VERSION" parameterInterface="true" comparefile="compare/compareOrionPublic" printfile="compare/printOrionPublic" comment="Software version for the tracker board in the Orion Gimbal (if applicable)">
