@@ -40,7 +40,8 @@ Holds the Protogen executables for various platforms, including:
 * Mac OS X
 * Linux (x86, x64 and ARM)
 
-If the ProtoGen binary will not run, it can be built from the source, at <https://github.com/billvaglienti/ProtoGen>. The version used by this SDK is tagged as 1.4.5.b.
+If the ProtoGen binary will not run, it can be built from the source, at <https://github.com/billvaglienti/ProtoGen>. The version used by this SDK is tagged as 2.12.d, git revision a0472b7ca056c14e5c036805bfa7548623c865ce.
+
 
 ### Utils
 
