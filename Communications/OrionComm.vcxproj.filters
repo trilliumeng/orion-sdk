@@ -43,6 +43,9 @@
     <ClCompile Include="scaledencode.c">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="OrionComm.c">
+      <Filter>Source Files</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="OrionComm.h">
