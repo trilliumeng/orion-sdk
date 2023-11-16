@@ -38,3 +38,6 @@ The `VideoPlayer` application takes several optional arguments, which are ordere
 * __Video IP__: Video destination IP (typically the host's address).
 * __Video Port__: Video destination port, default is 15004.
 * __Record Path__: Filepath for saving recorded video, omit to disable recording.
+
+## Example
+./orin-sdk/Examples/VideoPlayer <from ip_address> <to ip_address> [port] [file location]
