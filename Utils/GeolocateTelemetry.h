@@ -79,7 +79,7 @@ typedef struct
 	//! Slant range to target in meters
 	float slantRange;
 
-    //! Image position in ECEF and LLA coordinates
+    //! Image position in ECEF and LLA coordinates (HAE Alt)
     double imagePosECEF[NECEF];
     double imagePosLLA[NLLA];
 

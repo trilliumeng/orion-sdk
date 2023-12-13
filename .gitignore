@@ -1,0 +1,17 @@
+#Ignore the following files that may be created during the build process
+.qmake.stash
+*.o
+*.mk
+*.so.*
+*/x86/*
+*.html
+*.markdown
+Communications/OrionPublicPacket.*
+Communications/OrionPublicProtocol.h
+Communications/compare/
+Communications/fielddecode.*
+Communications/fieldencode.*
+Communications/floatspecial.*
+Communications/release/
+Communications/scaleddecode.*
+Communications/scaledencode.*

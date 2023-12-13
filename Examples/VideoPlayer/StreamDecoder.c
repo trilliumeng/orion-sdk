@@ -88,6 +88,8 @@ int StreamOpen(const char *pUrl, const char *pRecordPath)
             // Add a stream header if the output format calls for it
             if (pOutputContext->oformat->flags & AVFMT_GLOBALHEADER)
                 pStream->codec->flags |= CODEC_FLAG_GLOBAL_HEADER;
+                // if running more recent version of ffmpeg, uncomment line below, and comment line above
+                //pStream->codec->flags |= AV_CODEC_FLAG_GLOBAL_HEADER;
         }
 
         // Open the record file and write the header out

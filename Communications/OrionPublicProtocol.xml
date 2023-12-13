@@ -113,7 +113,7 @@ See TrilliumPacket.c (in the Orion SDK) for details.
         <Value name="ORION_PKT_SONY_SETTINGS" comment="Sony-specific camera settings"/>
         <Value name="ORION_PKT_KTNC_SETTINGS" comment="KTnC-specific camera settings"/>
         <Value name="ORION_PKT_ATTOLLO_SETTINGS" comment="Attollo-specific camera settings"/>
-        <Value name="ORION_PKT_PRIVATE_70" value="0x70" comment="Reserved packet identifier" hidden="true"/>
+        <Value name="ORION_PKT_VIDEO_OPTIONS" value="0x70" comment="Settings for changing video processing and display"/>
         <Value name="ORION_PKT_PRIVATE_71" comment="Reserved packet identifier" hidden="true"/>
         <Value name="ORION_PKT_AUTOPILOT_DATA" value="0x80" comment="Autopilot state data, if available"/>
         <Value name="ORION_PKT_PRIVATE_90" value="0x90" comment="Reserved packet identifier" hidden="true"/>
@@ -129,7 +129,7 @@ See TrilliumPacket.c (in the Orion SDK) for details.
         <Value name="ORION_PKT_SNPY_AB" comment="Reserved Snoopy Board packet identifier" hidden="true"/>
         <Value name="ORION_PKT_SNPY_AC" comment="Reserved Snoopy Board packet identifier" hidden="true"/>
         <Value name="ORION_PKT_SNPY_AD" comment="Reserved Snoopy Board packet identifier" hidden="true"/>
-        <Value name="ORION_PKT_PRIVATE_B0" value="0xB0" comment="Reserved packet identifier" hidden="true"/>
+        <Value name="ORION_PKT_CROWN_MODE" value="0xB0" comment="settings telemetry reporting modes"/>
         <Value name="ORION_PKT_DEBUG_STRING" comment="A human readable text string which is typically used for debugging purposes"/>
         <Value name="ORION_PKT_USER_DATA" comment="Packet for sending user data to a serial port in the gimbal" />
         <Value name="ORION_PKT_KLV_USER_DATA" comment="KLV user-specified field settings"/>
@@ -140,7 +140,7 @@ See TrilliumPacket.c (in the Orion SDK) for details.
         <Value name="ORION_PKT_PRIVATE_C3" comment="Reserved packet identifier" hidden="true"/>
         <Value name="ORION_PKT_PRIVATE_CE" value="0xCE" comment="Reserved packet identifier" hidden="true"/>
         <Value name="ORION_PKT_PRIVATE_CF" comment="Reserved packet identifier" hidden="true"/>
-        <Value name="ORION_PKT_PRIVATE_D0" comment="Reserved packet identifier" hidden="true"/>
+        <Value name="ORION_PKT_SENSOR_DATA" value="0xD0" comment="Raw sensor data from the Orion Crown board."/>
         <Value name="ORION_PKT_GPS_DATA" comment="Raw GPS data input or output"/>
         <Value name="ORION_PKT_EXT_HEADING_DATA" comment="Externally supplied heading information"/>
         <Value name="ORION_PKT_INS_QUALITY" comment="Quality of the inertial navigation system"/>
@@ -225,7 +225,8 @@ See TrilliumPacket.c (in the Orion SDK) for details.
         <Value name="ORION_MODE_SCENE" value="0x30" comment="Commands give the angular rate of the image produced by the camera"/>
         <Value name="ORION_MODE_TRACK" value="0x31" comment="Commands give the angular position of the track box in the camera image as fraction from center, bound these numbers -0.5 to 0.5"/>
         <Value name="ORION_MODE_NUDGE_TRACK" value="0x32" comment="Nudge the track box by a percentage of FOV"/>
-        <Value name="ORION_MODE_CALIBRATION" value="0x40" comment="Drives the pan and tilt axes to calibrate the stabilizer gyros"/>
+        <Value name="ORION_MODE_CALIBRATION" value="0x40" comment="Drives the pan and tilt axes to calibrate the stabilization gyros"/>
+        <Value name="ORION_MODE_NULL_GYROS" value="0x41" comment="Drives the pan and tilt axes to null the stabilization gyros"/>
         <Value name="ORION_MODE_POSITION" value="0x50" comment="Commands give the position of the pan and tilt axes with respect to the gimbal mount"/>
         <Value name="ORION_MODE_POSITION_NO_LIMITS" value="0x51" comment="Commands give the position of the pan and tilt axes with respect to the gimbal mount. NOTE: This mode ignores the pan/tilt limits and can result in serious damage to the gimbal if used incorrectly"/>
         <Value name="ORION_MODE_GEOPOINT" value="0x60" comment="Gimbal is pointing toward a fixed spatial location"/>
@@ -354,6 +355,7 @@ See TrilliumPacket.c (in the Orion SDK) for details.
         <Data name="Current3v3Var" inMemoryType="float32" encodedType="unsigned16" scaler="100000" comment="Current variance in Amps of the 3.3-volt rail"/>
         <Data name="PayloadTemp" inMemoryType="float32" encodedType="signed8" scaler="1.0" default="-127" />
         <Data name="PayloadHumidity" inMemoryType="float32" encodedType="unsigned8" max="100" default="0" />
+        <Data name="CurrentLaser" inMemoryType="float32" encodedType="unsigned16" scaler="1.0" default="-1.0" comment="Current in Amps of the Lsr rail"/>
     </Packet>
 
     <Packet name="OrionFault" ID="ORION_PKT_FAULTS" comment="Let someone know when a fault occurs">
@@ -487,6 +489,23 @@ See TrilliumPacket.c (in the Orion SDK) for details.
         <Data name="Address" inMemoryType="unsigned32" comment="Program counter prior to the reset (not yet used)"/>
         <Data name="sourceBoard" enum="OrionBoardEnumeration_t" default="BOARD_CLEVIS" encodedType="unsigned8" comment="Enumeration defining which board in the gimbal generated this message"/>
     </Packet>
+ 
+    <Packet name="CrownMode" ID="ORION_PKT_CROWN_MODE" parameterInterface="true"
+            comment="This packet commands a special mode of operation for the crown board. Any mode that is not 'crownModeNormal'
+                     is used for development or production purposes. When this packet is sent from the crown board it reports the
+                     current mode of operation. Request the current mode of operation by sending this packet with zero length.">
+
+	    <Enum name="crownModes" comment="Modes of operation for the orion crown board software.">
+	        <Value name="crownModeNormal" comment="The normal operation of the crown board"/>
+	        <Value name="crownModeLogINS" comment="Normal mode of operation except INS raw data are sent to users"/>
+	        <Value name="crownModePrintIMU" comment="Normal mode of operation except the IMU sensors are printed out using debug packets"/>
+	        <Value name="crownModePrintINS" comment="Normal mode of operation except the INS states are printed out using debug packets"/>
+	        <Value name="crownModeTempCal" comment="Special mode of operation used for temperature calibration of the sensors"/>
+	        <Value name="crownModeIMUCal" comment="Special mode of operation used for gain, bias, and alignment calibration of the IMU"/>
+	    </Enum>
+
+        <Data name="mode" enum="crownModes" encodedType="unsigned8" comment="Crown board mode of operation"/>
+   </Packet>
 
     <Packet name="DebugString" ID="ORION_PKT_DEBUG_STRING" comment="This packet sends a human readable text string which is typically used for debugging purposes.">
 
@@ -512,6 +531,20 @@ See TrilliumPacket.c (in the Orion SDK) for details.
         <Data name="Length" inMemoryType="unsigned8" comment="Data length, in bytes" />
         <Data name="Value" inMemoryType="unsigned8" array="127" variableArray="Length" comment="Variable-length value string"/>
     </Packet>
+
+    <Packet name="OrionSensorData" ID="ORION_PKT_SENSOR_DATA" comment="Raw sensor data from the Orion Crown board.">
+        <Data name="Gyros" inMemoryType="float32" array="3" encodedType="signed16" max="300*(pi/180)" comment="Measured angular rate in body axes in radians per second"/>
+        <Data name="Accels" inMemoryType="float32" array="3" encodedType="signed16" max="98.1" comment="Measured specific force in body axes in meters per second per second"/>
+        <Data name="Baro" inMemoryType="float32" encodedType="unsigned16" max="110000" comment="Measured barometric pressure in Pascals"/>
+        <Data name="OAT" inMemoryType="float32" encodedType="unsigned16" scaler="100" comment="Measured outside air temperature in degrees Kelvin"/>
+        <Data name="time" inMemoryType="unsigned32" comment="system time stamp in milliseconds of this IMU data"/>
+        <Data name="gyroTemp" inMemoryType="float32" encodedType="unsigned16" scaler="100" comment="Gyro die temperature in degrees Kelvin"/>
+        <Data name="gyroDt" inMemoryType="float32" default="0.005" encodedType="unsigned16" scaler="1000000" comment="Elapsed gyro time in seconds. Use this time to compute delta angle from the gyro rate"/>
+        <Data name="accelDt" inMemoryType="float32" default="0.005" encodedType="unsigned16" scaler="1000000" comment="Elapsed accelerometer time in seconds. Use this time to compute delta velocity from the specific force"/>
+        <Data name="ppsAge" inMemoryType="signed16" default="-1" comment="PPS pulse age in milliseconds before the system time reported in this packet"/>
+        <Data name="counter" inMemoryType="unsigned8" default="0" comment="IMU packet counter, rolls over every 256"/>
+    </Packet>
+
 
     <Packet name="GpsData" ID="ORION_PKT_GPS_DATA" comment=
         "Raw GPS data. This packet is normally sent by the gimbal once per second, unless the
@@ -772,7 +805,7 @@ See TrilliumPacket.c (in the Orion SDK) for details.
         </Enum>
 
         <Data name="DisableSffc" inMemoryType="bitfield1" />
-        <Data name="Palette" inMemoryType="bitfield3" />
+        <Data name="Palette" inMemoryType="bitfield3" comment="Image Colorization - 2 for Rainbow, 3 for RainbowHC, 4 for Ironbow, 5 for Lava, 6 for Arctic, 7 for Glowbow, 8 for GradedFire, 9 for Hottest"/>
         <Data name="NucType" enum="FlirNucType_t" encodedType="bitfield3" comment="NUC type setting" />
         <Data name="BlackHot" inMemoryType="bitfield1" comment="Image polarity setting - set to 0 for white hot or 1 for black hot. This field is ignored if Palette is non-zero, (default=0, effective min=0, effective max=1)"/>
         <Data name="MaxAgcGain" inMemoryType="unsigned8" comment="Maximum AGC output gain, (effective min=1, effective max=50)"/>
@@ -788,6 +821,7 @@ See TrilliumPacket.c (in the Orion SDK) for details.
 
         <Data name="AgcType" enum="FlirAgcType_t" encodedType="unsigned8" default="AGC_TYPE_DEFAULT"/>
         <Data name="AgcGamma" inMemoryType="float32" encodedType="unsigned8" default="1.0" min="0.5" max="4.0" comment="Agc Gamma (default = 1.0, effective min = 0.5, effective max = 4.0)"/>
+        <Data name="AgcLinearPercent" inMemoryType="float32" encodedType="unsigned8" default="50.0" min="0.0" max="100.0" comment="Agc Linear Percent (default = 50.0, effective min = 0.0, effective max = 100.0)" />
     </Packet>
 
     <Packet name="OrionAptinaSettings" ID="ORION_PKT_APTINA_SETTINGS" comparefile="compare/compareOrionPublic" printfile="compare/printOrionPublic" comment="Aptina-specific camera settings.">
@@ -866,6 +900,47 @@ See TrilliumPacket.c (in the Orion SDK) for details.
         <Data name="Sharpness" inMemoryType="float32" encodedType="unsigned8" max="5" default="0" comment="Sharpening filter strength" />
         <Data name="MeanTargetRange" inMemoryType="unsigned8" encodedType="unsigned8" default="4" comment="valid(0-5) corisponding to 0-2000, ... , 10000-12000" />
         <Data name="BlackPoint" inMemoryType="unsigned8" encodedType="unsigned8" default="0" comment="Sets Minimum Offset Range(x1000)" />
+    </Packet>
+
+
+    <Packet name="VideoOptions" ID="ORION_PKT_VIDEO_OPTIONS" comparefile="compare/compareOrionPublic" printfile="compare/printOrionPublic" comment="Video output options">
+        <Data name="Stabilized" inMemoryType="unsigned32" encodedType="bitfield1" comment="Set to 1 to enable digital video stabilization, or 0 to disable" />
+        <Data name="ShowTrackBox" inMemoryType="unsigned32" encodedType="bitfield1" comment="Set to 1 to render the track box on the video, or 0 to only send KLV track box position" />
+        <Data name="ShowReticle" inMemoryType="unsigned32" encodedType="bitfield1" comment="Set to 1 to render the center reticle on the video" />
+        <Data name="RotateVideo" inMemoryType="unsigned32" encodedType="bitfield1" comment="Set to 1 to automatically rotate the video to compensate for camera roll angles." />
+        <Data name="DisableFovMatch" inMemoryType="unsigned32" encodedType="bitfield1" comment="Set to 1 to disable FOV matching" />
+        <Data name="ShowTelemetry" inMemoryType="unsigned32" encodedType="bitfield1" comment="Set to 1 to render telemetry overlays on the video" />
+        <Data name="HasTelemetryOptions" inMemoryType="unsigned32" encodedType="bitfield1" comment="Set to 1 if TelemetryOptions are included" />
+        <Data name="ShowDetections" inMemoryType="unsigned32" encodedType="bitfield1" comment="Set to 1 to render MTI detections, if applicable" />
+        <Data name="DisableNtsc" inMemoryType="unsigned32" encodedType="bitfield1" comment="Set to 1 to disable NTSC analog video, or 0 to enable" />
+        <Data name="EnablePip" inMemoryType="unsigned32" encodedType="bitfield1" comment="Set to 1 to enable picture-in-picture overlays, or 0 to disable" />
+        <Data name="ZoomTrackBox" inMemoryType="unsigned32" encodedType="bitfield1" comment="Set to 1 to enable 1.5x trackbox zooming, or 0 to disable" />
+        <!-- !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!! -->
+        <!-- DON'T FORGET TO UPDATE THE RESERVED BITFIELD WIDTH IF YOU ADD NEW FIELDS -->
+        <!-- !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!! -->
+        <Data name="Reserved" inMemoryType="null" encodedType="bitfield21" constant="0" comment="Reserved, set to zero" />
+        <Data name="MaxShift" inMemoryType="float32" encodedType="unsigned8" max="1" default="0.1" comment="Maximum stabilization shift as a percentage of frame size, or 0 for no change" />
+        <Structure name="TelemetryOptions" dependsOn="HasTelemetryOptions">
+            <Data name="CameraPos" inMemoryType="unsigned32" encodedType="bitfield1" />
+            <Data name="TargetPos" inMemoryType="unsigned32" encodedType="bitfield1" />
+            <Data name="Fov" inMemoryType="unsigned32" encodedType="bitfield1" />
+            <Data name="Range" inMemoryType="unsigned32" encodedType="bitfield1" />
+            <Data name="MetricAlt" inMemoryType="unsigned32" encodedType="bitfield1" />
+            <Data name="MetricDist" inMemoryType="unsigned32" encodedType="bitfield1" />
+            <Enum name="CoordFormat_t">
+                <Value name="COORD_FMT_DEG_DECIMAL" comment="Decimal degrees" />
+                <Value name="COORD_FMT_DEG_MIN" comment="Degrees + decimal minutes" />
+                <Value name="COORD_FMT_DEG_MIN_SEC" comment="Degrees + minutes + seconds" />
+                <Value name="COORD_FMT_MGRS" comment="MGRS" />
+                <Value name="COORD_FMT_UTM" comment="UTM" />
+            </Enum>
+            <Data name="CoordFormat" enum="CoordFormat_t" encodedType="bitfield3" />
+            <Data name="Date" inMemoryType="unsigned32" encodedType="bitfield1" />
+            <Data name="Time" inMemoryType="unsigned32" encodedType="bitfield1" />
+            <Data name="NorthIndicator" inMemoryType="unsigned32" encodedType="bitfield1" />
+            <Data name="Reserved" inMemoryType="null" encodedType="bitfield20" />
+            <Data name="UserString" inMemoryType="string" array="40" />
+        </Structure>
     </Packet>
 
     <Enum name="OrionRetractCmd_t" comment="The retraction mechanism commands.">
