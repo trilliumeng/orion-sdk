@@ -95,8 +95,8 @@ See TrilliumPacket.c (in the Orion SDK) for details.
         <Value name="ORION_PKT_SOFTWARE_DIAGNOSTICS" comment="Diagnostic information related to software performance for a processor"/>
         <Value name="ORION_PKT_VIBRATION" comment="Platform vibration statistics"/>
         <Value name="ORION_PKT_NETWORK_DIAGNOSTICS" comment="Network diagnostics"/>
-        <Value name="ORION_PKT_PRIVATE_47" comment="Reserved packet identifier" hidden="true" />
-        <Value name="ORION_PKT_PRIVATE_48" comment="Reserved packet identifier" hidden="true" />
+        <Value name="ORION_PKT_TLE_STATUS" comment="Target Localization filter status" />
+        <Value name="ORION_PKT_TLE_COMMAND" comment="Target Localization filter commands" />
         <Value name="ORION_PKT_PRIVATE_49" comment="Reserved packet identifier" hidden="true" />
         <Value name="ORION_PKT_CAMERA_SWITCH" value="0x60" comment="Command the gimbal to swtich cameras"/>
         <Value name="ORION_PKT_CAMERA_STATE" comment="Command a camera in the gimbal"/>
@@ -114,7 +114,7 @@ See TrilliumPacket.c (in the Orion SDK) for details.
         <Value name="ORION_PKT_KTNC_SETTINGS" comment="KTnC-specific camera settings"/>
         <Value name="ORION_PKT_ATTOLLO_SETTINGS" comment="Attollo-specific camera settings"/>
         <Value name="ORION_PKT_VIDEO_OPTIONS" value="0x70" comment="Settings for changing video processing and display"/>
-        <Value name="ORION_PKT_PRIVATE_71" comment="Reserved packet identifier" hidden="true"/>
+        <Value name="ORION_PKT_TRACK_OPTIONS" value="0x71" comment="Options for changing scene/object track configurations"/>
         <Value name="ORION_PKT_AUTOPILOT_DATA" value="0x80" comment="Autopilot state data, if available"/>
         <Value name="ORION_PKT_PRIVATE_90" value="0x90" comment="Reserved packet identifier" hidden="true"/>
         <Value name="ORION_PKT_PRIVATE_91" value="0x91" comment="Reserved packet identifier" hidden="true"/>
@@ -437,6 +437,47 @@ See TrilliumPacket.c (in the Orion SDK) for details.
         <Data name="CarrierErrors" inMemoryType="unsigned16" comment="Number of carrier loss events" />
     </Packet>
 
+    <Enum name="TleType_t" comment="TLE algorithm type enumeration">
+        <Value name="TLE_TYPE_NONE" comment="No TLE filter" />
+        <Value name="TLE_TYPE_NO_CHANGE" comment="Appy settings to the currently active filter" />
+        <Value name="TLE_TYPE_GEOLOCATE" comment="The geolocation target estimation filter" />
+        <Value name="TLE_TYPE_ALIGN" comment="The pan tilt alignment offset filter" />
+    </Enum>
+
+    <Enum name="TleState_t" comment="">
+        <Value name="TLE_STATE_OFF" comment="Filter is not running" />
+        <Value name="TLE_STATE_RUNNING" comment="Filter is running" />
+    </Enum>
+
+    <Packet name="TleStatus" ID="ORION_PKT_TLE_STATUS" comment="TLE algorithm status message">
+        <Data name="SystemTime" inMemoryType="unsigned32" comment="Gimbal system time this status applies to" />
+        <Data name="FilterType" enum="TleType_t" encodedType="unsigned8" comment="The filter this status relates to" />
+        <Data name="State" enum="TleState_t" encodedType="unsigned8" comment="State of the filter (running or not)" />
+        <Data name="Reserved" inMemoryType="null" encodedType="unsigned16" />
+        <Data name="SampleCount" inMemoryType="unsigned16" comment="Number of samples used in the estimate" />
+        <Data name="Latitude"  inMemoryType="float64" encodedType="signed32" max="pi/2" comment="Filter's estimated latitude in radians" />
+        <Data name="Longitude" inMemoryType="float64" encodedType="signed32" max="pi" comment="Filter's estimated longitude in radians" />
+        <Data name="Altitude"  inMemoryType="float64" encodedType="signed24" scaler="100" comment="Filter's estimated altitude in meters above ellipsoid" />
+        <Data name="CE90" inMemoryType="float32" encodedType="signed16" max="1000" comment="90th percentile circular error radius in meters" />
+        <Data name="VE90" inMemoryType="float32" encodedType="signed16" max="1000" comment="90th percentile vertical error in meters" />
+        <Data name="SE90" inMemoryType="float32" encodedType="signed16" max="1000" comment="90th percentile spherical error in meters" />
+        <Data name="EllipseMajor" inMemoryType="float32" encodedType="signed16" max="1000" comment="Confidence ellipse major axis in meters" />
+        <Data name="EllipseMinor" inMemoryType="float32" encodedType="signed16" max="1000" comment="Confidence ellipse minor axis in meters" />
+        <Data name="EllipseAngle" inMemoryType="float32" encodedType="signed16" max="pi" comment="Conifdence ellipse rotation in radians" />
+        <Data name="PanError"  inMemoryType="float32" encodedType="signed16" max="pi" comment="Cumulative pan error in radians" />
+        <Data name="TiltError" inMemoryType="float32" encodedType="signed16" max="pi" comment="Cumulative tilt error in radians" />
+        <Data name="AltError"  inMemoryType="float32" encodedType="signed16" max="100" comment="Cumulative altitude error in meters" />
+        <Data name="PanUncertainty"  inMemoryType="float32" encodedType="unsigned16" max="pi/10" comment="Pan uncertainty in radians" />
+        <Data name="TiltUncertainty" inMemoryType="float32" encodedType="unsigned16" max="pi/10" comment="Tilt uncertainty in radians" />
+        <Data name="AltUncertainty"  inMemoryType="float32" encodedType="unsigned16" max="10" comment="Altitude uncertainty in meters" />
+        <Data name="PercentOrbit" inMemoryType="float32" encodedType="unsigned8" min="0" max="200" default="0" comment="Percent of completed orbit to converge on an estimate" />
+    </Packet>
+
+    <Packet name="TleCommand" ID="ORION_PKT_TLE_COMMAND" comment="TLE command message">
+        <Data name="FilterType" enum="TleType_t" encodedType="unsigned8" comment="The filter to start/stop" />
+        <Data name="Run" inMemoryType="unsigned8" comment="Start=1, Stop=0" />
+    </Packet>
+
     <Packet name="OrionRetractStatus" ID="ORION_PKT_RETRACT_STATUS" parameterInterface="true" comment="Current gimbal retraction mechanism status. This is sent by the gimbal regularly only if a retract system is installed.">
         <Enum name="OrionRetractState_t" comment="The retraction mechanism state">
             <Value name="RETRACT_STATE_DISABLED" comment="Retract is disabled"/>
@@ -566,6 +607,7 @@ See TrilliumPacket.c (in the Orion SDK) for details.
             <Value name="autopilotSource" comment="Autopilot host GPS data"/>
             <Value name="piccoloSource" value="autopilotSource" comment="Preserved for backward compatibility"/>
             <Value name="piksiSource" comment="Piksi external GPS"/>
+            <Value name="apntSource" comment="Alternative positioning, navigation, and timing system supplied data"/>
             <Value name="numGpsSources" comment="Number of possible GPS sources"/>
         </Enum>
 
@@ -943,6 +985,30 @@ See TrilliumPacket.c (in the Orion SDK) for details.
         </Structure>
     </Packet>
 
+    <Packet name="TrackOptions" ID="ORION_PKT_TRACK_OPTIONS" comparefile="compare/compareOrionPublic" printfile="compare/printOrionPublic" comment="Scene/object track options">
+        <Data name="DebugEnable" inMemoryType="unsigned32" encodedType="bitfield1" comment="Set to 1 to enable debug logging" />
+        <Data name="KpScene" inMemoryType="float32" encodedType="unsigned8" scaler="10" comment="Scene mode proportional gain" />
+        <Data name="KiScene" inMemoryType="float32" encodedType="unsigned8" scaler="10" comment="Scene mode integral gain" />
+        <Data name="KpTrack" inMemoryType="float32" encodedType="unsigned8" scaler="10" comment="Track mode proportional gain" />
+        <Data name="KiTrack" inMemoryType="float32" encodedType="unsigned8" scaler="10" comment="Track mode integral gain" />
+        <Data name="MaxRate" inMemoryType="float32" encodedType="unsigned8" scaler="100" comment="Maximum angular rate command, in FOV/s" />
+        <Data name="MaxAccel" inMemoryType="float32" encodedType="unsigned8" scaler="20" comment="Maximum angular acceleration command, in FOV/s/s" />
+        <Data name="TrackSize" inMemoryType="float32" encodedType="unsigned8" scaler="1000" comment="Track box size, as a percent of the frame" />
+        <Data name="TrackMode" inMemoryType="unsigned8" comment="Tracking mode" />
+        <Data name="TrackAlpha" inMemoryType="float32" encodedType="unsigned8" max="1" default="0.7" comment="Track box filter alpha" />
+        <Data name="RateAlpha" inMemoryType="float32" encodedType="unsigned8" max="1" default="0.2" comment="Inertial rate seed filter alpha" />
+        <Data name="MinSceneConf" inMemoryType="float32" encodedType="unsigned8" max="1" default="0.5" comment="Minimum scene confidence" />
+        <Data name="MinTrackConf" inMemoryType="float32" encodedType="unsigned8" max="1" default="0.3" comment="Minimum track box confidence" />
+        <Data name="MaxCoastTime" inMemoryType="float32" encodedType="unsigned8" scaler="100" default="1.5" comment="Maximum coast time, in seconds" />
+        <Data name="TrackDelay" inMemoryType="unsigned8" default="0" comment="Tracker feedback loop delay, in frames" />
+        <Data name="DisableMti" inMemoryType="unsigned8" default="0" comment="Set to 1 to disable MTI tracks" />
+        <Data name="DetectionMode" inMemoryType="unsigned16" default="0" comment="Detection Mode" />
+        <Data name="DetectionThreshold" inMemoryType="unsigned8" default="6" comment=" " />
+        <Data name="DetectionMaxTelemTrks" inMemoryType="unsigned8" default="3" comment=" " />
+        <Data name="TrackOffsetPan" inMemoryType="float32" default="0" comment="Send a TrackOptions command with this value set to nudge the track offset by the given amount in radians (positive pushes the cursor right" />
+        <Data name="TrackOffsetTilt" inMemoryType="float32" default="0" comment="Send a TrackOptions command with this value set to nudge the track offset by the given amount in radians (positive pushes the cursor down" />
+    </Packet>
+
     <Enum name="OrionRetractCmd_t" comment="The retraction mechanism commands.">
         <Value name="RETRACT_CMD_DISABLE" comment="Disable the retract motor"/>
         <Value name="RETRACT_CMD_DEPLOY" comment="Move the gimbal to a deployed position"/>
@@ -987,7 +1053,8 @@ See TrilliumPacket.c (in the Orion SDK) for details.
         <Data name="BypassEnabled" inMemoryType="bitfield1" comment="Set to 1 if the current command is bypassing the safety interlocks, otherwise 0" />
         <Data name="PitchAngleLock" inMemoryType="bitfield1" comment="Set to 1 if the laser is locked due to a positive pitch angle, otherwise 0" />
         <Data name="WatchdogLock" inMemoryType="bitfield1" comment="Set to 1 if the laser was locked due to laser command comm timeout. A new command will clear this lock" />
-        <Data name="Reserved" inMemoryType="bitfield13" constant="0" comment="Reserved for future use" />
+        <Data name="Reserved" inMemoryType="bitfield5" constant="0" comment="Reserved for future use" />
+        <Data name="LaserTemp" inMemoryType="float32" encodedType="unsigned8" scaler="1.0" comment="LaserTemp" />
         <Data name="WaitTimer" inMemoryType="unsigned16" comment="Time remaining, in milliseconds, before the laser will accept another command" />
     </Structure>
 

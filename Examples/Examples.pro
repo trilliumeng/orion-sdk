@@ -9,6 +9,7 @@ SUBDIRS += \
     PathTrack \
     SendCommand \
     SendConfig \
+    TrackSize \
     UserData
 
 unix:SUBDIRS += \

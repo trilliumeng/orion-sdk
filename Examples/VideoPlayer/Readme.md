@@ -40,4 +40,4 @@ The `VideoPlayer` application takes several optional arguments, which are ordere
 * __Record Path__: Filepath for saving recorded video, omit to disable recording.
 
 ## Example
-./orin-sdk/Examples/VideoPlayer <from ip_address> <to ip_address> [port] [file location]
+./orion-sdk/Examples/VideoPlayer <from ip_address> <to ip_address> [port] [file location]

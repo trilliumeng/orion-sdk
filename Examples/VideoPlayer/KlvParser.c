@@ -321,9 +321,21 @@ void KlvPrintData(void)
             {
             // Decode this tag as a double and print
             case KLV_TYPE_DOUBLE:
-                printf("%lf\n", KlvTreeGetValueDouble((KlvUasDataElement_t)i, TagInfo[i].Min, TagInfo[i].Max, &Result));
+            {
+                //check for special Cases
+                uint32_t Length, j;
+                const uint8_t *pData = KlvTreeGetValue((KlvUasDataElement_t)i, &Length);
+                // for (j = 0; j < Length; j++)
+                //     printf("(%02x) ", pData[j]);
+                if (Length == 2 && (pData[0] == 0x80 && pData[1] == 00)) {
+                    printf("KLV_INVALID_0x8000\n");
+                } else if (Length == 4 && (pData[0]==0x80 && pData[1] == 0x00 && pData[2] == 0x00 && pData[3] == 0x00)) {
+                    printf("KLV_INVALD_0x80000000\n");
+                } else {
+                    printf("%lf\n", KlvTreeGetValueDouble((KlvUasDataElement_t)i, TagInfo[i].Min, TagInfo[i].Max, &Result));
+                }
                 break;
-
+            }
             // Decode this tag as an unsigned int and print
             case KLV_TYPE_UINT:
                 printf("%" PRIu64 "\n", KlvTreeGetValueUInt((KlvUasDataElement_t)i, &Result));

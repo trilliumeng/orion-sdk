@@ -12,7 +12,7 @@ $(OBJ_DIR)/%.o:%.c
 	$(V)$(CC) -c -Wall $(CFLAGS) $< -o $@ $(QOUT)
 
 $(BIN): ../../Communications/$(TARGET)/libOrionComm.a ../../Utils/$(TARGET)/libOrionUtils.a $(OBJS)
-	$(V)$(CC) -o $(BIN) $(OBJS) -L../../Communications/$(TARGET) -L../../Utils/$(TARGET) -lOrionComm -lOrionUtils -lm $(LDFLAGS) $(QOUT)
+	$(V)$(CC) -o $(BIN) $(OBJS) -L../../Communications/$(TARGET) -L../../Utils/$(TARGET) -lOrionComm -lOrionUtils -lm -lz $(LDFLAGS) $(QOUT)
 
 ../../Communications/$(TARGET)/libOrionComm.a:
 	@make -C ../../Communications

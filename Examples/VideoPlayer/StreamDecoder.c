@@ -4,6 +4,11 @@
 
 #include <string.h>
 
+// This fixes issue with using ffmpeg > v4
+#ifndef CODEC_FLAG_GLOBAL_HEADER
+  #define CODEC_FLAG_GLOBAL_HEADER AV_CODEC_FLAG_GLOBAL_HEADER
+#endif
+
 static AVFormatContext *pInputContext = NULL;
 static AVFormatContext *pOutputContext = NULL;
 static AVCodecContext *pCodecContext = NULL;
@@ -326,7 +331,7 @@ int StreamProcess(void)
 int StreamGetVideoFrame(uint8_t *pFrameData, int *pWidth, int *pHeight, int MaxBytes)
 {
     // If we actually have frame data to copy out and it won't overrun pFrameData
-    if ((pFrameCopy->width > 0) && (pFrameCopy->height > 0) && ((pFrame->width * pFrame->height * 3) < MaxBytes))
+    if ((pFrameCopy->width > 0) && (pFrameCopy->height > 0) && ((pFrame->width * pFrame->height * 3) <= MaxBytes))
     {
         // Allocate a context for colorspace conversion and do some data marshaling 
         struct SwsContext *pContext  = sws_getContext(pFrameCopy->width, pFrameCopy->height, pFrameCopy->format,

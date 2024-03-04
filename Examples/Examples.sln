@@ -16,6 +16,8 @@ Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "SendCommand", "C:/svn/trunk
 EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "SendConfig", "C:/svn/trunk_clean/Public/Examples/SendConfig/SendConfig.vcxproj", "{6953A2F7-83B5-31E2-B7C7-CD8E34D235DE}"
 EndProject
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "TrackSize", "C:/svn/trunk_clean/Public/Examples/TrackSize/TrackSize.vcxproj", "{BD5E887F-DE32-45E2-9299-295E235D661D}"
+EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "UserData", "C:/svn/trunk_clean/Public/Examples/UserData\UserData.vcxproj", "{AC1F4947-0216-30F9-9DF9-7C96FE98A096}"
 EndProject
 Global
@@ -56,6 +58,10 @@ Global
 		{6953A2F7-83B5-31E2-B7C7-CD8E34D235DE}.Debug|Win32.Build.0 = Debug|Win32
 		{6953A2F7-83B5-31E2-B7C7-CD8E34D235DE}.Release|Win32.ActiveCfg = Release|Win32
 		{6953A2F7-83B5-31E2-B7C7-CD8E34D235DE}.Release|Win32.Build.0 = Release|Win32
+		{BD5E887F-DE32-45E2-9299-295E235D661D}.Debug|Win32.ActiveCfg = Debug|Win32
+		{BD5E887F-DE32-45E2-9299-295E235D661D}.Debug|Win32.Build.0 = Debug|Win32
+		{BD5E887F-DE32-45E2-9299-295E235D661D}.Release|Win32.ActiveCfg = Release|Win32
+		{BD5E887F-DE32-45E2-9299-295E235D661D}.Release|Win32.Build.0 = Release|Win32
 		{AC1F4947-0216-30F9-9DF9-7C96FE98A096}.Debug|Win32.ActiveCfg = Debug|Win32
 		{AC1F4947-0216-30F9-9DF9-7C96FE98A096}.Debug|Win32.Build.0 = Debug|Win32
 		{AC1F4947-0216-30F9-9DF9-7C96FE98A096}.Release|Win32.ActiveCfg = Release|Win32

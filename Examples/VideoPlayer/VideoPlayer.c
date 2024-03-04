@@ -60,7 +60,7 @@ int main(int argc, char **argv)
     while (1)
     {
         // Run the MPEG-TS stream processor
-        if (StreamProcess())
+        while (StreamProcess())
         {
             // If we got a new frame/metadata pair, print a little info to the screen
             printf("Captured %5d frames\r", ++FrameCount);
