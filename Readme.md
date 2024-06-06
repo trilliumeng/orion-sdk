@@ -8,7 +8,7 @@ The entire protocol is implemented in a single [ProtoGen](https://github.com/bil
 
 ## Getting Started
 
-Building the Orion SDK for linux has the following prerequisites:
+Building the Orion SDK for linux has the following prerequisites:  make, qmake, or msvc.
 
 * __Optional:__ MultiMarkdown (<http://fletcherpenney.net/multimarkdown>)
 
