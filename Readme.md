@@ -4,7 +4,7 @@
 
 The Orion SDK implements all the functionality needed to control any of [Trillium Engineering](http://www.trilliumeng.com)'s Orion family of gimbaled camera systems. It also includes a set of example applications which demonstrate the basic paradigms used to connect to and control an Orion gimbal.  
 
-The entire protocol is implemented in a single [ProtoGen](https://github.com/billvaglienti/ProtoGen) XML file. Running the top-level batch/shell scripts will use ProtoGen to generate all the necessary C code and documentation for encoding and decoding binary packets which conform to the API.  You can preview the documentation generated for the current release [here](https://static.trilliumeng.com/ApplicationData/Orion/download.html?device=OrionSDK).
+The entire protocol is implemented in a single [ProtoGen](https://github.com/billvaglienti/ProtoGen) XML file. Running the top-level batch/shell scripts will use ProtoGen to generate all the necessary C code and documentation for encoding and decoding binary packets which conform to the API.  
 
 ## Getting Started
 
@@ -12,7 +12,10 @@ Building the Orion SDK for linux has the following prerequisites:
 
 * __Optional:__ MultiMarkdown (<http://fletcherpenney.net/multimarkdown>)
 
-On Ubuntu and other Debian-based distributions, MultiMarkdown can also be installed by running `sudo apt-get install libtext-multimarkdown-perl`.
+On Ubuntu and other Debian-based distributions, MultiMarkdown can also be installed by running `sudo apt-get install libtext-multimarkdown-perl`.  
+
+This optional dependancy will allow a development system to generate a html version of the documentation.  Otherwise documentation is only generated into markdown files.  A preview of the documentation generated for the current release is found [here](https://static.trilliumeng.com/ApplicationData/Orion/download.html?device=OrionSDK).
+
 
 ## Repository Contents
 
