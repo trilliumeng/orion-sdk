@@ -14,7 +14,7 @@ Building the Orion SDK for linux has the following prerequisites:  make, qmake, 
 
 On Ubuntu and other Debian-based distributions, MultiMarkdown can also be installed by running `sudo apt-get install libtext-multimarkdown-perl`.  
 
-This optional dependancy will allow a development system to generate a html version of the documentation.  Otherwise documentation is only generated into markdown files.  A preview of the documentation generated for the current release is found [here](https://static.trilliumeng.com/ApplicationData/Orion/download.html?device=OrionSDK).
+This optional dependancy will allow a development system to [generate](https://github.com/trilliumeng/orion-sdk/blob/master/Readme.md#support-and-documentation) a html version of the documentation.  Otherwise documentation is only generated into markdown files.  A preview of the documentation generated for the current release is found [here](https://static.trilliumeng.com/ApplicationData/Orion/download.html?device=OrionSDK).
 
 
 ## Repository Contents
