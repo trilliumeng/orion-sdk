@@ -43,7 +43,7 @@ Holds the Protogen executables for various platforms, including:
 * Mac OS X
 * Linux (x86, x64 and ARM)
 
-If the ProtoGen binary will not run, it can be built from the source, at <https://github.com/billvaglienti/ProtoGen>. The version used by this SDK is tagged as 2.12.d, git revision a0472b7ca056c14e5c036805bfa7548623c865ce.
+If the ProtoGen pre-compiled binaries will not run on your platform, it can be built from the source.   Pull the 2.12.d release at <https://github.com/trilliumeng/ProtoGen/releases/tag/2.12.d_trillium>.
 
 
 ### Utils
