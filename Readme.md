@@ -8,14 +8,16 @@ The entire protocol is implemented in a single [ProtoGen](https://github.com/bil
 
 ## Getting Started
 
-Building the Orion SDK for linux has the following prerequisites:  make, qmake, or msvc.
-
+Building the Orion SDK for linux has the following prerequisites:  
+* compiler toolchain: (make, qmake, or msvc), gcc
+* Protogen (pre-built binaries are included for common platforms)
+* ffmpeg
+* libjpeg
 * __Optional:__ MultiMarkdown (<http://fletcherpenney.net/multimarkdown>)
 
 On Ubuntu and other Debian-based distributions, MultiMarkdown can also be installed by running `sudo apt-get install libtext-multimarkdown-perl`.  
 
 This optional dependancy will allow a development system to [generate](https://github.com/trilliumeng/orion-sdk/blob/master/Readme.md#support-and-documentation) a html version of the documentation.  Otherwise documentation is only generated into markdown files.  A preview of the documentation generated for the current release is found [here](https://static.trilliumeng.com/ApplicationData/Orion/download.html?device=OrionSDK).
-
 
 ## Repository Contents
 
@@ -33,7 +35,9 @@ All three functions will return `TRUE` upon a successful connection, then `Orion
 
 ### Examples
 
-The `Examples` directory contains some applications which demonstrate both the use of the packet SDK as well as the lower-level process of connecting to and exchanging data with a gimbal over both serial and Ethernet. For detailed information on a particular example application, please see the readme included in its subdirectory.
+The `Examples` directory contains some applications which demonstrate both the use of the packet SDK as well as the lower-level process of connecting to and exchanging data with a gimbal over both serial and Ethernet. For detailed information on a particular example application, please see the readme included in its subdirectory.  
+
+The VideoPlayer example app has some specific dependencies and will fail to build if they are not met.  Please see the [VideoPlayer Readme](https://github.com/trilliumeng/orion-sdk/tree/master/Examples/VideoPlayer)
 
 ### Protogen
 
