@@ -56,65 +56,83 @@ See TrilliumPacket.c (in the Orion SDK) for details.
 
     <Documentation comment="---"/>
     <Documentation name="Enumerations" paragraph="1" comment="Packets in the protocol refer to these global enumerations."/>
-        
+    <!--Unused Values to date:
+        0x0B to 0x1E,
+        0x32 to 0x3F,
+        0x4A to 0x5F,
+        0x6F,
+        0x75 to 0x7F,
+        0x81 to 0x8F,
+        0x95 to 0x9F,
+        0xA2 to 0xA7,
+        0xAE,
+        0xB5 to 0xBF,
+        0xC4 to 0xCD,
+        0xFB to 0xFF,
+    -->
     <Enum name="OrionPktType_t" comment="Identifiers of Orion public packets. The purpose of an Orion packet is determined by its ID field to this list.">
         <Value name="ORION_PKT_INITIALIZE" value="0x00"/>
-        <Value name="ORION_PKT_CMD" comment="Basic commands for control of gimbal pan and tilt."/>
-        <Value name="ORION_PKT_UART_CONFIG" comment="Baud rate and protocol configuration for crown serial ports"/>
-        <Value name="ORION_PKT_LASER_CMD" comment="Command to fire the laser"/>
-        <Value name="ORION_PKT_RESET" comment="Send this packet to cause the gimbal to reset"/>
-        <Value name="ORION_PKT_PRIVATE_05" comment="Reserved packet identifier"  hidden="true"/>
-        <Value name="ORION_PKT_LASER_STATES" comment="Laser state information" />
-        <Value name="ORION_PKT_STARTUP_CMD" comment="Command to run on startup at the end of motor initialization"/>
-        <Value name="ORION_PKT_PRIVATE_08" comment="Reserved packet identifier" hidden="true" />
-        <Value name="ORION_PKT_PRIVATE_09" comment="Reserved packet identifier" hidden="true" />
-        <Value name="ORION_PKT_POSITIONS" comment="Stored gimbal positions"/>
+        <Value name="ORION_PKT_CMD" value="0x01" comment="Basic commands for control of gimbal pan and tilt."/>
+        <Value name="ORION_PKT_UART_CONFIG" value="0x02" comment="Baud rate and protocol configuration for crown serial ports"/>
+        <Value name="ORION_PKT_LASER_CMD" value="0x03" comment="Command to fire the laser"/>
+        <Value name="ORION_PKT_RESET" value="0x04" comment="Send this packet to cause the gimbal to reset"/>
+        <Value name="ORION_PKT_PRIVATE_05" value="0x05" comment="Reserved packet identifier"  hidden="true"/>
+        <Value name="ORION_PKT_LASER_STATES" value="0x06" comment="Laser state information" />
+        <Value name="ORION_PKT_STARTUP_CMD" value="0x07" comment="Command to run on startup at the end of motor initialization"/>
+        <Value name="ORION_PKT_PRIVATE_08" value="0x08" comment="Reserved packet identifier" hidden="true" />
+        <Value name="ORION_PKT_PRIVATE_09" value="0x09" comment="Reserved packet identifier" hidden="true" />
+        <Value name="ORION_PKT_POSITIONS" value="0x0A" comment="Stored gimbal positions"/>
         <Value name="ORION_PKT_PRIVATE_1F" value="0x1F" comment="Reserved packet identifier" hidden="true"/>
-        <Value name="ORION_PKT_PRIVATE_20" comment="Reserved packet identifier" hidden="true"/>
-        <Value name="ORION_PKT_PRIVATE_21" comment="Reserved packet identifier" hidden="true"/>
-        <Value name="ORION_PKT_LIMITS" comment="Pan and tilt limits for current, acceleration, velocity, and position"/>
-        <Value name="ORION_PKT_PRIVATE_23" comment="Reserved packet identifier" hidden="true"/>
-        <Value name="ORION_PKT_PRIVATE_24" comment="Reserved packet identifier" hidden="true"/>
-        <Value name="ORION_PKT_CLEVIS_VERSION" comment="Software version for the clevis board"/>
-        <Value name="ORION_PKT_RESET_SOURCE" comment="Reset information for a processor"/>
-        <Value name="ORION_PKT_BOARD" comment="Information for a specific board"/>
-        <Value name="ORION_PKT_CROWN_VERSION" comment="Software version for the crown board"/>
-        <Value name="ORION_PKT_PAYLOAD_VERSION" comment="Software version for the payload board"/>
-        <Value name="ORION_PKT_PRIVATE_2A" comment="Reserved packet identifier" hidden="true"/>
-        <Value name="ORION_PKT_PRIVATE_2B" comment="Reserved packet identifier" hidden="true"/>
-        <Value name="ORION_PKT_TRACKER_VERSION" comment="Software version for the tracker board (if present)"/>
-        <Value name="ORION_PKT_PRIVATE_2D" comment="Reserved packet identifier" hidden="true"/>
-        <Value name="ORION_PKT_PRIVATE_30" comment="Reserved packet identifier" hidden="true"/>
-        <Value name="ORION_PKT_PRIVATE_31" comment="Reserved packet identifier" hidden="true"/>
-        <Value name="ORION_PKT_PRIVATE_32" comment="Reserved packet identifier" hidden="true"/>
-        <Value name="ORION_PKT_PRIVATE_33" comment="Reserved packet identifier" hidden="true"/>  
+        <Value name="ORION_PKT_PRIVATE_20" value="0x20" comment="Reserved packet identifier" hidden="true"/>
+        <Value name="ORION_PKT_PRIVATE_21" value="0x21" comment="Reserved packet identifier" hidden="true"/>
+        <Value name="ORION_PKT_LIMITS" value="0x22" comment="Pan and tilt limits for current, acceleration, velocity, and position"/>
+        <Value name="ORION_PKT_PRIVATE_23" value="0x23" comment="Reserved packet identifier" hidden="true"/>
+        <Value name="ORION_PKT_PRIVATE_24" value="0x24" comment="Reserved packet identifier" hidden="true"/>
+        <Value name="ORION_PKT_CLEVIS_VERSION" value="0x25" comment="Software version for the clevis board"/>
+        <Value name="ORION_PKT_RESET_SOURCE" value="0x26" comment="Reset information for a processor"/>
+        <Value name="ORION_PKT_BOARD" value="0x27" comment="Information for a specific board"/>
+        <Value name="ORION_PKT_CROWN_VERSION" value="0x28" comment="Software version for the crown board"/>
+        <Value name="ORION_PKT_PAYLOAD_VERSION" value="0x29" comment="Software version for the payload board"/>
+        <Value name="ORION_PKT_PRIVATE_2A" value="0x2A" comment="Reserved packet identifier" hidden="true"/>
+        <Value name="ORION_PKT_PRIVATE_2B" value="0x2B" comment="Reserved packet identifier" hidden="true"/>
+        <Value name="ORION_PKT_TRACKER_VERSION" value="0x2C" comment="Software version for the tracker board (if present)"/>
+        <Value name="ORION_PKT_PRIVATE_2D" value="0x2D" comment="Reserved packet identifier" hidden="true"/>
+        <Value name="ORION_PKT_PRIVATE_2E" value="0x2E" comment="Reserved packet identifier" hidden="true"/>
+        <Value name="ORION_PKT_PRIVATE_2F" value="0x2F" comment="Reserved packet identifier" hidden="true"/>
+        <Value name="ORION_PKT_PRIVATE_30" value="0x30" comment="Reserved packet identifier" hidden="true"/>
+        <Value name="ORION_PKT_PRIVATE_31" value="0x31" comment="Reserved packet identifier" hidden="true"/>  
         <Value name="ORION_PKT_PRIVATE_40" value="0x40" comment="Reserved packet identifier" hidden="true"/>
-        <Value name="ORION_PKT_DIAGNOSTICS" comment="Electrical diagnostic data"/>
-        <Value name="ORION_PKT_FAULTS"/>
-        <Value name="ORION_PKT_PERFORMANCE" comment="Measurements related to stabilization performance"/>
-        <Value name="ORION_PKT_SOFTWARE_DIAGNOSTICS" comment="Diagnostic information related to software performance for a processor"/>
-        <Value name="ORION_PKT_VIBRATION" comment="Platform vibration statistics"/>
-        <Value name="ORION_PKT_NETWORK_DIAGNOSTICS" comment="Network diagnostics"/>
-        <Value name="ORION_PKT_TLE_STATUS" comment="Target Localization filter status" />
-        <Value name="ORION_PKT_TLE_COMMAND" comment="Target Localization filter commands" />
-        <Value name="ORION_PKT_PRIVATE_49" comment="Reserved packet identifier" hidden="true" />
+        <Value name="ORION_PKT_DIAGNOSTICS" value="0x41" comment="Electrical diagnostic data"/>
+        <Value name="ORION_PKT_FAULTS" value="0x42"/>
+        <Value name="ORION_PKT_PERFORMANCE" value="0x43" comment="Measurements related to stabilization performance"/>
+        <Value name="ORION_PKT_SOFTWARE_DIAGNOSTICS" value="0x44" comment="Diagnostic information related to software performance for a processor"/>
+        <Value name="ORION_PKT_VIBRATION" value="0x45" comment="Platform vibration statistics"/>
+        <Value name="ORION_PKT_NETWORK_DIAGNOSTICS" value="0x46" comment="Network diagnostics"/>
+        <Value name="ORION_PKT_TLE_STATUS" value="0x47" comment="Target Localization filter status" />
+        <Value name="ORION_PKT_TLE_COMMAND" value="0x48" comment="Target Localization filter commands" />
+        <Value name="ORION_PKT_PRIVATE_49" value="0x49" comment="Reserved packet identifier" hidden="true" />
         <Value name="ORION_PKT_CAMERA_SWITCH" value="0x60" comment="Command the gimbal to swtich cameras"/>
-        <Value name="ORION_PKT_CAMERA_STATE" comment="Command a camera in the gimbal"/>
-        <Value name="ORION_PKT_NETWORK_VIDEO" comment="Command the IP settings for video delivery"/>
-        <Value name="ORION_PKT_CAMERAS" comment="Camera settings information"/>
-        <Value name="ORION_PKT_PRIVATE_64" comment="Reserved packet identifier" hidden="true"/>
-        <Value name="ORION_PKT_PRIVATE_65" comment="Reserved packet identifier" hidden="true"/>
-        <Value name="ORION_PKT_PRIVATE_66" comment="Reserved packet identifier" hidden="true"/>
-        <Value name="ORION_PKT_FLIR_SETTINGS" comment="FLIR-specific camera settings"/>
-        <Value name="ORION_PKT_APTINA_SETTINGS" comment="Aptina-specific camera settings"/>
-        <Value name="ORION_PKT_ZAFIRO_SETTINGS" comment="DRS Zafiro-specific camera settings"/>
-        <Value name="ORION_PKT_HITACHI_SETTINGS" comment="Hitachi-specific camera settings"/>
-        <Value name="ORION_PKT_BAE_SETTINGS" comment="BAE-specific camera settings"/>
-        <Value name="ORION_PKT_SONY_SETTINGS" comment="Sony-specific camera settings"/>
-        <Value name="ORION_PKT_KTNC_SETTINGS" comment="KTnC-specific camera settings"/>
-        <Value name="ORION_PKT_ATTOLLO_SETTINGS" comment="Attollo-specific camera settings"/>
+        <Value name="ORION_PKT_CAMERA_STATE" value="0x61" comment="Command a camera in the gimbal"/>
+        <Value name="ORION_PKT_NETWORK_VIDEO" value="0x62" comment="Command the IP settings for video delivery"/>
+        <Value name="ORION_PKT_CAMERAS" value="0x63" comment="Camera settings information"/>
+        <Value name="ORION_PKT_PRIVATE_64" value="0x64" comment="Reserved packet identifier" hidden="true"/>
+        <Value name="ORION_PKT_PRIVATE_65" value="0x65" comment="Reserved packet identifier" hidden="true"/>
+        <Value name="ORION_PKT_PRIVATE_66" value="0x66" comment="Reserved packet identifier" hidden="true"/>
+        <Value name="ORION_PKT_FLIR_SETTINGS" value="0x67" comment="FLIR-specific camera settings"/>
+        <Value name="ORION_PKT_APTINA_SETTINGS" value="0x68" comment="Aptina-specific camera settings"/>
+        <Value name="ORION_PKT_ZAFIRO_SETTINGS" value="0x69" comment="DRS Zafiro-specific camera settings"/>
+        <Value name="ORION_PKT_HITACHI_SETTINGS" value="0x6A" comment="Hitachi-specific camera settings"/>
+        <Value name="ORION_PKT_BAE_SETTINGS" value="0x6B" comment="BAE-specific camera settings"/>
+        <Value name="ORION_PKT_SONY_SETTINGS" value="0x6C" comment="Sony-specific camera settings"/>
+        <Value name="ORION_PKT_KTNC_SETTINGS" value="0x6D" comment="KTnC-specific camera settings"/>
+        <Value name="ORION_PKT_ATTOLLO_SETTINGS" value="0x6E" comment="Attollo-specific camera settings"/>
         <Value name="ORION_PKT_VIDEO_OPTIONS" value="0x70" comment="Settings for changing video processing and display"/>
         <Value name="ORION_PKT_TRACK_OPTIONS" value="0x71" comment="Options for changing scene/object track configurations"/>
+        <Value name="ORION_PKT_GEO_TRACK_STATUS" value="0x72" comment="Status of Objects being Tracked"/>
+        <Value name="ORION_PKT_GEO_TRACK_COMMAND" value="0x73" comment="GeoTracker Command Packet for setting filter" />
+        <Value name="ORION_PKT_TRACK_CMD" value="0x74" comment="Command Nudge, Clear tracks, etc."/>
+        <Value name="ORION_PKT_VIDEORECORD_STATUS" value="0x75" comment="Command Nudge, Clear tracks, etc."/>
+        <Value name="ORION_PKT_VIDEORECORD_CMD" value="0x76" comment="Command Nudge, Clear tracks, etc."/>
         <Value name="ORION_PKT_AUTOPILOT_DATA" value="0x80" comment="Autopilot state data, if available"/>
         <Value name="ORION_PKT_PRIVATE_90" value="0x90" comment="Reserved packet identifier" hidden="true"/>
         <Value name="ORION_PKT_PRIVATE_91" value="0x91" comment="Reserved packet identifier" hidden="true"/>
@@ -122,60 +140,61 @@ See TrilliumPacket.c (in the Orion SDK) for details.
         <Value name="ORION_PKT_PRIVATE_93" value="0x93" comment="Reserved packet identifier" hidden="true"/>
         <Value name="ORION_PKT_PRIVATE_94" value="0x94" comment="Reserved packet identifier" hidden="true"/>
         <Value name="ORION_PKT_RETRACT_CMD" value="0xA0" comment="Retract or deploy command for a gimbal retraction mechanism"/>
-        <Value name="ORION_PKT_RETRACT_STATUS" comment="Current gimbal retraction mechanism status"/>
+        <Value name="ORION_PKT_RETRACT_STATUS" value="0xA1" comment="Current gimbal retraction mechanism status"/>
         <Value name="ORION_PKT_SNPY_A8" value="0xA8" comment="Reserved Snoopy Board packet identifier" hidden="true"/>
-        <Value name="ORION_PKT_SNPY_A9" comment="Reserved Snoopy Board packet identifier" hidden="true"/>
-        <Value name="ORION_PKT_SNPY_AA" comment="Reserved Snoopy Board packet identifier" hidden="true"/>
-        <Value name="ORION_PKT_SNPY_AB" comment="Reserved Snoopy Board packet identifier" hidden="true"/>
-        <Value name="ORION_PKT_SNPY_AC" comment="Reserved Snoopy Board packet identifier" hidden="true"/>
-        <Value name="ORION_PKT_SNPY_AD" comment="Reserved Snoopy Board packet identifier" hidden="true"/>
+        <Value name="ORION_PKT_SNPY_A9" value="0xA9" comment="Reserved Snoopy Board packet identifier" hidden="true"/>
+        <Value name="ORION_PKT_SNPY_AA" value="0xAA" comment="Reserved Snoopy Board packet identifier" hidden="true"/>
+        <Value name="ORION_PKT_SNPY_AB" value="0xAB" comment="Reserved Snoopy Board packet identifier" hidden="true"/>
+        <Value name="ORION_PKT_SNPY_AC" value="0xAC" comment="Reserved Snoopy Board packet identifier" hidden="true"/>
+        <Value name="ORION_PKT_SNPY_AD" value="0xAD" comment="Reserved Snoopy Board packet identifier" hidden="true"/>
         <Value name="ORION_PKT_CROWN_MODE" value="0xB0" comment="settings telemetry reporting modes"/>
-        <Value name="ORION_PKT_DEBUG_STRING" comment="A human readable text string which is typically used for debugging purposes"/>
-        <Value name="ORION_PKT_USER_DATA" comment="Packet for sending user data to a serial port in the gimbal" />
-        <Value name="ORION_PKT_KLV_USER_DATA" comment="KLV user-specified field settings"/>
-        <Value name="ORION_PKT_PRIVATE_B4" comment="Reserved packet identifier" hidden="true"/>
+        <Value name="ORION_PKT_DEBUG_STRING" value="0xB1" comment="A human readable text string which is typically used for debugging purposes"/>
+        <Value name="ORION_PKT_USER_DATA" value="0xB2" comment="Packet for sending user data to a serial port in the gimbal" />
+        <Value name="ORION_PKT_KLV_USER_DATA" value="0xB3" comment="KLV user-specified field settings"/>
+        <Value name="ORION_PKT_PRIVATE_B4" value="0xB4" comment="Reserved packet identifier" hidden="true"/>
         <Value name="ORION_PKT_PRIVATE_C0" value="0xC0" comment="Reserved packet identifier" hidden="true"/>
-        <Value name="ORION_PKT_PRIVATE_C1" comment="Reserved packet identifier" hidden="true"/>
-        <Value name="ORION_PKT_PRIVATE_C2" comment="Reserved packet identifier" hidden="true"/>
-        <Value name="ORION_PKT_PRIVATE_C3" comment="Reserved packet identifier" hidden="true"/>
+        <Value name="ORION_PKT_PRIVATE_C1" value="0xC1" comment="Reserved packet identifier" hidden="true"/>
+        <Value name="ORION_PKT_PRIVATE_C2" value="0xC2" comment="Reserved packet identifier" hidden="true"/>
+        <Value name="ORION_PKT_PRIVATE_C3" value="0xC3" comment="Reserved packet identifier" hidden="true"/>
         <Value name="ORION_PKT_PRIVATE_CE" value="0xCE" comment="Reserved packet identifier" hidden="true"/>
-        <Value name="ORION_PKT_PRIVATE_CF" comment="Reserved packet identifier" hidden="true"/>
+        <Value name="ORION_PKT_PRIVATE_CF" value="0xCF" comment="Reserved packet identifier" hidden="true"/>
         <Value name="ORION_PKT_SENSOR_DATA" value="0xD0" comment="Raw sensor data from the Orion Crown board."/>
-        <Value name="ORION_PKT_GPS_DATA" comment="Raw GPS data input or output"/>
-        <Value name="ORION_PKT_EXT_HEADING_DATA" comment="Externally supplied heading information"/>
-        <Value name="ORION_PKT_INS_QUALITY" comment="Quality of the inertial navigation system"/>
-        <Value name="ORION_PKT_GEOLOCATE_TELEMETRY" comment="Information needed to locate the gimbal and its imagery"/>
-        <Value name="ORION_PKT_GEOPOINT_CMD" comment="Command the gimbal to go to Geopoint mode"/>
-        <Value name="ORION_PKT_RANGE_DATA" comment="Range information from the gimbal to its target"/>
-        <Value name="ORION_PKT_PATH" comment="Command the gimbal to path track mode"/>
-        <Value name="ORION_PKT_INS_OPTIONS" comment="Configuration options for the Inertial Navigation System"/>
-        <Value name="ORION_PKT_STARE_START" comment="Stare portion of step stare started"/>
-        <Value name="ORION_PKT_STARE_ACK" comment="Stare acknowledged, clear to move"/>
-        <Value name="ORION_PKT_PRIVATE_DB" comment="Reserved packet identifier" hidden="true"/>
-        <Value name="ORION_PKT_GEOID_UNDULATION" comment="Geoid undulation data"/>
+        <Value name="ORION_PKT_GPS_DATA" value="0xD1" comment="Raw GPS data input or output"/>
+        <Value name="ORION_PKT_EXT_HEADING_DATA" value="0xD2" comment="Externally supplied heading information"/>
+        <Value name="ORION_PKT_INS_QUALITY" value="0xD3" comment="Quality of the inertial navigation system"/>
+        <Value name="ORION_PKT_GEOLOCATE_TELEMETRY" value="0xD4" comment="Information needed to locate the gimbal and its imagery"/>
+        <Value name="ORION_PKT_GEOPOINT_CMD" value="0xD5" comment="Command the gimbal to go to Geopoint mode"/>
+        <Value name="ORION_PKT_RANGE_DATA" value="0xD6" comment="Range information from the gimbal to its target"/>
+        <Value name="ORION_PKT_PATH" value="0xD7" comment="Command the gimbal to path track mode"/>
+        <Value name="ORION_PKT_INS_OPTIONS" value="0xD8" comment="Configuration options for the Inertial Navigation System"/>
+        <Value name="ORION_PKT_STARE_START" value="0xD9" comment="Stare portion of step stare started"/>
+        <Value name="ORION_PKT_STARE_ACK" value="0xDA" comment="Stare acknowledged, clear to move"/>
+        <Value name="ORION_PKT_PRIVATE_DB" value="0xDB" comment="Reserved packet identifier" hidden="true"/>
+        <Value name="ORION_PKT_GEOID_UNDULATION" value="0xDC" comment="Geoid undulation data"/>
         <Value name="ORION_PKT_PRIVATE_DE" value="0xDE" comment="Reserved packet identifier" hidden="true"/>
-        <Value name="ORION_PKT_PRIVATE_DF" comment="Reserved packet identifier" hidden="true"/>
-        <Value name="ORION_PKT_PRIVATE_E0" comment="Reserved packet identifier" hidden="true"/>
-        <Value name="ORION_PKT_PRIVATE_E1" comment="Reserved packet identifier" hidden="true"/>
-        <Value name="ORION_PKT_PRIVATE_E2" comment="Reserved packet identifier" hidden="true"/>
-        <Value name="ORION_PKT_PRIVATE_E3" comment="Reserved packet identifier" hidden="true"/>
-        <Value name="ORION_PKT_NETWORK_SETTINGS" comment="Change the IP network settings in the gimbal"/>
-        <Value name="ORION_PKT_PRIVATE_E5" comment="Reserved packet identifier" hidden="true"/>
-        <Value name="ORION_PKT_PRIVATE_E6" comment="Reserved packet identifier" hidden="true"/>
-        <Value name="ORION_PKT_PRIVATE_E7" comment="Reserved packet identifier" hidden="true"/>
-        <Value name="ORION_PKT_PRIVATE_E8" comment="Reserved packet identifier" hidden="true"/>
-        <Value name="ORION_PKT_PRIVATE_E9" comment="Reserved packet identifier" hidden="true"/>
-        <Value name="ORION_PKT_PRIVATE_EA" comment="Reserved packet identifier" hidden="true"/>
+        <Value name="ORION_PKT_PRIVATE_DF" value="0xDF" comment="Reserved packet identifier" hidden="true"/>
+        <Value name="ORION_PKT_PRIVATE_E0" value="0xE0" comment="Reserved packet identifier" hidden="true"/>
+        <Value name="ORION_PKT_PRIVATE_E1" value="0xE1" comment="Reserved packet identifier" hidden="true"/>
+        <Value name="ORION_PKT_PRIVATE_E2" value="0xE2" comment="Reserved packet identifier" hidden="true"/>
+        <Value name="ORION_PKT_PRIVATE_E3" value="0xE3" comment="Reserved packet identifier" hidden="true"/>
+        <Value name="ORION_PKT_NETWORK_SETTINGS" value="0xE4" comment="Change the IP network settings in the gimbal"/>
+        <Value name="ORION_PKT_PRIVATE_E5" value="0xE5" comment="Reserved packet identifier" hidden="true"/>
+        <Value name="ORION_PKT_PRIVATE_E6" value="0xE6" comment="Reserved packet identifier" hidden="true"/>
+        <Value name="ORION_PKT_PRIVATE_E7" value="0xE7" comment="Reserved packet identifier" hidden="true"/>
+        <Value name="ORION_PKT_PRIVATE_E8" value="0xE8" comment="Reserved packet identifier" hidden="true"/>
+        <Value name="ORION_PKT_PRIVATE_E9" value="0xE9" comment="Reserved packet identifier" hidden="true"/>
+        <Value name="ORION_PKT_PRIVATE_EA" value="0xEA" comment="Reserved packet identifier" hidden="true"/>
         <Value name="ORION_PKT_PRIVATE_F0" value="0xF0" comment="Reserved packet identifier" hidden="true"/>
-        <Value name="ORION_PKT_PRIVATE_F1" comment="Reserved packet identifier" hidden="true"/>
-        <Value name="ORION_PKT_PRIVATE_F2" comment="Reserved packet identifier" hidden="true"/>
-        <Value name="ORION_PKT_PRIVATE_F3" comment="Reserved packet identifier" hidden="true"/>
-        <Value name="ORION_PKT_PRIVATE_F4" comment="Reserved packet identifier" hidden="true"/>
-        <Value name="ORION_PKT_PRIVATE_F5" comment="Reserved packet identifier" hidden="true"/>
-        <Value name="ORION_PKT_PRIVATE_F6" comment="Reserved packet identifier" hidden="true"/>
-        <Value name="ORION_PKT_PRIVATE_F7" comment="Reserved packet identifier" hidden="true"/>
-        <Value name="ORION_PKT_RETRACT_VERSION" comment="Software version for the retract board (if present)"/>
-        <Value name="ORION_PKT_LENSCTL_VERSION" comment="Software version for the lens control board (if present)"/>
+        <Value name="ORION_PKT_PRIVATE_F1" value="0xF1" comment="Reserved packet identifier" hidden="true"/>
+        <Value name="ORION_PKT_PRIVATE_F2" value="0xF2" comment="Reserved packet identifier" hidden="true"/>
+        <Value name="ORION_PKT_PRIVATE_F3" value="0xF3" comment="Reserved packet identifier" hidden="true"/>
+        <Value name="ORION_PKT_PRIVATE_F4" value="0xF4" comment="Reserved packet identifier" hidden="true"/>
+        <Value name="ORION_PKT_PRIVATE_F5" value="0xF5" comment="Reserved packet identifier" hidden="true"/>
+        <Value name="ORION_PKT_PRIVATE_F6" value="0xF6" comment="Reserved packet identifier" hidden="true"/>
+        <Value name="ORION_PKT_PRIVATE_F7" value="0xF7" comment="Reserved packet identifier" hidden="true"/>
+        <Value name="ORION_PKT_RETRACT_VERSION" value="0xF8" comment="Software version for the retract board (if present)"/>
+        <Value name="ORION_PKT_LENSCTL_VERSION" value="0xF9" comment="Software version for the lens control board (if present)"/>
+        <Value name="ORION_PKT_PRIVATE_FA" value="0xFA" comment="Reserved packet identifier" hidden="true"/>
     </Enum>
 
     <Enum name="GimbalAxis_t" comment="Enumeration of gimbal pan and tilt axes.">
@@ -224,7 +243,8 @@ See TrilliumPacket.c (in the Orion SDK) for details.
         <Value name="ORION_MODE_FFC_MANUAL" value="0x21" comment="Commands the gimbal to perform a flat field correction, pan and tilt will drive the IR camera to the commanded positions. NOTE: The pan/tilt targets specify the payload position, not the boresight position, so the reported angles may not match the command target"/>
         <Value name="ORION_MODE_SCENE" value="0x30" comment="Commands give the angular rate of the image produced by the camera"/>
         <Value name="ORION_MODE_TRACK" value="0x31" comment="Commands give the angular position of the track box in the camera image as fraction from center, bound these numbers -0.5 to 0.5"/>
-        <Value name="ORION_MODE_NUDGE_TRACK" value="0x32" comment="Nudge the track box by a percentage of FOV"/>
+        <Value name="ORION_MODE_NUDGE_TRACK" value="0x32" comment="(Deprecated) Use ORION_PKT_TRACK_CMD"/>
+        <Value name="ORION_MODE_SECONDARY_TRACK" value="0x33" comment="(Deprecated) Use ORION_PKT_TRACK_CMD"/>
         <Value name="ORION_MODE_CALIBRATION" value="0x40" comment="Drives the pan and tilt axes to calibrate the stabilization gyros"/>
         <Value name="ORION_MODE_NULL_GYROS" value="0x41" comment="Drives the pan and tilt axes to null the stabilization gyros"/>
         <Value name="ORION_MODE_POSITION" value="0x50" comment="Commands give the position of the pan and tilt axes with respect to the gimbal mount"/>
@@ -249,6 +269,7 @@ See TrilliumPacket.c (in the Orion SDK) for details.
         <Value name="LASER_TYPE_DESIGNATOR" comment="Laser designator" />
         <Value name="LASER_TYPE_JENOPTIK_DLEM_TEST" comment="Jenoptik DLEM LRF test mode" />
         <Value name="LASER_TYPE_DESIGNATOR_6x" comment="Laser Designator Extender 6x" />
+        <Value name="LASER_TYPE_DESIGNATOR_DUMMY" comment="Laser Designator Dummy" />
     </Enum>
 
     <Structure name="Date" comparefile="compare/compareOrionPublic" printfile="compare/printOrionPublic"  comment="Compresssed date format.">
@@ -449,6 +470,13 @@ See TrilliumPacket.c (in the Orion SDK) for details.
         <Value name="TLE_STATE_RUNNING" comment="Filter is running" />
     </Enum>
 
+    <Enum name="TleSource_t" comment="">
+        <Value name="TLE_SOURCE_GIMBAL_GEO" />   <!-- Geolocation application running on gimbal  -->
+        <Value name="TLE_SOURCE_SKYLINK_GEO" />  <!-- Geolocation application running on Skylink  -->
+        <Value name="TLE_SOURCE_GIMBAL_DTED" />  <!-- Instantaneous geolocation estimate using DTED  -->
+        <Value name="TLE_SOURCE_OTHER" />     <!-- External source for geolocation estimate  -->
+    </Enum>
+
     <Packet name="TleStatus" ID="ORION_PKT_TLE_STATUS" comment="TLE algorithm status message">
         <Data name="SystemTime" inMemoryType="unsigned32" comment="Gimbal system time this status applies to" />
         <Data name="FilterType" enum="TleType_t" encodedType="unsigned8" comment="The filter this status relates to" />
@@ -471,11 +499,29 @@ See TrilliumPacket.c (in the Orion SDK) for details.
         <Data name="TiltUncertainty" inMemoryType="float32" encodedType="unsigned16" max="pi/10" comment="Tilt uncertainty in radians" />
         <Data name="AltUncertainty"  inMemoryType="float32" encodedType="unsigned16" max="10" comment="Altitude uncertainty in meters" />
         <Data name="PercentOrbit" inMemoryType="float32" encodedType="unsigned8" min="0" max="200" default="0" comment="Percent of completed orbit to converge on an estimate" />
+        <Data name="Source" enum="TleSource_t" encodedType="unsigned8" default="TLE_SOURCE_GIMBAL_GEO" />
+        <Structure name="TleDetects" comment="Detection Data MISB 0903.6">
+            <Data name="ID" inMemoryType="unsigned8" />
+            <Data name="SigmaNorth" inMemoryType="float32" encodedType="unsigned16" min="0" max="1000" default="0" />
+            <Data name="SigmaEast" inMemoryType="float32" encodedType="unsigned16" min="0" max="1000" default="0" />
+            <Data name="SigmaDown" inMemoryType="float32" encodedType="unsigned16" min="0" max="1000" default="0" />
+            <Data name="RhoNorthEast" inMemoryType="float32" encodedType="unsigned16" min="-1" max="1" default="0" />
+            <Data name="RhoNorthDown" inMemoryType="float32" encodedType="unsigned16" min="-1" max="1" default="0" />
+            <Data name="RhoEastDown" inMemoryType="float32" encodedType="unsigned16" min="-1" max="1" default="0" />
+        </Structure>
     </Packet>
 
     <Packet name="TleCommand" ID="ORION_PKT_TLE_COMMAND" comment="TLE command message">
+        <Enum name="TleOptions" comment="Options controlling what inputs TLE filter will use">
+            <Value name="tleDefault" value="0x00" comment="Use default options defined by the filter."/>
+            <Value name="tleIns" value="0x01" comment="Include LOS measurements from the INS filter" />
+            <Value name="tleDted" value="0x02" comment="Include altitude measurements using LOS and DTED lookups" />
+            <Value name="tleLrf" value="0x04" comment="Include range measurements from laser range finder" />
+            <Value name="tleOffBoard" value="0x08" comment="Include LLT measurements from offboard sources" />
+        </Enum>
         <Data name="FilterType" enum="TleType_t" encodedType="unsigned8" comment="The filter to start/stop" />
         <Data name="Run" inMemoryType="unsigned8" comment="Start=1, Stop=0" />
+        <Data name="Options" inMemoryType="unsigned8" default="tleDefault" comment="Bitfiled of TleOptions flags."/>
     </Packet>
 
     <Packet name="OrionRetractStatus" ID="ORION_PKT_RETRACT_STATUS" parameterInterface="true" comment="Current gimbal retraction mechanism status. This is sent by the gimbal regularly only if a retract system is installed.">
@@ -607,7 +653,6 @@ See TrilliumPacket.c (in the Orion SDK) for details.
             <Value name="autopilotSource" comment="Autopilot host GPS data"/>
             <Value name="piccoloSource" value="autopilotSource" comment="Preserved for backward compatibility"/>
             <Value name="piksiSource" comment="Piksi external GPS"/>
-            <Value name="apntSource" comment="Alternative positioning, navigation, and timing system supplied data"/>
             <Value name="numGpsSources" comment="Number of possible GPS sources"/>
         </Enum>
 
@@ -650,7 +695,7 @@ See TrilliumPacket.c (in the Orion SDK) for details.
         <Data name="multiAntHeading" default="0" dependsOn="multiAntHeadingValid" inMemoryType="float32" encodedType="signed16" max="pi" comment="The heading in radians from the multi antenna solution from -pi to pi"/>
         <Data name="posAccuracy" default="0" dependsOn="detailedAccuracyValid" inMemoryType="float32" array="3" encodedType="unsigned16" scaler="1000" comment="North, East, Down position accuracy estimate in meters"/>
         <Data name="velAccuracy" default="0" dependsOn="detailedAccuracyValid" inMemoryType="float32" array="3" encodedType="unsigned16" scaler="1000" comment="North, East, Down velocity accuracy estimate in meters per second"/>
-		<Data name="posEcef" inMemoryType="float64" array="3" encodedType="null" comment="Position in ECEF x,y,z meters"/>
+        <Data name="posEcef" inMemoryType="float64" array="3" encodedType="null" comment="Position in ECEF x,y,z meters"/>
         <Data name="velEcef" inMemoryType="float32" array="3" encodedType="null" comment="Velocity in ECEF x,y,z meters per second"/>
         <Data name="posEcefAccuracy" inMemoryType="float32" array="3" encodedType="null" comment="ECEF x,y,z position accuracy estimate in meters"/>
         <Data name="velEcefAccuracy" inMemoryType="float32" array="3" encodedType="null" comment="ECEF x,y,z accuracy estimate in meters per second"/>
@@ -829,7 +874,7 @@ See TrilliumPacket.c (in the Orion SDK) for details.
     <Packet name="OrionCameraState" ID="ORION_PKT_CAMERA_STATE" comment=
         "Command a camera in the gimbal.">
         <Data name="Zoom" inMemoryType="float32" encodedType="signed16" scaler="100" comment="Zoom is calculated from fov as: Zoom = PixelPitch*ArrayWidth*0.5/(MinFocalLength*tan(FOV*0.5)) array width and pixel pitch come from the OrionCameras packet
-                                                                                                Sending 0 or less commands current zoom, 1 is full wide."/>
+                                                                                                Sending less than 1 interprets as do not change, 1 is full wide, 2 is 2X, etc."/>
         <Data name="Focus" inMemoryType="float32" encodedType="signed16" scaler="10000" default="-1" comment="Focus command/position on imagers with manual focus control, expected between 0 and 1.0, exactly 0 commands autofocus, -1 is don't change"/>
         <Data name="KeepActiveCamera" inMemoryType="unsigned8" encodedType="bitfield1" default="0" comment="Set to 1 to maintain the currently active camera. If this bit is set to zero and the Index field does not match the currently active camera index, the gimbal will switch cameras"/>
         <Data name="Index" inMemoryType="unsigned8" encodedType="bitfield7" default="0" comment="The index of the camera to command"/>
@@ -881,7 +926,8 @@ See TrilliumPacket.c (in the Orion SDK) for details.
         <Data name="Aperture" inMemoryType="float32" encodedType="unsigned8" max="32" default="0" comment="Aperture command, set to 0 for auto" />
         <Data name="MinAperture" inMemoryType="float32" encodedType="unsigned8" max="32" default="0" comment="Minimum aperture setting, or 0 for not supported" />
         <Data name="MaxAperture" inMemoryType="float32" encodedType="unsigned8" max="32" default="0" comment="Maximum aperture setting, or 0 for not supported" />
-    </Packet>
+        <Data name="Flip" inMemoryType="unsigned8" default="0" comment="Set to non-zero to vertically flip the video, (default=0, effective min=0, effective max=1)" />
+        </Packet>
 
     <Packet name="OrionZafiroSettings" ID="ORION_PKT_ZAFIRO_SETTINGS" comparefile="compare/compareOrionPublic" printfile="compare/printOrionPublic" comment="Zafiro-specific camera settings.">
         <Data name="Index" inMemoryType="unsigned8" comment="Index of the camera that these settings should apply to. Use 0xFF to apply to any connected Zafiro camera."/>
@@ -942,6 +988,10 @@ See TrilliumPacket.c (in the Orion SDK) for details.
         <Data name="Sharpness" inMemoryType="float32" encodedType="unsigned8" max="5" default="0" comment="Sharpening filter strength" />
         <Data name="MeanTargetRange" inMemoryType="unsigned8" encodedType="unsigned8" default="4" comment="valid(0-5) corisponding to 0-2000, ... , 10000-12000" />
         <Data name="BlackPoint" inMemoryType="unsigned8" encodedType="unsigned8" default="0" comment="Sets Minimum Offset Range(x1000)" />
+        <Data name="DisableSeeSpot" inMemoryType="bitfield1" default="0" comment="If set to 1, disable see spot process" />
+        <Data name="Reserved0" inMemoryType="bitfield7" default="0" comment="Reserved bits, set to zero" />
+        <Data name="FixedLaserTriggerDelay" inMemoryType="float" encodedType="float" default="-1.0" comment="Sets a fixed trigger delay from the laser pulse to laser frame capture, set to -1 to disable" />
+        <Data name="LaserIntegrationTime" inMemoryType="float" encodedType="float" default="0.003" comment="Sets the integration time for laser frames" />
     </Packet>
 
 
@@ -957,10 +1007,11 @@ See TrilliumPacket.c (in the Orion SDK) for details.
         <Data name="DisableNtsc" inMemoryType="unsigned32" encodedType="bitfield1" comment="Set to 1 to disable NTSC analog video, or 0 to enable" />
         <Data name="EnablePip" inMemoryType="unsigned32" encodedType="bitfield1" comment="Set to 1 to enable picture-in-picture overlays, or 0 to disable" />
         <Data name="ZoomTrackBox" inMemoryType="unsigned32" encodedType="bitfield1" comment="Set to 1 to enable 1.5x trackbox zooming, or 0 to disable" />
+        <Data name="ShowTrackId" inMemoryType="unsigned32" encodedType="bitfield1" comment="Set to 1 to render TrackBox and Detection Ids, or 0 to disable" />
         <!-- !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!! -->
         <!-- DON'T FORGET TO UPDATE THE RESERVED BITFIELD WIDTH IF YOU ADD NEW FIELDS -->
         <!-- !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!! -->
-        <Data name="Reserved" inMemoryType="null" encodedType="bitfield21" constant="0" comment="Reserved, set to zero" />
+        <Data name="Reserved" inMemoryType="null" encodedType="bitfield20" constant="0" comment="Reserved, set to zero" />
         <Data name="MaxShift" inMemoryType="float32" encodedType="unsigned8" max="1" default="0.1" comment="Maximum stabilization shift as a percentage of frame size, or 0 for no change" />
         <Structure name="TelemetryOptions" dependsOn="HasTelemetryOptions">
             <Data name="CameraPos" inMemoryType="unsigned32" encodedType="bitfield1" />
@@ -1007,6 +1058,143 @@ See TrilliumPacket.c (in the Orion SDK) for details.
         <Data name="DetectionMaxTelemTrks" inMemoryType="unsigned8" default="3" comment=" " />
         <Data name="TrackOffsetPan" inMemoryType="float32" default="0" comment="Send a TrackOptions command with this value set to nudge the track offset by the given amount in radians (positive pushes the cursor right" />
         <Data name="TrackOffsetTilt" inMemoryType="float32" default="0" comment="Send a TrackOptions command with this value set to nudge the track offset by the given amount in radians (positive pushes the cursor down" />
+    </Packet>
+
+    <Enum name="GeoTrackerState_t" comment="">
+        <Value name="GEO_TRACKER_STATE_OFF" comment="Filter is not running" />
+        <Value name="GEO_TRACKER_STATE_RUNNING" comment="Filter is running" />
+    </Enum>
+
+    <Packet name="GeoTrackStatus" ID="ORION_PKT_GEO_TRACK_STATUS" comparefile="compare/compareOrionPublic" printfile="compare/printOrionPublic" comment="Object track status">
+        <Data name="Index" inMemoryType="unsigned8" default="1" comment="Index of the track (0 indicates primary-ctr of fov, 1 and higher are secondary)" />
+        <Data name="ID" inMemoryType="unsigned32" />
+        <Data name="Status" inMemoryType="unsigned8" />
+        <Data name="Latitude"  inMemoryType="float64" encodedType="signed32" max="pi/2" comment="Filter's estimated latitude in radians" />
+        <Data name="Longitude" inMemoryType="float64" encodedType="signed32" max="pi" comment="Filter's estimated longitude in radians" />
+        <Data name="Altitude"  inMemoryType="float64" encodedType="signed24" scaler="100" comment="Filter's estimated altitude in meters above ellipsoid" />
+        <Data name="SigmaLatitude"  inMemoryType="float32" encodedType="signed16" max="pi/2" comment="Sigma latitude in radians" />
+        <Data name="SigmaLongitude" inMemoryType="float32" encodedType="signed16" max="pi" comment="Sigma longitude in radians" />
+        <Data name="SigmaAltitude" inMemoryType="float32" encodedType="signed16" max="pi" comment="Sigma altitude in meters above ellipsoid" />
+        <Data name="EllipseMajor" inMemoryType="float32" encodedType="signed16" max="1000" comment="Confidence ellipse major axis in meters" />
+        <Data name="EllipseMinor" inMemoryType="float32" encodedType="signed16" max="1000" comment="Confidence ellipse minor axis in meters" />
+        <Data name="EllipseAngle" inMemoryType="float32" encodedType="signed16" max="pi" comment="Conifdence ellipse rotation in radians" />
+        <Data name="VelNED" inMemoryType="float32" array="3" encodedType="signed32" scaler="1000" comment="Velocity in North, East, Down meters per second"/>
+        <Data name="SigmaVelNED" inMemoryType="float32" array="3" encodedType="unsigned16"  min="0" max="1000" default="0" comment="Sigma in North, East, Down meters per second"/>
+        <Data name="State" enum="GeoTrackerState_t" inMemoryType="unsigned8" comment="State of the filter (running or not)" />
+        <Data name="Course" inMemoryType="float32" encodedType="signed16" max="360.0" comment="Estimated Course in deg" />
+
+    </Packet>
+
+    <Enum name="OrionTrackCmd_t" comment="The retraction mechanism commands.">
+        <Value name="TRACK_START_PRIMARY" comment="Command give the angular position of the track box in the camera image as Target (bound -0.5 to 0.5)"/>
+        <Value name="TRACK_START_SECONDARY" comment="Command give the angular position of the track box in the camera image as Target (bound -0.5 to 0.5)"/>
+        <Value name="TRACK_STOP_ALL" comment="Clear all tracks"/>
+        <Value name="TRACK_STOP_ALL_BUT_PRIMARY" comment="Clear all secondary tracks"/>
+        <Value name="TRACK_NUDGE_PRIMARY" comment="Nudge a track index by given Target (percentage of FOV)"/>
+        <Value name="TRACK_RESIZE_PRIMARY" comment="Resize a track index by given Resize"/>
+        <Value name="TRACK_NUDGE_BY_INDEX" comment="Nudge a track index by given Target (percentage of FOV)"/>
+        <Value name="TRACK_RESIZE_BY_INDEX" comment="Resize a track index by given Resize"/>
+        <Value name="TRACK_REMOVE_BY_INDEX" comment="Remove a track at TrackIndex"/>
+        <Value name="TRACK_REMOVE_BY_PIXEL" comment="Remove a track by given Target (bound -0.5 to 0.5)"/>
+    </Enum>
+
+    <Packet name="TrackCmd" ID="ORION_PKT_TRACK_CMD" comparefile="compare/compareOrionPublic" printfile="compare/printOrionPublic" comment="Track settings, nudge, resize, etc.">
+        <Data name="Cmd" enum="OrionTrackCmd_t" encodedType="unsigned8" comment="The Track command to apply to."/>
+        <Data name="Target" inMemoryType="float32" array="NUM_GIMBAL_AXES" encodedType="signed16" scaler="1000.0" comment="Pan and tilt in radians. Interpretation depends on Mode."/>
+        <Data name="TrackIndex" inMemoryType="signed32" default="0" comment="Index of the track to target the effects of Cmd" />
+        <Data name="Resize" inMemoryType="float32" encodedType="signed16" default="0" scaler="1000" comment="Use Cmd to affect the Track box size, as a percent of the frame (postive increase track size)" />
+     </Packet>
+
+    <Enum name="VideoRecordState_t" comment="The current status of cameras/recordings">
+        <Value name="VideoRecordStateIdle" comment="Not actively streaming or recording."/>
+        <Value name="VideoRecordStateRecording" comment="Actively recording to disk."/>
+        <Value name="VideoRecordStateRecording_Streaming" comment="Actively recording to disk and streaming to udp destination."/>
+        <Value name="VideoRecordStateStreaming" comment="Actively streaming to udp destination."/>
+        <Value name="VideoRecordStateStalled" comment="Streaming/Recording is failing."/>
+    </Enum>
+
+    <Enum name="KlvMode_t" comment="The current flavor of KLV encoding to stream">
+        <Value name="KlvModeLegacy" comment="The legacy mode of encoding KLV to the stream, a asynchronous stream with PTS timestamps."/>
+        <Value name="KlvModeSynchronous" comment="The synchronous mode of encoding KLV to the stream, with MAU and PTS/DTS."/>
+        <Value name="KlvModeAsynchronous" comment="The asynchronous mode of encoding KLV to the stream, without PTS/DTS."/>
+    </Enum>
+
+    <Packet name="VideoRecordStatus" ID="ORION_PKT_VIDEORECORD_STATUS" comparefile="compare/compareOrionPublic" printfile="compare/printOrionPublic" comment="VideoRecord status.">
+        <Data name="Version" inMemoryType="fixedstring" array="16" comment="Version of the VideoRecord software"/>
+        <Structure name="CameraInformation" array="3" comment="Camera recording information">
+            <Data name="Status" enum="VideoRecordState_t" encodedType="unsigned8" comment="Current status of the camera."/>
+            <Data name="StreamId" inMemoryType="unsigned8" comment="The current index in the MPEG-TS stream."/>
+            <Data name="Bitrate" inMemoryType="unsigned16" comment="The current bitrate of the camera, in KBps."/>
+            <Data name="FrameStatistics" inMemoryType="float32" encodedType="signed16" scaler="1000" comment="Percentage of frames that are being processed.(0.0f-1.0f)"/>
+            <Data name="Enabled" inMemoryType="bitfield1" comment="enable for recording/streaming" />
+            <Data name="Reserved0" inMemoryType="unsigned64" comment="Reserved"/>
+        </Structure>
+        <Data name="UdpEnabled" inMemoryType="bitfield1" bitfieldGroup="true" comment="Is the UDP stream output enabled"/>
+        <Data name="RecordingEnabled" inMemoryType="bitfield1" comment="Is Recording enabled"/>
+        <Data name="EnableKlvData" inMemoryType="bitfield1" comment="(CtrlNotImp) Enable active camera's KLV data inserted into the MPEG-TS stream [SID:0x68]"/>
+        <Data name="EnableOrionData" inMemoryType="bitfield1" comment="Enable Orion data inserted into the MPEG-TS stream [SID:0x69]"/>
+        <Data name="Reserved1" inMemoryType="bitfield4" comment="Reserved bits"/>
+        <Data name="UdpDestIp" inMemoryType="unsigned32" comment="destination IPv4 address"/>
+        <Data name="UdpPort" inMemoryType="unsigned16" comment="destination port"/>
+        <Data name="UdpBitrate" inMemoryType="unsigned32" comment="Total stream bitrate, in KBps"/>
+        <Data name="KlvMode" enum="KlvMode_t" encodedType="unsigned8" comment="Active KLV encoding method"/>
+        <Data name="State" enum="VideoRecordState_t" encodedType="unsigned8" comment="Current status of VideoRecord."/>
+        <Data name="DiskConsumption" inMemoryType="float32" encodedType="signed16" scaler="10000" comment="Percentage of disk consumed. (0.0f-1.0f)"/>
+        <Structure name="Error" comment="">
+            <Data name="DiskFull" inMemoryType="bitfield1" bitfieldGroup="true" comment="The disk is full and recording is stopped"/>
+            <Data name="Disk80Percent" inMemoryType="bitfield1" comment="The disk is nearing full and recording will stop soon"/>
+            <Data name="BadStatistics" inMemoryType="bitfield1" comment="The usage statistics have dropped below 90%"/>
+            <Data name="Reserved" inMemoryType="bitfield5" comment="Reserved"/>
+        </Structure>
+     </Packet>
+
+    <Packet name="VideoRecordCmd" ID="ORION_PKT_VIDEORECORD_CMD" comparefile="compare/compareOrionPublic" printfile="compare/printOrionPublic" comment="VideoRecord settings, destination, cameras to use, etc.">
+        <Data name="EnableUdpStream" inMemoryType="bitfield1" bitfieldGroup="true" comment="Enable a UDP stream, either uni-cast or multi-cast"/>
+        <Data name="EnableRecording" inMemoryType="bitfield1" comment="Enable recording video to disk"/>
+        <Data name="EnableKlvData" inMemoryType="bitfield1" comment="(CtrlNotImp) Enable active camera's KLV data inserted into the MPEG-TS stream [SID:0x68]"/>
+        <Data name="EnableOrionData" inMemoryType="bitfield1" comment="Enable Orion data inserted into the MPEG-TS stream [SID:0x69]"/>
+        <Data name="DeleteAllRecordings" inMemoryType="bitfield1" comment="PERMANENTLY deletes all recordings on disk"/>
+        <Data name="Ident" inMemoryType="bitfield1" comment="Always 0 from clients, used to ignore command packet"/>
+        <Data name="StreamOnRestart" inMemoryType="bitfield1" comment="Enable the system to start streaming on restart automatically, doesn't work for recording, or recording/streaming."/>
+        <Data name="Reserved0" inMemoryType="bitfield1" comment="Reserved for future commands"/>
+        <Data name="UdpDestIp" inMemoryType="unsigned32" comment="destination IPv4 address"/>
+        <Data name="UdpPort" inMemoryType="unsigned16" comment="desitnation port"/>
+        <Data name="UdpBitrateCamera0" inMemoryType="unsigned32" comment="Video encoding target bitrate per camera, in KBps."/>
+        <Data name="UdpBitrateCamera1" inMemoryType="unsigned32" comment="Video encoding target bitrate per camera, in KBps."/>
+        <Data name="UdpBitrateCamera2" inMemoryType="unsigned32" comment="Video encoding target bitrate per camera, in KBps."/>
+        <Data name="KlvMode" enum="KlvMode_t" encodedType="unsigned8" comment="Set KLV encoding method"/>
+        <Data name="EnableCamera0" inMemoryType="bitfield1" bitfieldGroup="true" comment="Enable recording/streaming on camera index 0" />
+        <Data name="EnableCamera1" inMemoryType="bitfield1" comment="Enable recording/streaming on camera index 0" />
+        <Data name="EnableCamera2" inMemoryType="bitfield1" comment="Enable recording/streaming on camera index 0" />
+        <Data name="Reserved1" inMemoryType="bitfield5" comment="Reserved for future cameras" />
+     </Packet>
+
+    <Enum name="GeoTrackerFilterType_t" comment="Geo Tracker filter Type enumeration">
+        <Value name="GEO_TRACKER_FILTER_STATIC" comment="Static object filter" />
+        <Value name="GEO_TRACKER_FILTER_CONST_VEL" comment="Constant Velocity filter" />
+        <Value name="GEO_TRACKER_FILTER_CONST_ACC" comment="Constant Acceleration filter" />
+    </Enum>
+
+    <Enum name="GeoTrackerTargetType_t" comment="Geo Tracker Target Type enumeration">
+        <Value name="GEO_TRACKER_TARGET_STATIC" comment="Static target type" />
+        <Value name="GEO_TRACKER_TARGET_PERSON" comment="Person target type" />
+        <Value name="GEO_TRACKER_TARGET_CAR" comment="Generic Car target type" />
+        <Value name="GEO_TRACKER_TARGET_CAR_CITY" comment="City Car target type" />
+        <Value name="GEO_TRACKER_TARGET_CAR_HIGHWAY" comment="City Highway target type" />
+        <Value name="GEO_TRACKER_TARGET_BOAT" comment="Generic Boat target type" />
+        <Value name="GEO_TRACKER_TARGET_BOAT_FAST" comment="Fast Boat target type" />
+    </Enum>
+
+    <Enum name="GeoTrackerCmd_t" comment="GeoTracker Command enumeration">
+        <Value name="GEO_TRACKER_CMD_STOP" comment="Stop GeoTracker Algorithm from running on track data" />
+        <Value name="GEO_TRACKER_CMD_RUN" comment="Start GeoTracker Algorithm" />
+        <Value name="GEO_TRACKER_CMD_RESTART" comment="Restarts GeoTracker Algorithm and regenerates with new id for existing track if present in track data" />
+    </Enum>
+
+    <Packet name="GeoTrackerCommand" ID="ORION_PKT_GEO_TRACK_COMMAND" comment="GeoTracker command message">
+        <Data name="FilterType" enum="GeoTrackerFilterType_t" encodedType="unsigned8" comment="GeoTracker filter Enum" />
+        <Data name="TargetType" enum="GeoTrackerTargetType_t" encodedType="unsigned8" comment="GeoTracker Target Enum" />
+        <Data name="cmd" enum="GeoTrackerCmd_t" encodedType="unsigned8" comment="GeoTracker Command Enum" />
     </Packet>
 
     <Enum name="OrionRetractCmd_t" comment="The retraction mechanism commands.">
@@ -1107,6 +1295,7 @@ See TrilliumPacket.c (in the Orion SDK) for details.
             <Value name="PROTOCOL_VECTORNAV" comment="VectorNav IMU" />
             <Value name="PROTOCOL_UBLOX_HDG" comment="uBlox relative heading" />
             <Value name="PROTOCOL_SBG_PULSE_IMU" comment="SBG Pulse IMU" />
+            <Value name="PROTOCOL_HEADWAY_INS" comment="PNI Headway IMU" />
             <Value name="NUM_PROTOCOL"/>
         </Enum>        
 
@@ -1219,6 +1408,7 @@ See TrilliumPacket.c (in the Orion SDK) for details.
         <Data name="SaveSettings" inMemoryType="bitfield1" default="0" comment="Set to 1 to make h.264 settings non-volatile, or 0 to reset to defaults on startup" />
         <Data name="TsPacketCount" inMemoryType="bitfield4" default="0" comment="Number of TS packets per UDP packet, or 0 for no change" />
         <Data name="FramePeriod" inMemoryType="bitfield3" default="0" comment="Set to 0 for no change, or set to N, where the encoder will only render every Nth input frame" />
+        <Data name="KlvMode" enum="KlvMode_t" encodedType="unsigned8" default="KlvModeLegacy" comment="Active KLV encoding method"/>
     </Packet>
 
 
@@ -1233,6 +1423,7 @@ See TrilliumPacket.c (in the Orion SDK) for details.
         <Data name="SaveSettings" inMemoryType="bitfield1" default="0" comment="Set to 1 to make h.264 settings non-volatile, or 0 to reset to defaults on startup" />
         <Data name="TsPacketCount" inMemoryType="bitfield4" default="0" comment="Number of TS packets per UDP packet, or 0 for no change" />
         <Data name="FramePeriod" inMemoryType="bitfield3" default="0" comment="Set to 0 for no change, or set to N, where the encoder will only render every Nth input frame" />
+        <Data name="KlvMode" enum="KlvMode_t" encodedType="unsigned8" default="KlvModeLegacy" comment="Active KLV encoding method"/>
     </Packet>
 
     <Packet name="OrionCameras" ID="ORION_PKT_CAMERAS" comparefile="compare/compareOrionPublic" printfile="compare/printOrionPublic" comment="Camera definitions for the Orion gimbal">

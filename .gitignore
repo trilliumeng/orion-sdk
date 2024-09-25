@@ -4,6 +4,7 @@
 *.mk
 *.so.*
 */x86/*
+*.html
 *.markdown
 Communications/OrionPublicPacket.*
 Communications/OrionPublicProtocol.h

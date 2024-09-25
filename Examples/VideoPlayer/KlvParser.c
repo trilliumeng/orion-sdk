@@ -130,6 +130,34 @@ KlvTagInfo_t TagInfo[KLV_UAS_NUM_ELEMENTS] = {
     { "KLV_UAS_CORE_ID", /* = 94 */               KLV_TYPE_OTHER },
 };
 
+KlvTagInfo_t SecurityTagInfo[KLV_SECURITY_NUM_ELEMENTS] = {
+    { "KLV_SECURITY_NULL", /* = 0 */                            KLV_TYPE_OTHER },
+    { "KLV_SECURITY_CLASSIFICATION", /* = 1 */                  KLV_TYPE_OTHER },
+    { "KLV_SECURITY_CLASSIFYING_CODING", /* = 2 */              KLV_TYPE_OTHER },
+    { "KLV_SECURITY_CLASSIFYING_COUNTRY", /* = 3 */             KLV_TYPE_STRING },
+    { "KLV_SECURITY_HANDLING_INSTRUCTIONS", /* = 4 */           KLV_TYPE_STRING },
+    { "KLV_SECURITY_CAVEATS", /* = 5 */                         KLV_TYPE_STRING },
+    { "KLV_SECURITY_RELEASING_INSTRUCTIONS", /* = 6 */          KLV_TYPE_STRING },
+    { "KLV_SECURITY_CLASSIFIED_BY", /* = 7 */                   KLV_TYPE_STRING },
+    { "KLV_SECURITY_DERIVED_FROM", /* = 8 */                    KLV_TYPE_STRING },
+    { "KLV_SECURITY_CLASSIFICATION_REASON", /* = 9 */           KLV_TYPE_STRING },
+    { "KLV_SECURITY_DECLASSIFICATION_DATE", /* = 10 */          KLV_TYPE_STRING },
+    { "KLV_SECURITY_CLASSIFICATION_MARKING", /* = 11 */         KLV_TYPE_STRING },
+    { "KLV_SECURITY_OBJECT_COUNTRY_CODING", /* = 12 */          KLV_TYPE_OTHER },
+    { "KLV_SECURITY_OBJECT_COUNTRY", /* = 13 */                 KLV_TYPE_OTHER }, //UTF16
+    { "KLV_SECURITY_CLASSIFICATION_COMMENTS", /* = 14 */        KLV_TYPE_STRING },
+    { "KLV_SECURITY_NULL1", /* = 15 */                          KLV_TYPE_OTHER },
+    { "KLV_SECURITY_NULL2", /* = 16 */                          KLV_TYPE_OTHER },
+    { "KLV_SECURITY_NULL3", /* = 17 */                          KLV_TYPE_OTHER },
+    { "KLV_SECURITY_NULL4", /* = 18 */                          KLV_TYPE_OTHER },
+    { "KLV_SECURITY_NULL5", /* = 19 */                          KLV_TYPE_OTHER },
+    { "KLV_SECURITY_NULL6", /* = 20 */                          KLV_TYPE_OTHER },
+    { "KLV_SECURITY_NULL7", /* = 21 */                          KLV_TYPE_OTHER },
+    { "KLV_SECURITY_VERSION", /* = 22 */                        KLV_TYPE_UINT },
+    { "KLV_SECURITY_CLASSIFYING_CODING_VERSION", /* = 23 */     KLV_TYPE_STRING },
+    { "KLV_SECURITY_OBJECT_COUNTRY_CODING_VERSION", /* = 24 */  KLV_TYPE_STRING },
+};
+
 static uint64_t KlvGetLength(const uint8_t *pData, uint64_t *pIndex)
 {
     if (pData[*pIndex] & 0x80)
@@ -298,6 +326,17 @@ const char *KlvGetValueString(KlvUasDataElement_t Element)
 
 }// KlvGetValueString
 
+const char *KlvGetSecurityValueString(KlvSecurityDataElement_t Element)
+{
+    const char *pValue = 0;
+
+    // If this is a valid key
+    if ((Element < KLV_SECURITY_NUM_ELEMENTS) && (SecurityTagInfo[Element].Type == KLV_TYPE_STRING))
+        pValue = KlvTreeGetValueString(Element+KLV_UAS_NUM_ELEMENTS);
+
+    return pValue;
+
+}// KlvGetSecurityValueString
 
 void KlvPrintData(void)
 {
@@ -315,6 +354,12 @@ void KlvPrintData(void)
 
             // Print the key, enumeration name, and length
             printf("Key %3d (%-32s), length: %d, value: ", i, TagInfo[i].Name, Length);
+
+            if(i == 48) {
+                uint32_t Length;
+                const uint8_t *pData = KlvTreeGetValue((KlvUasDataElement_t)i, &Length);
+                KlvPrintSecurityData(pData, Length); continue; 
+            }
 
             // Switch on tag type
             switch (TagInfo[i].Type)
@@ -369,4 +414,93 @@ void KlvPrintData(void)
 
 }// KlvPrintData
 
+void KlvPrintSecurityData(const uint8_t *pData, int passedLength)
+{
+    //presumably we are coming from KlvPrintData so add a newLine
+    printf("\n");
+    int Result, i;
+    uint32_t Length;
 
+    // Get the length of the whole shebang
+    uint64_t k = 0, DataLength = passedLength;
+
+    // As long as there's more data to read out
+    while (k < DataLength)
+    {
+        // Grab the key and the length of the tag's data
+        uint8_t Key = pData[k++] + KLV_UAS_NUM_ELEMENTS; //Offset the key by the KLV_UAS count. as duplicate key entries exist
+        uint64_t KeyLength = KlvGetLength(pData, &k);
+
+        // Clip the length to the number of bytes remaining
+        KeyLength = MIN(KeyLength, DataLength - k);
+
+        // Pass the data to the KLV tree
+        KlvTreeSetValue(Key, KeyLength, &pData[k]);
+
+        // Now increment the array index by the data size
+        k += KeyLength;
+    }
+
+    // Loop through all of the different tags we know about
+    for (i = 0; i < KLV_SECURITY_NUM_ELEMENTS; i++)
+    {
+        // If we found one of these elements
+        if (KlvTreeHasKey(i+KLV_UAS_NUM_ELEMENTS))
+        {
+            // Grab the length of this tag
+            KlvTreeGetValue(i+KLV_UAS_NUM_ELEMENTS, &Length);
+
+            // Print the key, enumeration name, and length
+            printf("\tKey %3d (%-45s), length: %d, value: ", i, SecurityTagInfo[i].Name, Length);
+
+            // Switch on tag type
+            switch (SecurityTagInfo[i].Type)
+            {
+            // Decode this tag as a double and print
+            case KLV_TYPE_DOUBLE:
+            {
+                //check for special Cases
+                uint32_t Length, j;
+                const uint8_t *pData = KlvTreeGetValue((KlvSecurityDataElement_t)i+KLV_UAS_NUM_ELEMENTS, &Length);
+                // for (j = 0; j < Length; j++)
+                //     printf("(%02x) ", pData[j]);
+                if (Length == 2 && (pData[0] == 0x80 && pData[1] == 00)) {
+                    printf("KLV_INVALID_0x8000\n");
+                } else if (Length == 4 && (pData[0]==0x80 && pData[1] == 0x00 && pData[2] == 0x00 && pData[3] == 0x00)) {
+                    printf("KLV_INVALD_0x80000000\n");
+                } else {
+                    printf("%lf\n", KlvTreeGetValueDouble((KlvSecurityDataElement_t)i+KLV_UAS_NUM_ELEMENTS, SecurityTagInfo[i].Min, SecurityTagInfo[i].Max, &Result));
+                }
+                break;
+            }
+            // Decode this tag as an unsigned int and print
+            case KLV_TYPE_UINT:
+                printf("%" PRIu64 "\n", KlvTreeGetValueUInt((KlvSecurityDataElement_t)i+KLV_UAS_NUM_ELEMENTS, &Result));
+                break;
+
+            // Decode this tag as a signed int and print
+            case KLV_TYPE_INT:
+                printf("%" PRId64 "\n", KlvTreeGetValueInt((KlvSecurityDataElement_t)i+KLV_UAS_NUM_ELEMENTS, &Result));
+                break;
+
+            // Decode this tag as a string and print
+            case KLV_TYPE_STRING:
+                printf("%s\n", KlvGetSecurityValueString((KlvSecurityDataElement_t)i));
+                break;
+
+            // Print anything else as a hexdump
+            default:
+            {
+                uint32_t Length, j;
+                const uint8_t *pData = KlvTreeGetValue((KlvSecurityDataElement_t)i+KLV_UAS_NUM_ELEMENTS, &Length);
+
+                // 
+                for (j = 0; j < Length; j++)
+                    printf("%02x ", pData[j]);
+                printf("\n");
+                break;
+            }
+            };
+        }
+    }
+}

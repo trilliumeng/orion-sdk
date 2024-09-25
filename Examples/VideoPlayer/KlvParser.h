@@ -103,6 +103,36 @@ typedef enum
     KLV_UAS_NUM_ELEMENTS
 } KlvUasDataElement_t;
 
+typedef enum
+{
+    KLV_SECURITY_NULL, // = 0
+    KLV_SECURITY_CLASSIFICATION, // = 1
+    KLV_SECURITY_CLASSIFYING_CODING, // = 2
+    KLV_SECURITY_CLASSIFYING_COUNTRY, // = 3
+    KLV_SECURITY_HANDLING_INSTRUCTIONS, // = 4
+    KLV_SECURITY_CAVEATS, // = 5
+    KLV_SECURITY_RELEASING_INSTRUCTIONS, // = 6
+    KLV_SECURITY_CLASSIFIED_BY, // = 7
+    KLV_SECURITY_DERIVED_FROM, // = 8
+    KLV_SECURITY_CLASSIFICATION_REASON, // = 9
+    KLV_SECURITY_DECLASSIFICATION_DATE, // = 10
+    KLV_SECURITY_CLASSIFICATION_MARKING, // = 11
+    KLV_SECURITY_OBJECT_COUNTRY_CODING, // = 12
+    KLV_SECURITY_OBJECT_COUNTRY, // = 13
+    KLV_SECURITY_CLASSIFICATION_COMMENTS, // = 14
+    KLV_SECURITY_NULL1, // = 15
+    KLV_SECURITY_NULL2, // = 16
+    KLV_SECURITY_NULL3, // = 17
+    KLV_SECURITY_NULL4, // = 18
+    KLV_SECURITY_NULL5, // = 19
+    KLV_SECURITY_NULL6, // = 20
+    KLV_SECURITY_NULL7, // = 21
+    KLV_SECURITY_VERSION, // = 22
+    KLV_SECURITY_CLASSIFYING_CODING_VERSION, // = 23
+    KLV_SECURITY_OBJECT_COUNTRY_CODING_VERSION, // = 24
+    KLV_SECURITY_NUM_ELEMENTS
+} KlvSecurityDataElement_t;
+
 void KlvNewData(const uint8_t *pData, int Length);
 
 double KlvGetValueDouble(KlvUasDataElement_t Element, int *pResult);
@@ -111,5 +141,6 @@ uint64_t KlvGetValueUInt(KlvUasDataElement_t Element, int *pResult);
 const char *KlvGetValueString(KlvUasDataElement_t Element);
 
 void KlvPrintData(void);
+void KlvPrintSecurityData(const uint8_t *pData, int passedLength);
 
 #endif // KLVPARSER_H
