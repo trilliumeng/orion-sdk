@@ -653,6 +653,7 @@ See TrilliumPacket.c (in the Orion SDK) for details.
             <Value name="autopilotSource" comment="Autopilot host GPS data"/>
             <Value name="piccoloSource" value="autopilotSource" comment="Preserved for backward compatibility"/>
             <Value name="piksiSource" comment="Piksi external GPS"/>
+            <Value name="apntSource" comment="Alternative positioning, navigation, and timing system supplied data"/>
             <Value name="numGpsSources" comment="Number of possible GPS sources"/>
         </Enum>
 
