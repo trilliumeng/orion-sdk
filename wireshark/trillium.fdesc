@@ -37,6 +37,7 @@ enum8 T_my_msg_id
     STARTUP_CMD         0x07
     PRIVATE_08          0x08
     PRIVATE_09          0x09
+    POSITIONS           0x0A
     PRIVATE_1F          0x1F
     PRIVATE_20          0x20
     PRIVATE_21          0x21
@@ -52,6 +53,10 @@ enum8 T_my_msg_id
     PRIVATE_2B          0x2B
     TRACKER_VERSION     0x2C
     PRIVATE_2D          0x2D
+    PRIVATE_2E          0x2E
+    PRIVATE_2F          0x2F
+    PRIVATE_30          0x30
+    PRIVATE_31          0x31
     PRIVATE_40          0x40
     DIAGNOSTICS         0x41
     FAULTS              0x42
@@ -59,8 +64,8 @@ enum8 T_my_msg_id
     SOFTWARE_DIAGNOSTICS 0x44
     VIBRATION           0x45
     NETWORK_DIAGNOSTICS 0x46
-    PRIVATE_47          0x47
-    PRIVATE_48          0x48
+    TLE_STATUS          0x47
+    TLE_COMMAND         0x48
     PRIVATE_49          0x49
     CAMERA_SWITCH       0x60
     CAMERA_STATE        0x61
@@ -76,15 +81,29 @@ enum8 T_my_msg_id
     BAE_SETTINGS        0x6B
     SONY_SETTINGS       0x6C
     KTNC_SETTINGS       0x6D
-    PRIVATE_70          0x70
-    PRIVATE_71          0x71
+    ATTOLLO_SETTINGS    0x6E
+    VIDEO_OPTIONS       0x70
+    TRACK_OPTIONS       0x71
+    GEO_TRACK_STATUS    0x72
+    GEO_TRACK_COMMAND   0x73
+    TRACK_CMD           0x74
+    VIDEORECORD_STATUS  0x75
+    VIDEORECORD_CMD     0x76
     AUTOPILOT_DATA      0x80
     PRIVATE_90          0x90
     PRIVATE_91          0x91
     PRIVATE_92          0x92
+    PRIVATE_93          0x93
+    PRIVATE_94          0x94
     RETRACT_CMD         0xA0
     RETRACT_STATUS      0xA1
-    PRIVATE_B0          0xB0
+    SNPY_A8             0xA8
+    SNPY_A9             0xA9
+    SNPY_AA             0xAA
+    SNPY_AB             0xAB
+    SNPY_AC             0xAC
+    SNPY_AD             0xAD
+    CROWN_MODE          0xB0
     DEBUG_STRING        0xB1
     USER_DATA           0xB2
     KLV_USER_DATA       0xB3
@@ -95,7 +114,7 @@ enum8 T_my_msg_id
     PRIVATE_C3          0xC3
     PRIVATE_CE          0xCE
     PRIVATE_CF          0xCF
-    PRIVATE_D0          0xD0
+    SENSOR_DATA         0xD0
     GPS_DATA            0xD1
     EXT_HEADING_DATA    0xD2
     INS_QUALITY         0xD3
@@ -107,6 +126,7 @@ enum8 T_my_msg_id
     STARE_START         0xD9
     STARE_ACK           0xDA
     PRIVATE_DB          0xDB
+    GEOID_UNDULATION    0xDC
     PRIVATE_DE          0xDE
     PRIVATE_DF          0xDF
     PRIVATE_E0          0xE0
@@ -130,6 +150,7 @@ enum8 T_my_msg_id
     PRIVATE_F7          0xF7
     RETRACT_VERSION     0xF8
     LENSCTL_VERSION     0xF9
+    PRIVATE_FA          0xFA
 }
 
 
@@ -238,22 +259,24 @@ enum8 T_GimbalAxis
 
 enum8 T_Mode
 {
-    MODE_DISABLED           0
-    MODE_FAULT              1
-    MODE_RATE               16
-    MODE_GEO_RATE           17
-    MODE_FFC_AUTO           32
-    #MODE_FFC                32
-    MODE_FFC_MANUAL         33
-    MODE_SCENE              48
-    MODE_TRACK              49
-    MODE_CALIBRATION        64
-    MODE_POSITION           80
-    MODE_POSITION_NO_LIMITS 81
-    MODE_GEOPOINT           96
-    MODE_PATH               112
-    MODE_DOWN               113
-    MODE_UNKNOWN            255
+    MODE_DISABLED           0x00
+    MODE_FAULT              0x01
+    MODE_RATE               0x10
+    MODE_GEO_RATE           0x11
+    MODE_FFC_AUTO           0x20
+    #MODE_FFC               MODE_FFC_AUTO
+    MODE_FFC_MANUAL         0x21
+    MODE_SCENE              0x30
+    MODE_TRACK              0x31
+    MODE_NUDGE_TRACK        0x32
+    MODE_SECONDARY_TRACK    0x33
+    MODE_CALIBRATION        0x40
+    MODE_POSITION           0x50
+    MODE_POSITION_NO_LIMITS 0x51
+    MODE_GEOPOINT           0x60
+    MODE_PATH               0x70
+    MODE_DOWN               0x71
+    MODE_UNKNOWN            0xFF
 }
 enum8 T_RangeDataSrc
 {
@@ -264,6 +287,100 @@ enum8 T_RangeDataSrc
     RANGE_SRC_INTERNAL      4
     RANGE_SRC_INTERNAL_DTED 5
     NUM_RANGE_SRCS          6
+}
+
+enum8 T_TleType
+{
+    TLE_TYPE_NONE           0
+    TLE_TYPE_NO_CHANGE      1
+    TLE_TYPE_GEOLOCATE      2
+    TLE_TYPE_ALIGN          3
+}
+
+enum8 T_TleState
+{
+    TLE_STATE_OFF           0
+    TLE_STATE_RUNNING       1
+} 
+
+enum8 T_TleSource
+
+{
+    TLE_SOURCE_GIMBAL_GEO   0
+    TLE_SOURCE_SKYLINK_GEO  1
+    TLE_SOURCE_GIMBAL_DTED  2
+    TLE_SOURCE_OTHER        3 
+}
+
+enum8 T_TleOptions
+{
+    tleDefault       0x00
+    tleIns           0x01
+    tleDted          0x02
+    tleLrf           0x04
+    tleOffBoard      0x08
+}
+
+
+enum8 T_GeoTrackerState
+{
+    GEO_TRACKER_STATE_OFF     0
+    GEO_TRACKER_STATE_RUNNING 1
+} 
+
+enum8 T_TrackCmd
+{
+    TRACK_START_PRIMARY         0
+    TRACK_START_SECONDARY       1
+    TRACK_STOP_ALL              2
+    TRACK_STOP_ALL_BUT_PRIMARY  3
+    TRACK_NUDGE_PRIMARY         4
+    TRACK_RESIZE_PRIMARY        5
+    TRACK_NUDGE_BY_INDEX        6
+    TRACK_RESIZE_BY_INDEX       7
+    TRACK_REMOVE_BY_INDEX       8
+    TRACK_REMOVE_BY_PIXEL       9
+}
+
+enum8 T_VideoRecordState
+{
+    VideoRecordStateIdle                 0
+    VideoRecordStateRecording            1
+    VideoRecordStateRecording_Streaming  2
+    VideoRecordStateStreaming            3
+    VideoRecordStateStalled              4
+}
+
+enum8 T_KlvMode
+{
+    KlvModeLegacy                0
+    KlvModeSynchronous           1
+    KlvModeAsynchronous          2
+}
+
+enum8 T_GeoTrackerFilterType
+{
+    GEO_TRACKER_FILTER_STATIC      0
+    GEO_TRACKER_FILTER_CONST_VEL   1
+    GEO_TRACKER_FILTER_CONST_ACC   2
+}
+
+enum8 T_GeoTrackerTargetType
+{
+    GEO_TRACKER_TARGET_STATIC         0  
+    GEO_TRACKER_TARGET_PERSON         1  
+    GEO_TRACKER_TARGET_CAR            2
+    GEO_TRACKER_TARGET_CAR_CITY       3   
+    GEO_TRACKER_TARGET_CAR_HIGHWAY    4      
+    GEO_TRACKER_TARGET_BOAT           5
+    GEO_TRACKER_TARGET_BOAT_FAST      6     
+}
+
+enum8 T_GeoTrackerCmd
+{
+    GEO_TRACKER_CMD_STOP              0     
+    GEO_TRACKER_CMD_RUN               1   
+    GEO_TRACKER_CMD_RESTART           2       
 }
 
 enum8 T_InsRotationOptions
@@ -332,17 +449,21 @@ enum8 T_Stator
 
 enum8 T_MaxLasers
 {
-    MAX_LASERS  2
+    MAX_LASERS  3
 }
 
 enum8 T_LaserType
 {
-    LASER_TYPE_NONE             0
-    LASER_TYPE_POINTER          1
-    LASER_TYPE_10MJ_MARKER      2
-    LASER_TYPE_LIGHTWARE        3
-    LASER_TYPE_JENOPTIK_DLEM    4
-    LASER_TYPE_VECTRONIX        5
+    LASER_TYPE_NONE                 0
+    LASER_TYPE_POINTER              1
+    LASER_TYPE_10MJ_MARKER          2
+    LASER_TYPE_LIGHTWARE            3
+    LASER_TYPE_JENOPTIK_DLEM        4
+    LASER_TYPE_VECTRONIX            5
+    LASER_TYPE_DESIGNATOR           6
+    LASER_TYPE_JENOPTIK_DLEM_TEST   7
+    LASER_TYPE_DESIGNATOR_6x        8
+    LASER_TYPE_DESIGNATOR_DUMMY     9
 }
 
 enum8 T_DataPort
@@ -414,12 +535,10 @@ enum3 T_imuType
     imuTypeDmu11        2
     imuTypeExternal     3
     imuTypeEpson        4
-    numImuTypes         5
+    imuTypeSBGPulse     5
+    imuTypeVectorNav    6
+    numImuTypes         7
 }
-
-###############################################################################
-# Header
-###############################################################################
 
 enum8 T_StreamType
 {
@@ -429,6 +548,46 @@ enum8 T_StreamType
     STREAM_TYPE_YUV     3
     NUM_STREAM_TYPES    4
 }
+
+enum8 T_FaultType
+{
+    FAULT_TYPE_NONE                          0
+    FAULT_TYPE_CLEVIS_RESET_COMMANDED        1
+    FAULT_TYPE_INVALID_GYRO_CALIBRATION      2
+    FAULT_TYPE_VELOCITY_LIMIT_EXCEEDED       3
+    FAULT_TYPE_ACCELERATION_LIMIT_EXCEEDED   4
+}
+
+enum8 T_FaultLevel
+{
+    FAULT_LEVEL_LOG             0
+    FAULT_LEVEL_INFO            1
+    FAULT_LEVEL_WARNING         2
+    FAULT_LEVEL_ERROR           3
+    FAULT_LEVEL_FATAL           4
+}
+
+enum8 T_FaultComponent
+{
+    FAULT_COMPONENT_PAN_AXIS         0
+    FAULT_COMPONENT_TILT_AXIS        1
+    FAULT_COMPONENT_PAYLOAD_GYROS    2
+}
+
+enum8 T_crownModes
+{
+    crownModeNormal         0
+    crownModeLogINS         1
+    crownModePrintIMU       2
+    crownModePrintINS       3
+    crownModeTempCal        4
+    crownModeIMUCal         5
+}
+
+
+###############################################################################
+# Message Structures
+###############################################################################
 
 struct  T_msg_NETWORK_VIDEO
 {
@@ -463,6 +622,21 @@ struct T_CamSettings
     int16[2]            AlignMax_raw;
 }
 
+struct T_msg_Date
+{
+    uint32         year;
+    uint32         month;
+    uint32         day; 
+}
+
+struct T_msg_PrimaryTrackData
+{
+    float32[T_GimbalAxis::NUM_GIMBAL_AXES]       Pos;
+    float32                                      Size;
+    float32                                      Confidence;
+    uint32                                       Coasting;            
+    uint32                                       Active;
+}
 
 struct T_msg_CAMERAS
 {
@@ -638,7 +812,15 @@ struct T_msg_GPS_DATA
     }
 }
 
-struct T_msg_STARTUP_CMD
+  struct T_msg_STARTUP_CMD
+  {
+      int16[T_GimbalAxis::NUM_GIMBAL_AXES] Target;
+      T_Mode  Mode;
+      uint8   Stabalized;
+      uint8   ImpulseTime;
+  }
+
+  struct T_msg_CMD
 {
     int16[T_GimbalAxis::NUM_GIMBAL_AXES] Target;
     T_Mode  Mode;
@@ -646,13 +828,26 @@ struct T_msg_STARTUP_CMD
     uint8   ImpulseTime;
 }
 
-struct T_msg_CMD
+struct T_msg_LaserState
 {
-    int16[T_GimbalAxis::NUM_GIMBAL_AXES] Target;
-    T_Mode  Mode;
-    uint8   Stabalized;
-    uint8   ImpulseTime;
+    T_LaserType      Type;
+    uint32           Enabled;
+    uint32           Armed; 
+    uint32           Active;
+    uint32           GroundSpeedLock;
+    uint32           AltitudeLock;
+    uint32           PasswordLock;
+    uint32           ApCommLock;
+    uint32           ApFlyingLock;
+    uint32           BypassEnabled;
+    uint32           PitchAngleLock;
+    uint32           WatchdogLock; 
+    uint32           Reserved;    
+    float32          LaserTemp;      
+    uint16           WaitTimer;     
 }
+
+
 
 struct T_FftData
 {
@@ -693,6 +888,37 @@ struct T_msg_NETWORK_DIAGNOSTICS
     uint16 FrameErrors;
     uint16 Collisions;
     uint16 CarrierErrors;
+}
+
+struct T_msg_Diagnostics
+{
+    float32 Voltage24;
+    float32 Voltage12;
+    float32 Voltage3v3;
+    float32 Current24;
+    float32 Current12;
+    float32 Current3v3;
+    float32 CrownTemp;
+    float32 SlaTemp;
+    float32 GyroTemp;
+    float32 Voltage24Var;
+    float32 Voltage12Var;
+    float32 Voltage3v3Var;
+    float32 Current24Var;
+    float32 Current12Var;
+    float32 Current3v3Var;
+    float32 PayloadTemp;
+    float32 PayloadHumidity;
+    float32 CurrentLaser;
+}
+
+struct T_msg_Fault
+{
+    T_FaultType        Type; 
+    T_FaultLevel       Level;
+    T_FaultComponent   Component;
+    uint32             Code;    
+    float32            Value;  
 }
 
 struct T_msg_ThreadLoading
@@ -740,12 +966,56 @@ struct T_msg_SOFTWARE_DIAGNOSTICS
     }
 }
 
+# Detection Data MISB 0903.6
+struct T_TleDetects
+{
+    uint8       ID;          
+    float32   SigmaNorth;  
+    float32   SigmaEast;   
+    float32   SigmaDown;   
+    float32   RhoNorthEast;
+    float32   RhoNorthDown;
+    float32   RhoEastDown; 
+}
+
+struct T_msg_TleStatus
+{
+    uint32            SystemTime;
+    T_TleType         FilterType;
+    T_TleState        State;    
+    uint16            SampleCount;
+    float64       Latitude;  
+    float64       Longitude;
+    float64       Altitude;
+    float32       CE90;   
+    float32       VE90;  
+    float32       SE90; 
+    float32       EllipseMajor;
+    float32       EllipseMinor;
+    float32       EllipseAngle;
+    float32       PanError;   
+    float32       TiltError; 
+    float32       AltError; 
+    float32       PanUncertainty;
+    float32       TiltUncertainty;
+    float32       AltUncertainty; 
+    float32       PercentOrbit;  
+    T_TleSource       Source;         
+    T_TleDetects      TleDetects;   
+}
+
+struct T_msg_TleCommand
+{
+    T_TleType      FilterType;
+    uint8          Run;    
+    uint8          Options; 
+}
+
 struct T_msg_RETRACT_CMD
 {
     T_RetractCmd    Cmd;
     hide uint8      reserved;
 }
-
 
 struct T_msg_UART_CONFIG
 {
@@ -899,6 +1169,35 @@ struct T_msg_STARE_START
     if (Size > 50) {
         int16   crossStareAngle;
     }
+}
+
+struct T_msg_ResetSource
+{
+    uint32            Vector;
+    uint32            Address;
+    T_BoardEnumeration sourceBoard;
+}
+
+struct T_msg_KlvUserData
+{
+    uint8            Key;
+    uint8            SubKey;
+    uint8            Length;
+    uint8[127]       Value;
+}
+
+struct T_msg_SensorData
+{
+    float32[3]    Gyros;  
+    float32[3]    Accels; 
+    float32       Baro;    
+    float32       OAT;    
+    uint32        time;  
+    float32       gyroTemp;
+    float32       gyroDt; 
+    float32       accelDt;
+    int16         ppsAge;
+    uint8         counter;
 }
 
 struct T_msg_GEOPOINT_CMD
@@ -1072,6 +1371,15 @@ switch  T_my_msg_switch  T_my_msg_id
     case  T_my_msg_id::NETWORK_VIDEO        : T_msg_NETWORK_VIDEO "";
     case  T_my_msg_id::NETWORK_SETTINGS     : T_msg_NETWORK_SETTINGS "";
     case  T_my_msg_id::CAMERAS              : T_msg_CAMERAS "";
+    case  T_my_msg_id::RESET_SOURCE         : T_msg_ResetSource "";
+    case  T_my_msg_id::LASER_STATES         : T_msg_LaserState "";
+    case  T_my_msg_id::DIAGNOSTICS          : T_msg_Diagnostics "";
+    case  T_my_msg_id::FAULTS               : T_msg_Fault "";
+    case  T_my_msg_id::TLE_STATUS           : T_msg_TleStatus "";
+    case  T_my_msg_id::TLE_COMMAND          : T_msg_TleCommand "";
+    case  T_my_msg_id::RESET_SOURCE         : T_msg_ResetSource "";
+    case  T_my_msg_id::KLV_USER_DATA        : T_msg_KlvUserData "";
+    case  T_my_msg_id::SENSOR_DATA          : T_msg_SensorData "";
     default :
       T_msg_unknown "";
 }

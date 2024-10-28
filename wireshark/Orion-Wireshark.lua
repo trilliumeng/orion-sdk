@@ -69,13 +69,19 @@ function get_mode_string(mode)
 	local mode_str = "Unknown Mode 0x" .. mode
 
 	if mode == 0 then mode_str = "Disabled"
+	elseif mode == 1  then mode_str = "Fault"
 	elseif mode == 16 then mode_str = "Rate"
+	elseif mode == 17 then mode_str = "GeoRate"
 	elseif mode == 32 then mode_str = "FFC Auto"
 	elseif mode == 33 then mode_str = "FFC Manual"
 	elseif mode == 48 then mode_str = "Scene"
 	elseif mode == 49 then mode_str = "Track"
+	elseif mode == 50 then mode_str = "Nudge Track"
+	elseif mode == 51 then mode_str = "Secondary Track"
 	elseif mode == 64 then mode_str = "Calibration"
+	elseif mode == 65 then mode_str = "Null Gyros"
 	elseif mode == 80 then mode_str = "Position"
+	elseif mode == 80 then mode_str = "Position No Limits"
 	elseif mode == 96 then mode_str = "Geopoint"
 	elseif mode == 112 then mode_str = "Path"
 	elseif mode == 113 then mode_str = "Look Down"
@@ -94,6 +100,8 @@ function get_gps_string(gps_source)
 	elseif gps_source == 3 then gps_string = "NMEA"
 	elseif gps_source == 4 then gps_string = "Novatel"
 	elseif gps_source == 5 then gps_string = "Piccolo"
+	elseif gps_source == 6 then gps_string = "Piksi"
+	elseif gps_source == 7 then gps_string = "APNT"
 	end
 
 	return gps_string
@@ -108,6 +116,7 @@ function get_board_string(board)
 	elseif board == 2 then board_str = "INS"
 	elseif board == 3 then board_str = "Payload"
 	elseif board == 4 then board_str = "Lens Control"
+	elseif board == 5 then board_str = "Mission Computer"
 	end
 
 	return board_str
@@ -792,7 +801,6 @@ function print_geolocate(subtree, buffer, id, size)
 	if size >= 77 then
 		subtree:add(buffer(76,1), "Range Source: " .. get_range_src_string(buffer(76,1):uint()))
 	end
-
 	if size >= 78 then
 		subtree:add(buffer(77,1), "Leap Seconds: " .. buffer(77,1):uint())
 	end
@@ -1121,6 +1129,32 @@ function print_camera_state(subtree, buffer, id, size)
 
 end
 
+function print_camera_switch(subtree, buffer, id, size)
+	local name = "Camera Switch"
+	subtree = make_subtree(subtree, buffer, name, id, size)
+
+	if size == 0 then
+		return name
+	end
+
+	subtree:add(buffer(0,1), "Index: " .. buffer(0,1):int())
+
+	return name
+
+end
+
+
+function print_uart_config(subtree, buffer, id, size)
+  local name = "UART Config"
+  subtree = make_subtree( subtree, buffer, name, id, size)
+  if size == 0 then
+    return name
+  end
+
+--  subtree:add(buffer( 
+  return name
+end
+
 function print_cameras(subtree, buffer, id, size)
 	local name = "Cameras"
 	subtree = make_subtree(subtree, buffer, name, id, size)
@@ -1184,7 +1218,37 @@ function print_cameras(subtree, buffer, id, size)
     return name
 end
 
+function print_videorecord_status(subtree, data, id, size)
+  local name = "VideoRecord Status"
+	subtree = make_subtree(subtree, buffer, name, id, size)
 
+	if size == 0 then
+		return name
+	end
+
+	subtree:add(buffer(0,15), "Version: " .. buffer(0,15))
+
+  local status_int = buffer(16,16).uint()
+  local status_str = "Idle"
+
+  if status_int == 1 then
+    status_str = "Recording"
+  elseif status_int == 2 then
+    status_str = "Recording and Streaming"
+  elseif status_int == 3 then
+    status_str = "Streaming"
+  elseif status_int == 4 then
+    status_str = "Stalled"
+  end
+
+	subtree:add(buffer(16,16), "Status: " .. status_str)
+	subtree:add(buffer(17,17), "StreamID: " .. buffer(17,17).uint())
+	subtree:add(buffer(18,19), "Bitrate: " .. buffer(18,19).uint())
+  
+  return name
+end
+
+  
 
 function print_network_settings(subtree, buffer, id, size)
 	local name = "Network Settings"
@@ -1212,35 +1276,38 @@ function print_packet(pinfo, subtree, buffer)
 	local data = buffer(4,size)
 	local info = ""
 
-	if     id == 1   then info = print_cmd(subtree, data, id, size)
-	elseif id == 5   then info = print_lasers(subtree, data, id, size)
-	elseif id == 6   then info = print_laser_states(subtree, data, id, size)
-	elseif id == 37  then info = print_version(subtree, data, id, size)
-	elseif id == 39  then info = print_board_info(subtree, data, id, size)
-	elseif id == 40  then info = print_version(subtree, data, id, size)
-	elseif id == 41  then info = print_version(subtree, data, id, size)
-	elseif id == 44  then info = print_version(subtree, data, id, size)
-	elseif id == 65  then info = print_diagnostics(subtree, data, id, size)
-	elseif id == 67  then info = print_performance(subtree, data, id, size)
-	elseif id == 70  then info = print_network_diagnostics(subtree, data, id, size)
-	elseif id == 68  then info = print_sw_diagnostics(subtree, data, id, size)
-	elseif id == 97  then info = print_camera_state(subtree, data, id, size)
-	elseif id == 98  then info = print_network_video(subtree, data, id, size)
-	elseif id == 99  then info = print_cameras(subtree, data, id, size)
-    elseif id == 160 then info = print_retract_cmd(subtree, data, id, size)
-    elseif id == 161 then info = print_retract_status(subtree, data, id, size)
-    -- elseif id == 177 then info = print_debug_string(subtree, data, id, size)
-    elseif id == 209 then info = print_gps_data(subtree, data, id, size)
-	elseif id == 210 then info = print_ext_heading(subtree, data, id, size)
-	elseif id == 211 then info = print_ins_quality(subtree, data, id, size)
-	elseif id == 212 then info = print_geolocate(subtree, data, id, size)
-	elseif id == 213 then info = print_geopoint_cmd(subtree, data, id, size)
-	elseif id == 214 then info = print_range(subtree, data, id, size)
-	elseif id == 215 then info = print_path_data(subtree, data, id, size)
-	elseif id == 217 then info = print_stare_start(subtree, data, id, size)
-	elseif id == 218 then info = print_stare_ack(subtree, data, id, size)
-	elseif id == 228 then info = print_network_settings(subtree, data, id, size)
-	else
+  if     id == 1   then info = print_cmd(subtree, data, id, size)
+  elseif id == 2   then info = print_uart_config(subtree, data, id, size)
+  elseif id == 5   then info = print_lasers(subtree, data, id, size)
+  elseif id == 6   then info = print_laser_states(subtree, data, id, size)
+  elseif id == 37  then info = print_version(subtree, data, id, size)
+  elseif id == 39  then info = print_board_info(subtree, data, id, size)
+  elseif id == 40  then info = print_version(subtree, data, id, size)
+  elseif id == 41  then info = print_version(subtree, data, id, size)
+  elseif id == 44  then info = print_version(subtree, data, id, size)
+  elseif id == 65  then info = print_diagnostics(subtree, data, id, size)
+  elseif id == 67  then info = print_performance(subtree, data, id, size)
+  elseif id == 70  then info = print_network_diagnostics(subtree, data, id, size)
+  elseif id == 68  then info = print_sw_diagnostics(subtree, data, id, size)
+  elseif id == 96  then info = print_camera_switch(subtree, data, id, size)
+  elseif id == 97  then info = print_camera_state(subtree, data, id, size)
+  elseif id == 98  then info = print_network_video(subtree, data, id, size)
+  elseif id == 99  then info = print_cameras(subtree, data, id, size)
+  elseif id == 117 then info = print_videorecord_status(subtree, data, id, size)
+  elseif id == 160 then info = print_retract_cmd(subtree, data, id, size)
+  elseif id == 161 then info = print_retract_status(subtree, data, id, size)
+  -- elseif id == 177 then info = print_debug_string(subtree, data, id, size)
+  elseif id == 209 then info = print_gps_data(subtree, data, id, size)
+  elseif id == 210 then info = print_ext_heading(subtree, data, id, size)
+  elseif id == 211 then info = print_ins_quality(subtree, data, id, size)
+  elseif id == 212 then info = print_geolocate(subtree, data, id, size)
+  elseif id == 213 then info = print_geopoint_cmd(subtree, data, id, size)
+  elseif id == 214 then info = print_range(subtree, data, id, size)
+  elseif id == 215 then info = print_path_data(subtree, data, id, size)
+  elseif id == 217 then info = print_stare_start(subtree, data, id, size)
+  elseif id == 218 then info = print_stare_ack(subtree, data, id, size)
+  elseif id == 228 then info = print_network_settings(subtree, data, id, size)
+  else
 		local name = "Unknown packet ID 0x" .. buffer(2,1)
 		subtree = make_subtree(subtree, data, name, id, size)
 		subtree:add(data, "Data: " .. data)

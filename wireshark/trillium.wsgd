@@ -2,7 +2,6 @@
 # Author: Tom Pittenger at Kraus-Himdani Aerospace
 # email: tom.pittenger@krausaerospace.com
 
-
 # Protocol's names.
 PROTONAME         Trillium Protocol
 PROTOSHORTNAME    Trillium
@@ -12,6 +11,8 @@ PROTOABBREV       trillium
 PARENT_SUBFIELD          udp.port
 PARENT_SUBFIELD_VALUES   8745 8746 8748
 
+PARENT_SUBFIELD          tcp.port
+PARENT_SUBFIELD_VALUES   8747
 
 #PACKET_CONTAINS_ONLY_COMPLETE_MSG  yes
 #PACKET_CONTAINS_ONLY_1_MSG         yes
