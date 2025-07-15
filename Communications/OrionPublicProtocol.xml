@@ -246,7 +246,7 @@ See TrilliumPacket.c (in the Orion SDK) for details.
         <Value name="ORION_MODE_NUDGE_TRACK" value="0x32" comment="(Deprecated) Use ORION_PKT_TRACK_CMD"/>
         <Value name="ORION_MODE_SECONDARY_TRACK" value="0x33" comment="(Deprecated) Use ORION_PKT_TRACK_CMD"/>
         <Value name="ORION_MODE_CALIBRATION" value="0x40" comment="Drives the pan and tilt axes to calibrate the stabilization gyros"/>
-        <Value name="ORION_MODE_NULL_GYROS" value="0x41" comment="Drives the pan and tilt axes to null the stabilization gyros"/>
+        <Value name="ORION_MODE_NULL_GYROS" value="0x41" comment="Hold gimbal still while stabilization gyro and IMU gyro biases are estimated. User ensures that crown will not move while in this mode."/>
         <Value name="ORION_MODE_POSITION" value="0x50" comment="Commands give the position of the pan and tilt axes with respect to the gimbal mount"/>
         <Value name="ORION_MODE_POSITION_NO_LIMITS" value="0x51" comment="Commands give the position of the pan and tilt axes with respect to the gimbal mount. NOTE: This mode ignores the pan/tilt limits and can result in serious damage to the gimbal if used incorrectly"/>
         <Value name="ORION_MODE_GEOPOINT" value="0x60" comment="Gimbal is pointing toward a fixed spatial location"/>
