@@ -1005,7 +1005,8 @@ See TrilliumPacket.c (in the Orion SDK) for details.
         <Data name="DisableSeeSpot" inMemoryType="bitfield1" default="0" comment="If set to 1, disable see spot process" />
         <Data name="SeeSpotDebugOutput" inMemoryType="bitfield1" default="0" comment="If set to 1, enable more logging on the see spot process" />
         <Data name="RawRecord" inMemoryType="bitfield1" default="0" comment="If set to 1, enable raw record of the phoenix pipeline" />
-        <Data name="Reserved0" inMemoryType="bitfield5" default="0" comment="Reserved bits, set to zero" />
+        <Data name="AutoGainMode" inMemoryType="bitfield1" default="1" comment="If set to 1, enable autogain mode on the griffin" />
+		<Data name="Reserved0" inMemoryType="bitfield4" default="0" comment="Reserved bits, set to zero" />
         <Data name="FixedLaserTriggerDelay" inMemoryType="float" encodedType="float" default="-1.0" comment="Sets a fixed trigger delay from the laser pulse to laser frame capture, set to -1 to disable" />
         <Data name="LaserIntegrationTime" inMemoryType="float" encodedType="float" default="0.003" comment="Sets the integration time for laser frames" />
         <Data name="Brightness" inMemoryType="float" encodedType="float" default="0.0" comment="Sets image brightness" />

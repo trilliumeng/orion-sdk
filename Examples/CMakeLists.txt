@@ -1,0 +1,18 @@
+cmake_minimum_required(VERSION 3.16)
+project(Examples VERSION 1.0 LANGUAGES C CXX)
+
+set(CMAKE_INCLUDE_CURRENT_DIR ON)
+
+add_subdirectory(CameraInfo)
+add_subdirectory(EncodeDecode)
+add_subdirectory(GeoPoint)
+add_subdirectory(GpsAndHeading)
+add_subdirectory(LineOfSight)
+add_subdirectory(PathTrack)
+add_subdirectory(SendCommand)
+add_subdirectory(SendConfig)
+add_subdirectory(TrackSize)
+add_subdirectory(UserData)
+if(UNIX)
+    add_subdirectory(VideoPlayer)
+endif()
