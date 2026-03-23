@@ -1042,12 +1042,37 @@ See TrilliumPacket.c (in the Orion SDK) for details.
     </Packet>
 
     <Packet name="OrionSierraSettings" ID="ORION_PKT_SIERRA_SETTINGS" comparefile="compare/compareOrionPublic" printfile="compare/printOrionPublic" comment="SierraOlympia-specific camera settings.">
+        <Enum name="SierraPolarity_t" comment="Enumerated values representing the image polarity setting for SierraOlympia cameras">
+            <Value name="SIERRA_POLARITY_WHITE_HOT" value="0" comment="SierraOlympia White-hot polarity" />
+            <Value name="SIERRA_POLARITY_BLACK_HOT" value="1" comment="SierraOlympia Black-hot polarity" />
+        </Enum>
+        <Enum name="SierraColorPalette_t" comment="Enumerated values representing the scene colorization palette options for SierraOlympia cameras">
+            <Value name="SIERRA_PALETTE_MONOCHROME" value="0" comment="SierraOlympia monochrome palette (grey scale)" />
+            <Value name="SIERRA_PALETTE_SOFTLIGHT" value="1" comment="SierraOlympia soft light palette" />
+            <Value name="SIERRA_PALETTE_INFERNAL" value="2" comment="SierraOlympia infernal palette" />
+            <Value name="SIERRA_PALETTE_FULL_SPRECTRUM" value="3" comment="SierraOlympia full spectrum palette" />
+            <Value name="SIERRA_PALETTE_INFERNO" value="4" comment="SierraOlympia inferno palette" />
+            <Value name="SIERRA_PALETTE_ARCUS" value="5" comment="SierraOlympia arcus palette" />
+            <Value name="SIERRA_PALETTE_OCEAN" value="6" comment="SierraOlympia ocean palette" />
+            <Value name="SIERRA_PALETTE_MEMORIAM" value="7" comment="SierraOlympia memoriam palette" />
+            <Value name="SIERRA_PALETTE_COUNT" comment="End marker for SierraColorPalette_t" />
+        </Enum>
+        <Enum name="SierraColorMode_t" comment="Enumerated values representing the scene colorization mode options for SierraOlympia cameras">
+            <Value name="SIERRA_COLOR_DISABLED" value="0" comment="SierraOlympia monochrome mode (disabled)" />
+            <Value name="SIERRA_COLOR_FULL" value="1" comment="SierraOlympia full detail mode" />
+            <Value name="SIERRA_COLOR_HIGH" value="2" comment="SierraOlympia high detail mode" />
+            <Value name="SIERRA_COLOR_NORMAL" value="3" comment="SierraOlympia normal detail mode" />
+            <Value name="SIERRA_COLOR_COUNT" comment="End marker for SierraColorMode_t" />
+        </Enum>
         <Data name="Index" inMemoryType="unsigned8" comment="Index of the camera that these settings should apply to. Use 0xFF to apply to any connected SierraOlympia camera."/>
         <Data name="IceBrightness" inMemoryType="unsigned16" encodedType="unsigned16" comment="Sets level bias value. Level bias is similar to a brightness control."/>
         <Data name="IceGain" inMemoryType="unsigned16" encodedType="unsigned16" comment="Sets gain bias value. Gain bias is similar to a contrast control."/>
         <Data name="IceStrength" inMemoryType="unsigned16" encodedType="unsigned16" comment="Sets ICE Strength. (ICE Mode must be enabled before this command will have any effect). This command, enables the user to select an ICE strength from 0-7 in 1\n unit increments. The lowest setting is 0; the highest setting is 7. We recommend using lower\n values when looking at lower contrast scenes and higher values when looking at dynamic\n scenes."/>
+        <Data name="Polarity" enum="SierraPolarity_t" default="SIERRA_POLARITY_WHITE_HOT" encodedType="bitfield1" comment="Sets the white-hot/black-hot polarity. 0:white-hot, 1:black-hot"/>
+        <Data name="ColorPalette" enum="SierraColorPalette_t" default="SIERRA_PALETTE_MONOCHROME" encodedType="bitfield4" comment="Sets the scene colorization color palette selection. 0:monochrome (disabled), 1:Softlight, 2:Infernal, 3:Full Spectrum, 4:Inferno, 5:Arcus, 6:Ocean 7:Memoriam"/>
+        <Data name="ColorMode" enum="SierraColorMode_t" default="SIERRA_COLOR_DISABLED" encodedType="bitfield3" comment="Sets the scene colorization mode. 0:disabled color, 1:full color, 2:high detail, 3:normal detail"/>
     </Packet>
-
+    
     <Packet name="VideoOptions" ID="ORION_PKT_VIDEO_OPTIONS" comparefile="compare/compareOrionPublic" printfile="compare/printOrionPublic" comment="Video output options">
         <Data name="Stabilized" inMemoryType="unsigned32" encodedType="bitfield1" comment="Set to 1 to enable digital video stabilization, or 0 to disable" />
         <Data name="ShowTrackBox" inMemoryType="unsigned32" encodedType="bitfield1" comment="Set to 1 to render the track box on the video, or 0 to only send KLV track box position" />
@@ -1558,6 +1583,8 @@ See TrilliumPacket.c (in the Orion SDK) for details.
             <Value name="CAMERA_TYPE_MWIR" comment="Mid wave infrared camera"/>
             <Value name="CAMERA_TYPE_LWIR" comment="Long wave infrared camera"/>
             <Value name="CAMERA_TYPE_SPOTTER" comment="Visible light spotter camera"/>
+            <Value name="CAMERA_TYPE_NIR" comment="Near Infrared Camera"/>
+            <Value name="CAMERA_TYPE_1064" comment="Low Light Monochrome"/>
         </Enum>
 
         <Enum name="OrionCameraProtocol_t" comment="The camera communications protocol">
