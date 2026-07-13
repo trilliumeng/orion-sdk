@@ -10,13 +10,25 @@ target_include_directories(VideoPlayer PRIVATE
     ../../Utils
 )
 find_package(PkgConfig REQUIRED)
+
+if(NOT PkgConfig_FOUND)
+    message(STATUS "Skipping VideoPlayer: PkgConfig not found")
+    return()
+endif()
+
 find_package(JPEG)
-pkg_check_modules(LIBAV REQUIRED IMPORTED_TARGET
+pkg_check_modules(LIBAV QUIET IMPORTED_TARGET
     libavcodec
     libavformat
     libavutil
     libswscale
 )
+
+if(NOT LIBAV_FOUND)
+    message(STATUS "Skipping VideoPlayer: FFmpeg libs not found")
+    return()
+endif()
+
 target_link_libraries(VideoPlayer PRIVATE
     JPEG::JPEG
     OrionComm

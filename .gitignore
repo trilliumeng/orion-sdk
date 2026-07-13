@@ -1,4 +1,6 @@
 #Ignore the following files that may be created during the build process
+build/
+compile_commands.json
 .qmake.stash
 *.o
 *.mk
