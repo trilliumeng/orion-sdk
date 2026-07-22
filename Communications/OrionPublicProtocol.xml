@@ -1,6 +1,6 @@
 <?xml version="1.0"?>
 
-<Protocol name="OrionPublic" version="1.3.0.a" endian="big" supportInt64="true" file="OrionPublicPacket" comment=
+<Protocol name="OrionPublic" version="1.4.0" endian="big" supportInt64="true" file="OrionPublicPacket" comment=
 "The *OrionPublic* protocol is the packet description for the public interface of the Orion gimbal from [Trillium Engineering](http://w3.trilliumeng.com/).
 The Orion gimbal communicates to users with packets of data transported over asyncrhonous serial, or transported by TCP/IP over ethernet.">
 
@@ -59,8 +59,7 @@ See TrilliumPacket.c (in the Orion SDK) for details.
     <!--Unused Values to date:
         0x0B to 0x1E,
         0x32 to 0x3F,
-        0x4A to 0x5F,
-        0x6F,
+        0x4B to 0x5F,
         0x75 to 0x7F,
         0x81 to 0x8F,
         0x95 to 0x9F,
@@ -111,6 +110,8 @@ See TrilliumPacket.c (in the Orion SDK) for details.
         <Value name="ORION_PKT_TLE_STATUS" value="0x47" comment="Target Localization filter status" />
         <Value name="ORION_PKT_TLE_COMMAND" value="0x48" comment="Target Localization filter commands" />
         <Value name="ORION_PKT_PRIVATE_49" value="0x49" comment="Reserved packet identifier" hidden="true" />
+		<Value name="ORION_PKT_BOARD_HEARTBEAT" value="0x4A" comment="Heartbeat indication for boards in a distributed system."/>
+        <Value name="ORION_PKT_ADVANCED_ENCODING" value="0x5F" comment="Command the encoding settings for video streams"/>
         <Value name="ORION_PKT_CAMERA_SWITCH" value="0x60" comment="Command the gimbal to swtich cameras"/>
         <Value name="ORION_PKT_CAMERA_STATE" value="0x61" comment="Command a camera in the gimbal"/>
         <Value name="ORION_PKT_NETWORK_VIDEO" value="0x62" comment="Command the IP settings for video delivery"/>
@@ -137,6 +138,8 @@ See TrilliumPacket.c (in the Orion SDK) for details.
         <Value name="ORION_PKT_VIDEORECORD_CLOCK" value="0x77" comment="Get Current PTS of VideoRecord and PTS of PayloadRouter"/>
         <Value name="ORION_PKT_OMNIVIS_SETTINGS" value="0x78" comment="OmniVision specific camera settings"/>
         <Value name="ORION_PKT_SIERRA_SETTINGS" value="0x79" comment="Sierra-Olympia specific camera settings"/>
+        <Value name="ORION_PKT_SIONYX_SETTINGS" value="0x7A" comment="Sionyx specific camera settings"/>
+        <Value name="ORION_PKT_LYNRED_SETTINGS" value="0x7B" comment="Lynred specific camera settings"/>
         <Value name="ORION_PKT_AUTOPILOT_DATA" value="0x80" comment="Autopilot state data, if available"/>
         <Value name="ORION_PKT_PRIVATE_90" value="0x90" comment="Reserved packet identifier" hidden="true"/>
         <Value name="ORION_PKT_PRIVATE_91" value="0x91" comment="Reserved packet identifier" hidden="true"/>
@@ -202,6 +205,7 @@ See TrilliumPacket.c (in the Orion SDK) for details.
         <Value name="ORION_PKT_PRIVATE_FA" value="0xFA" comment="Reserved packet identifier" hidden="true"/>
         <Value name="ORION_PKT_PRF_DETECT" value="0xFB" comment="Control and telemtry from Mira PRF detect enabled systems"/>
         <Value name="ORION_PKT_SCAN_PLAN" value="0xFC" comment="Control For Orion Scan Plan"/>
+        <Value name="ORION_PKT_UNIFIED_CAM_ERR_SETTINGS" value="0xFD" comment="A packet to indicate the total angular error between two cameras."/>
     </Enum>
 
     <Enum name="OrionNumberOfCameras_t" comment="The maximum number of cameras in an Orion Gimbal">
@@ -286,7 +290,7 @@ See TrilliumPacket.c (in the Orion SDK) for details.
     </Enum>
 
     <Structure name="Date" comparefile="compare/compareOrionPublic" printfile="compare/printOrionPublic"  comment="Compresssed date format.">
-        <Data name="year" inMemoryType="bitfield7" comment="Years after 2000"/>
+        <Data name="year" inMemoryType="bitfield7" documentValueOffset ="+ 2000" comment="Years after 2000"/>
         <Data name="month" inMemoryType="bitfield4" comment="Month of the year, from 1 to 12"/>
         <Data name="day" inMemoryType="bitfield5" comment="Day of the month, from 1 to 31"/>
     </Structure>
@@ -319,41 +323,41 @@ See TrilliumPacket.c (in the Orion SDK) for details.
         being shifted by the gimbal. This is the primary packet that users should monitor to determine the gimbal
         status and populate user interfaces.">
         <Data name="systemTime" inMemoryType="unsigned32" comment="Milliseconds since system bootup"/>
-        <Data name="gpsITOW" inMemoryType="unsigned32" comment="GPS time of week in milliseconds"/>
+        <Data name="gpsITOW" inMemoryType="unsigned32" documentUnit=" ms" comment="GPS time of week in milliseconds"/>
         <Data name="gpsWeek" inMemoryType="unsigned16" comment="GPS week number since Jan 6 1980"/>
-        <Data name="geoidUndulation" inMemoryType="float64" encodedType="signed16" max="120" comment="Height of the geoid with respect to the WGS84 ellipsoid, in meters"/>
-        <Data name="posLat" inMemoryType="float64" encodedType="signed32" scaler="180*10000000/pi" comment="Geodetic latitude of the gimbal in radians, positive North"/>
-        <Data name="posLon" inMemoryType="float64" encodedType="signed32" scaler="180*10000000/pi" comment="Longitude of the gimbal in radians, positive East"/>
-        <Data name="posAlt" inMemoryType="float64" encodedType="signed32" scaler="10000" comment="Altitude of the gimbal in meters above the WGS-84 ellipsoid"/>
-        <Data name="velNED" inMemoryType="float32" array="3" encodedType="signed16" scaler="100" comment="Velocity of the gimbal in North, East, Down meters per second"/>
-        <Data name="gimbalQuat" inMemoryType="float32" array="4" encodedType="signed16" max="1" comment="Gimbal quaternion describing the rotation from the gimbal mount frame to the North, East, Down navigation frame"/>
-        <Data name="pan" inMemoryType="float32" encodedType="signed16" max="pi" comment="Gimbal pan angle in radians from -pi to pi. This includes the camera alignment offsets."/>
-        <Data name="tilt" inMemoryType="float32" encodedType="signed16" max="pi" comment="Gimbal tilt angle in radians from -pi to pi This includes the camera alignment offsets."/>
-        <Data name="hfov" inMemoryType="float32" encodedType="unsigned16" max="2*pi" comment="Horizontal field of view of the camera in radians from 0 to 2pi"/>
-        <Data name="vfov" inMemoryType="float32" encodedType="unsigned16" max="2*pi" comment="Vertical field of view of the camera in radians from 0 to 2pi"/>
-        <Data name="losECEF" inMemoryType="float32" encodedType="signed16" scaler="1" array="3" default="0" comment="Vector from the gimbal to the image location in ECEF meters. The image location is only computed if ranging data are provided to the gimbal. Otherwise the image location data are 0,0,0"/>
-        <Data name="pixelWidth" inMemoryType="unsigned16" default="0" comment="Active focal plane width in pixels"/>
-        <Data name="pixelHeight" inMemoryType="unsigned16" default="0" comment="Active focal plane height in pixels"/>
+        <Data name="geoidUndulation" inMemoryType="float64" encodedType="signed16" max="120" documentToMethod="GeoidUndulationMeters" comment="Height of the geoid with respect to the WGS84 ellipsoid, in meters"/>
+        <Data name="posLat" inMemoryType="float64" encodedType="signed32" scaler="180*10000000/pi" documentToMethod="Degrees" comment="Geodetic latitude of the gimbal in radians, positive North"/>
+        <Data name="posLon" inMemoryType="float64" encodedType="signed32" scaler="180*10000000/pi" documentToMethod="Degrees" comment="Longitude of the gimbal in radians, positive East"/>
+        <Data name="posAlt" inMemoryType="float64" encodedType="signed32" scaler="10000" documentUnit=" m" comment="Altitude of the gimbal in meters above the WGS-84 ellipsoid"/>
+        <Data name="velNED" inMemoryType="float32" array="3" encodedType="signed16" scaler="100" documentToMethod="16NED" comment="Velocity of the gimbal in North, East, Down meters per second"/>
+        <Data name="gimbalQuat" inMemoryType="float32" array="4" encodedType="signed16" max="1" documentFunction="displayQuat" comment="Gimbal quaternion describing the rotation from the gimbal mount frame to the North, East, Down navigation frame"/>
+        <Data name="pan" inMemoryType="float32" encodedType="signed16" max="pi" documentToMethod="PanTilt" comment="Gimbal pan angle in radians from -pi to pi. This includes the camera alignment offsets."/>
+        <Data name="tilt" inMemoryType="float32" encodedType="signed16" max="pi" documentToMethod="PanTilt" comment="Gimbal tilt angle in radians from -pi to pi This includes the camera alignment offsets."/>
+        <Data name="hfov" inMemoryType="float32" encodedType="unsigned16" max="2*pi" documentToMethod="FOV" comment="Horizontal field of view of the camera in radians from 0 to 2pi"/>
+        <Data name="vfov" inMemoryType="float32" encodedType="unsigned16" max="2*pi" documentToMethod="FOV" comment="Vertical field of view of the camera in radians from 0 to 2pi"/>
+        <Data name="losECEF" inMemoryType="float32" encodedType="signed16" scaler="1" array="3" documentFunction="displayLosECEF(posLat, posLon, posAlt, " default="0" comment="Vector from the gimbal to the image location in ECEF meters. The image location is only computed if ranging data are provided to the gimbal. Otherwise the image location data are 0,0,0"/>
+        <Data name="pixelWidth" inMemoryType="unsigned16" default="0" documentUnit=" px" comment="Active focal plane width in pixels"/>
+        <Data name="pixelHeight" inMemoryType="unsigned16" default="0" documentUnit=" px" comment="Active focal plane height in pixels"/>
         <Data name="mode" enum="OrionMode_t" encodedType="unsigned8" default="ORION_MODE_UNKNOWN" comment="Operational mode of the gimbal."/>
         <Data name="pathProgress" inMemoryType="float32" encodedType="unsigned8" max="1" default="0" comment="Distance along the path from 0 (the starting point) to 1 (the ending point). This only applies if the mode is ORION_MODE_PATH."/>
         <Data name="stareTime" inMemoryType="float32" encodedType="unsigned8" max="2.55" default="0" comment="Seconds remaining in the stare portion of a step stare point, 0 if stare is not in progress. This only applies if the mode is ORION_MODE_PATH."/>
         <Data name="pathFrom" inMemoryType="unsigned8" default="0" comment="Index of the path point gimbal is traveling from. This only applies if the mode is ORION_MODE_PATH."/>
         <Data name="pathTo" inMemoryType="unsigned8" default="0" comment="Index of the path point gimbal is traveling to. This only applies if the mode is ORION_MODE_PATH."/>
-        <Data name="imageShifts" inMemoryType="float32" array="NUM_GIMBAL_AXES" encodedType="signed32" scaler="1000000" default="0" comment="X (horizontal) and Y (vertical) instantaneous image shifts in radians"/>
-        <Data name="imageShiftDeltaTime" inMemoryType="float32" encodedType="unsigned16" scaler="1000" default="0" comment="The amount of time in seconds over which these shifts apply. If no new shift data has arrived since this packet was last transmitted then this will be 0"/>
-        <Data name="imageShiftConfidence" inMemoryType="float32" encodedType="unsigned8" max="1" default="0" comment="Registration solution confidence, from 0 (no confidence) to 1 (full confidence)."/>
-        <Data name="outputShifts" inMemoryType="float32" array="NUM_GIMBAL_AXES" encodedType="signed16" max="pi" default="0" comment="X (horizontal) and Y (vertical) image shifts in radians, as displayed in the video stream"/>
+        <Data name="imageShifts" inMemoryType="float32" array="NUM_GIMBAL_AXES" encodedType="signed32" scaler="1000000" default="0" documentToMethod="PanTilt" comment="X (horizontal) and Y (vertical) instantaneous image shifts in radians"/>
+        <Data name="imageShiftDeltaTime" inMemoryType="float32" encodedType="unsigned16" scaler="1000" default="0" documentUnit=" s" comment="The amount of time in seconds over which these shifts apply. If no new shift data has arrived since this packet was last transmitted then this will be 0"/>
+        <Data name="imageShiftConfidence" inMemoryType="float32" encodedType="unsigned8" max="1" default="0" documentFunction="unsignedToFloat32" comment="Registration solution confidence, from 0 (no confidence) to 1 (full confidence)."/>
+        <Data name="outputShifts" inMemoryType="float32" array="NUM_GIMBAL_AXES" encodedType="signed16" max="pi" default="0" documentFunction="displayOutputShifts" comment="X (horizontal) and Y (vertical) image shifts in radians, as displayed in the video stream"/>
         <Data name="rangeSource" enum="RangeDataSrc_t" encodedType="unsigned8" default="RANGE_SRC_SKYLINK" comment="Range data source used in line of sight calculation"/>
-        <Data name="leapSeconds" default="18" inMemoryType="unsigned8" comment="Leap seconds to subtract from GPS time to compute UTC time"/>
-        <Data name="panAlignment" inMemoryType="float32" encodedType="signed8" scaler="1000" default="0" comment="Pan camera alignment offsets in radian. The raw pan angle is given as pan + panAlignment."/>
-        <Data name="tiltAlignment" inMemoryType="float32" encodedType="signed8" scaler="1000" default="0" comment="Tilt camera alignment offsets in radian. The raw tilt angle is given as tilt + tiltAlignment."/>
+        <Data name="leapSeconds" default="18" inMemoryType="unsigned8" documentUnit=" seconds" comment="Leap seconds to subtract from GPS time to compute UTC time"/>
+        <Data name="panAlignment" inMemoryType="float32" encodedType="signed8" scaler="1000" documentToMethod="Degrees" default="0" comment="Pan camera alignment offsets in radian. The raw pan angle is given as pan + panAlignment."/>
+        <Data name="tiltAlignment" inMemoryType="float32" encodedType="signed8" scaler="1000" documentToMethod="Degrees" default="0" comment="Tilt camera alignment offsets in radian. The raw tilt angle is given as tilt + tiltAlignment."/>
         <Enum name="InsRotationOptions" comment="Enumeration INS rotation options">
             <Value name="insInGimbalNative" comment="The INS is running in the gimbal native axis"/>
             <Value name="insInPlatform" comment="The INS is running in the platform axis, see the INS options for specific roataion details"/>
             <Value name="insInPayloadBall" comment="The INS is running in the payload ball."/>
         </Enum>
         <Data name="insRotationOption" enum="InsRotationOptions" default="insInGimbalNative" comment="This flag indicates special INS options. If insSpecialOption is 1 the INS is running in the gimbal crown, but is rotated from the gimbal native axis. If insSpecialOption is 2 the INS is running in the ball of the gimbal."/>
-        <Data name="insQuat" inMemoryType="float32" array="4" encodedType="signed16" default="0" dependsOn="insRotationOption" max="1" comment="The rotation of the INS from its native frame to the North, East, Down navigation frame. If insSpecialOption is 0 then this rotation is the same as the gimbalQuat"/>
+        <Data name="insQuat" inMemoryType="float32" array="4" encodedType="signed16" default="0" dependsOn="insRotationOption" max="1" documentFunction="displayQuat" comment="The rotation of the INS from its native frame to the North, East, Down navigation frame. If insSpecialOption is 0 then this rotation is the same as the gimbalQuat"/>
         <Data name="imageRotation" inMemoryType="float32" encodedType="signed16" max="pi" default="0" />
         <Data name="cameraIndex" inMemoryType="signed8" default="-1" comment="Current camera index, or -1 if the gimbal does not include this field" />
 
@@ -363,33 +367,34 @@ See TrilliumPacket.c (in the Orion SDK) for details.
     </Packet>
 
     <Packet name="OrionPerformance" ID="ORION_PKT_PERFORMANCE" comment="Measurements related to stabilization performance. This packet is sent by the gimbal 4 times per second.">
-        <Data name="RmsQuad" inMemoryType="float32" array="NUM_GIMBAL_AXES" encodedType="unsigned16" scaler="1000000" comment="Quad rms errors"/>
-        <Data name="RmsDir" inMemoryType="float32" array="NUM_GIMBAL_AXES" encodedType="unsigned16" scaler="1000000" comment="Dir rms errors"/>
-        <Data name="RmsVel" inMemoryType="float32" array="NUM_GIMBAL_AXES" encodedType="unsigned16" scaler="1000" comment="Vel rms errors"/>
-        <Data name="RmsPos" inMemoryType="float32" array="NUM_GIMBAL_AXES" encodedType="unsigned16" scaler="1000000" comment="Pos rms errors"/>
-        <Data name="Iout" inMemoryType="float32" array="NUM_GIMBAL_AXES" encodedType="unsigned16" scaler="1000" comment="Output current"/>
+        <Data name="RmsQuad" inMemoryType="float32" array="NUM_GIMBAL_AXES" encodedType="unsigned16" scaler="1000000" documentFunction="displayRMSJitter" comment="Quad rms errors"/>
+        <Data name="RmsDir" inMemoryType="float32" array="NUM_GIMBAL_AXES" encodedType="unsigned16" scaler="1000000" documentFunction="displayDirRMS" comment="Dir rms errors"/>
+        <Data name="RmsVel" inMemoryType="float32" array="NUM_GIMBAL_AXES" encodedType="unsigned16" scaler="1000" documentFunction="displayVelRMS" comment="Vel rms errors"/>
+        <Data name="RmsPos" inMemoryType="float32" array="NUM_GIMBAL_AXES" encodedType="unsigned16" scaler="1000000" documentFunction="displayPosRMS" comment="Pos rms errors"/>
+        <Data name="Iout" inMemoryType="float32" array="NUM_GIMBAL_AXES" encodedType="unsigned16" scaler="1000" documentFunction="displayOutputCurrent" comment="Output current"/>
     </Packet>
 
     <Packet name="OrionDiagnostics" ID="ORION_PKT_DIAGNOSTICS" comment="Electrical diagnostic data for the Orion gimbal. This packet is sent by the gimbal every 3 seconds.">
-        <Data name="Voltage24" inMemoryType="float32" encodedType="unsigned16" scaler="1000" comment="Voltage of the 24-volt rail"/>
-        <Data name="Voltage12" inMemoryType="float32" encodedType="unsigned16" scaler="1000" comment="Voltage of the 12-volt rail"/>
-        <Data name="Voltage3v3" inMemoryType="float32" encodedType="unsigned16" scaler="1000" comment="Voltage of the 3.3-volt rail"/>
-        <Data name="Current24" inMemoryType="float32" encodedType="unsigned16" scaler="1000" comment="Current in Amps of the 24-volt rail"/>
-        <Data name="Current12" inMemoryType="float32" encodedType="unsigned16" scaler="1000" comment="Current in Amps of the 12-volt rail"/>
-        <Data name="Current3v3" inMemoryType="float32" encodedType="unsigned16" scaler="1000" comment="Current in Amps of the 3.3-volt rail"/>
-        <Data name="CrownTemp" inMemoryType="float32" encodedType="signed8" scaler="1.0" comment="Temperature of the crown board in degrees Celsius"/>
-        <Data name="SlaTemp" inMemoryType="float32" encodedType="signed8" scaler="1.0" comment="Temperature of the SLA-1500 board (if applicable) in degrees Celsius"/>
-        <Data name="GyroTemp" inMemoryType="float32" encodedType="signed8" scaler="1.0" comment="Stabilization gyro ADC temperature in degrees Celsius"/>
+        <Data name="Voltage24" inMemoryType="float32" encodedType="unsigned16" scaler="1000" documentUnit=" V" comment="Voltage of the 24-volt rail"/>
+        <Data name="Voltage12" inMemoryType="float32" encodedType="unsigned16" scaler="1000" documentUnit=" V" comment="Voltage of the 12-volt rail"/>
+        <Data name="Voltage3v3" inMemoryType="float32" encodedType="unsigned16" scaler="1000" documentUnit=" V" comment="Voltage of the 3.3-volt rail"/>
+        <Data name="Current24" inMemoryType="float32" encodedType="unsigned16" scaler="1000" documentUnit=" Amps" comment="Current in Amps of the 24-volt rail"/>
+        <Data name="Current12" inMemoryType="float32" encodedType="unsigned16" scaler="1000" documentUnit=" Amps" comment="Current in Amps of the 12-volt rail"/>
+        <Data name="Current3v3" inMemoryType="float32" encodedType="unsigned16" scaler="1000" documentUnit=" Amps" comment="Current in Amps of the 3.3-volt rail"/>
+        <Data name="CrownTemp" inMemoryType="float32" encodedType="signed8" scaler="1.0" documentUnit=" °C" comment="Temperature of the crown board in degrees Celsius"/>
+        <Data name="SlaTemp" inMemoryType="float32" encodedType="signed8" scaler="1.0" documentUnit=" °C" comment="Temperature of the SLA-1500 board (if applicable) in degrees Celsius"/>
+        <Data name="GyroTemp" inMemoryType="float32" encodedType="signed8" scaler="1.0" documentUnit=" °C" comment="Stabilization gyro ADC temperature in degrees Celsius"/>
         <Data name="reserved" inMemoryType="null" encodedType="unsigned8" constant="0" comment="Reserved space for future expansion"/>
-        <Data name="Voltage24Var" inMemoryType="float32" encodedType="unsigned16" scaler="100000" comment="Voltage variance of the 24-volt rail"/>
-        <Data name="Voltage12Var" inMemoryType="float32" encodedType="unsigned16" scaler="100000" comment="Voltage variance of the 12-volt rail"/>
-        <Data name="Voltage3v3Var" inMemoryType="float32" encodedType="unsigned16" scaler="100000" comment="Voltage variance of the 3.3-volt rail"/>
-        <Data name="Current24Var" inMemoryType="float32" encodedType="unsigned16" scaler="100000" comment="Current variance in Amps of the 24-volt rail"/>
-        <Data name="Current12Var" inMemoryType="float32" encodedType="unsigned16" scaler="100000" comment="Current variance in Amps of the 12-volt rail"/>
-        <Data name="Current3v3Var" inMemoryType="float32" encodedType="unsigned16" scaler="100000" comment="Current variance in Amps of the 3.3-volt rail"/>
-        <Data name="PayloadTemp" inMemoryType="float32" encodedType="signed8" scaler="1.0" default="-127" />
-        <Data name="PayloadHumidity" inMemoryType="float32" encodedType="unsigned8" max="100" default="0" />
-        <Data name="CurrentLaser" inMemoryType="float32" encodedType="unsigned16" scaler="1.0" default="-1.0" comment="Current in Amps of the Lsr rail"/>
+        <Data name="Voltage24Var" inMemoryType="float32" encodedType="unsigned16" scaler="100000" documentToMethod="VarVolts" comment="Voltage variance of the 24-volt rail"/>
+        <Data name="Voltage12Var" inMemoryType="float32" encodedType="unsigned16" scaler="100000" documentToMethod="VarVolts" comment="Voltage variance of the 12-volt rail"/>
+        <Data name="Voltage3v3Var" inMemoryType="float32" encodedType="unsigned16" scaler="100000" documentToMethod="VarVolts" comment="Voltage variance of the 3.3-volt rail"/>
+        <Data name="Current24Var" inMemoryType="float32" encodedType="unsigned16" scaler="100000" documentToMethod="VarAmps" comment="Current variance in Amps of the 24-volt rail"/>
+        <Data name="Current12Var" inMemoryType="float32" encodedType="unsigned16" scaler="100000" documentToMethod="VarAmps" comment="Current variance in Amps of the 12-volt rail"/>
+        <Data name="Current3v3Var" inMemoryType="float32" encodedType="unsigned16" scaler="100000" documentToMethod="VarAmps" comment="Current variance in Amps of the 3.3-volt rail"/>
+        <Data name="PayloadTemp" inMemoryType="float32" encodedType="signed8" scaler="1.0" documentUnit=" °C" default="-127" />
+        <Data name="PayloadHumidity" inMemoryType="float32" encodedType="unsigned8" max="100" documentToMethod="Percent" default="0" />
+        <Data name="CurrentLaser" inMemoryType="float32" encodedType="unsigned16" scaler="1.0" default="-1.0" documentUnit=" Amps" comment="Current in Amps of the Lsr rail"/>
+        <Data name="PayloadCPUTemp" inMemoryType="float32" encodedType="signed8" scaler="1.0" default="-127" documentUnit=" °C" comment="Payload CPU temperature in degrees Celsius"/>
     </Packet>
 
     <Packet name="OrionFault" ID="ORION_PKT_FAULTS" comment="Let someone know when a fault occurs">
@@ -425,50 +430,61 @@ See TrilliumPacket.c (in the Orion SDK) for details.
 
     <Packet name="OrionSoftwareDiagnostics" ID="ORION_PKT_SOFTWARE_DIAGNOSTICS" comment="Diagnostic information related to software performance for a specific board in the Orion Gimbal. This packet is sent by the gimbal once per second.">
         <Data name="sourceBoard" enum="OrionBoardEnumeration_t" encodedType="unsigned8" comment="Enumeration defining which board in the gimbal generated this message"/>
-        <Data name="numCores" inMemoryType="unsigned8" comment="Number of CPU cores that this packet reports for"/>
+        <Data name="numCores" inMemoryType="unsigned8" documentUnit=" cores" comment="Number of CPU cores that this packet reports for"/>
         <Data name="reserved" inMemoryType="null" encodedType="unsigned16" comment="Reserved space for future expansion"/>
         <Structure name="CoreLoading" array="2" variableArray="numCores" comment="Per-Core CPU load information">
-            <Data name="cpuLoad" inMemoryType="float32" encodedType="unsigned8" max="100" comment="CPU utilization as a percentage"/>
-            <Data name="heapLoad" inMemoryType="float32" encodedType="unsigned8" max="100" comment="Heap memory utilization as a percentage, 0 if no heap is present"/>
-            <Data name="stackLoad" inMemoryType="float32" encodedType="unsigned8" max="100" comment="System stack memory utilization as a percentage, 0 if no system stack is present"/>
+            <Data name="cpuLoad" inMemoryType="float32" encodedType="unsigned8" max="100" documentFunction="displayLoad" comment="CPU utilization as a percentage"/>
+            <Data name="heapLoad" inMemoryType="float32" encodedType="unsigned8" max="100" documentFunction="displayLoad" comment="Heap memory utilization as a percentage, 0 if no heap is present"/>
+            <Data name="stackLoad" inMemoryType="float32" encodedType="unsigned8" max="100" documentFunction="displayLoad" comment="System stack memory utilization as a percentage, 0 if no system stack is present"/>
             <Data name="reserved" inMemoryType="null" encodedType="unsigned8" comment="Reserved space for future expansion"/>
-            <Data name="numThreads" inMemoryType="unsigned8" comment="Number of threads in the system, must be at least 1"/>
+            <Data name="numThreads" inMemoryType="unsigned8" documentUnit=" threads" comment="Number of threads in the system, must be at least 1"/>
             <Structure name="ThreadLoading" array="10" variableArray="numThreads" comment="Per-thread information, in order of priority (highest to lowest)">
-                <Data name="cpuLoad" inMemoryType="float32" encodedType="unsigned8" max="100" comment="CPU utilization of this thread as a percentage"/>
-                <Data name="heapLoad" inMemoryType="float32" encodedType="unsigned8" max="100" comment="Heap memory utilization of this thread as a percentage, 0 if no heap is present"/>
-                <Data name="stackLoad" inMemoryType="float32" encodedType="unsigned8" max="100" comment="Stack memory utilization of this thread as a percentage, 100 if stack overflow occurs"/>
-                <Data name="watchdogLeft" inMemoryType="float32" encodedType="unsigned8" max="100" comment="Worst case amount of watchdog time remaining in this reporting period for this thread, 0 if watchdog has timed out"/>
-                <Data name="numIterations" inMemoryType="unsigned16" encodedType="unsigned8" scaler="0.1" comment="Number of times this thread iterated during the reporting period"/>
-                <Data name="worstcase" inMemoryType="float32" encodedType="unsigned8" max="25.5" comment="Worst case thread run time as a ratio with the average thread run time during the reporting period"/>
+                <Data name="cpuLoad" inMemoryType="float32" encodedType="unsigned8" max="100" documentFunction="displayLoad" comment="CPU utilization of this thread as a percentage"/>
+                <Data name="heapLoad" inMemoryType="float32" encodedType="unsigned8" max="100" documentFunction="displayLoad" comment="Heap memory utilization of this thread as a percentage, 0 if no heap is present"/>
+                <Data name="stackLoad" inMemoryType="float32" encodedType="unsigned8" max="100" documentFunction="displayLoad" comment="Stack memory utilization of this thread as a percentage, 100 if stack overflow occurs"/>
+                <Data name="watchdogLeft" inMemoryType="float32" encodedType="unsigned8" max="100" documentFunction="displayLoad" comment="Worst case amount of watchdog time remaining in this reporting period for this thread, 0 if watchdog has timed out"/>
+                <Data name="numIterations" inMemoryType="unsigned16" encodedType="unsigned8" scaler="0.1" documentFunction="displayIterations" comment="Number of times this thread iterated during the reporting period"/>
+                <Data name="worstcase" inMemoryType="float32" encodedType="unsigned8" max="25.5" documentFunction="unsignedToFloat32" comment="Worst case thread run time as a ratio with the average thread run time during the reporting period"/>
             </Structure>
         </Structure>
     </Packet>
+	
+	<Packet name="OrionBoardHeartbeat" ID="ORION_PKT_BOARD_HEARTBEAT" comment="Packet to track heartbeat of processor(s) in a distributed system.">
+	    <Data name="sourceBoard" enum="OrionBoardEnumeration_t" encodedType="unsigned8" comment="Enumeration defining which board in the gimbal generated this particular message"/>
+		<Data name="includesClevis" inMemoryType="bitfield1" comment="Indicates if the Clevis board heartbeat is tracked in this packet."/>
+	    <Data name="heartbeatClevis" inMemoryType="bitfield1" comment="Indicates if the Clevis satisfies its heartbeat evaluation, 1 if it is operating nominally or 0 if it has stopped."/>
+        <Data name="includesCrown" inMemoryType="bitfield1" comment="Indicates if the Crown board heartbeat is tracked in this packet."/>
+	    <Data name="heartbeatCrown" inMemoryType="bitfield1" comment="See heartbeatClevis note above, but specific to Crown board."/>
+        <Data name="includesPayload" inMemoryType="bitfield1" comment="Indicates if the Payload board heartbeat is tracked in this packet."/>
+        <Data name="heartbeatPayload" inMemoryType="bitfield1" comment="See heartbeatClevis note above, but specific to Payload board."/>
+		<Data name="reserved" inMemoryType="null" encodedType="bitfield2"/>
+    </Packet>
 
     <Packet name="OrionVibration" ID="ORION_PKT_VIBRATION" comment="Platform vibration amplitude and frequency information. This packet is sent by the gimbal once every five seconds.">
-        <Data name="MaxAccel" inMemoryType="float32" encodedType="signed16" max="20" array="NUM_AXES" comment="Maximum acceleration values, in m/s/s"/>
-        <Data name="MaxGyro" inMemoryType="float32" encodedType="signed16" max="0.1" array="NUM_AXES" comment="Maximum angular rate values, in rad/s"/>
+        <Data name="MaxAccel" inMemoryType="float32" encodedType="signed16" max="20" array="NUM_AXES" documentToMethod="Acceleration" comment="Maximum acceleration values, in m/s/s"/>
+        <Data name="MaxGyro" inMemoryType="float32" encodedType="signed16" max="0.1" array="NUM_AXES" documentToMethod="16QUAT" comment="Maximum angular rate values, in rad/s"/>
         <Structure name="FftData" array="16" comment="A series of points containing FFT-derived frequency and magnitude data">
-            <Data name="Frequency" inMemoryType="float32" encodedType="unsigned16" max="200" comment="Frequency, in Hertz, of the data point defined by this element"/>
-            <Data name="Accel" inMemoryType="float32" encodedType="unsigned8" max="1" array="NUM_AXES" comment="Acceleration magnitude, expressed as a percentage of MaxAccel"/>
-            <Data name="Gyro" inMemoryType="float32" encodedType="unsigned8" max="1" array="NUM_AXES" comment="Angular rate magnitude, expressed as a percentage of MaxGyro"/>
+            <Data name="Frequency" inMemoryType="float32" encodedType="unsigned16" max="200" documentToMethod="Hertz" comment="Frequency, in Hertz, of the data point defined by this element"/>
+            <Data name="Accel" inMemoryType="float32" encodedType="unsigned8" max="1" array="NUM_AXES" documentToMethod="Magnitude" comment="Acceleration magnitude, expressed as a percentage of MaxAccel"/>
+            <Data name="Gyro" inMemoryType="float32" encodedType="unsigned8" max="1" array="NUM_AXES" documentToMethod="Magnitude" comment="Angular rate magnitude, expressed as a percentage of MaxGyro"/>
         </Structure>
     </Packet>
 
     <Packet name="NetworkDiagnostics" ID="ORION_PKT_NETWORK_DIAGNOSTICS" comment="Ethernet network diagnostic information">
         <Data name="Flags" inMemoryType="unsigned16" comment="Ethernet interface configuration flags" />
-        <Data name="RxBytes" inMemoryType="unsigned32" comment="Ethernet bytes received" />
-        <Data name="TxBytes" inMemoryType="unsigned32" comment="Ethernet bytes transmitted" />
-        <Data name="RxPackets" inMemoryType="unsigned32" comment="Ethernet packets received" />
-        <Data name="TxPackets" inMemoryType="unsigned32" comment="Ethernet packets transmitted" />
-        <Data name="RxErrors" inMemoryType="unsigned16" comment="Number of receive errors" />
-        <Data name="TxErrors" inMemoryType="unsigned16" comment="Number of transmit errors" />
-        <Data name="RxDrops" inMemoryType="unsigned16" comment="Number of receive packets dropped by the Ethernet driver" />
-        <Data name="TxDrops" inMemoryType="unsigned16" comment="Number of transmit packets dropped by the Ethernet driver" />
-        <Data name="RxFifoErrors" inMemoryType="unsigned16" comment="Number of receive FIFO errors" />
-        <Data name="TxFifoErrors" inMemoryType="unsigned16" comment="Number of transmit FIFO errors" />
-        <Data name="FrameErrors" inMemoryType="unsigned16" comment="Framing error count" />
-        <Data name="Collisions" inMemoryType="unsigned16" comment="Hardware interface collision count" />
-        <Data name="CarrierErrors" inMemoryType="unsigned16" comment="Number of carrier loss events" />
+        <Data name="RxBytes" inMemoryType="unsigned32" documentToMethod="Bytes" comment="Ethernet bytes received" />
+        <Data name="TxBytes" inMemoryType="unsigned32" documentToMethod="Bytes" comment="Ethernet bytes transmitted" />
+        <Data name="RxPackets" inMemoryType="unsigned32" documentUnit=" packets" comment="Ethernet packets received" />
+        <Data name="TxPackets" inMemoryType="unsigned32" documentUnit=" packets" comment="Ethernet packets transmitted" />
+        <Data name="RxErrors" inMemoryType="unsigned16" documentUnit=" errors" comment="Number of receive errors" />
+        <Data name="TxErrors" inMemoryType="unsigned16" documentUnit=" errors" comment="Number of transmit errors" />
+        <Data name="RxDrops" inMemoryType="unsigned16" documentUnit=" dropped packets" comment="Number of receive packets dropped by the Ethernet driver" />
+        <Data name="TxDrops" inMemoryType="unsigned16" documentUnit=" dropped packets" comment="Number of transmit packets dropped by the Ethernet driver" />
+        <Data name="RxFifoErrors" inMemoryType="unsigned16" documentUnit=" errors" comment="Number of receive FIFO errors" />
+        <Data name="TxFifoErrors" inMemoryType="unsigned16" documentUnit=" errors" comment="Number of transmit FIFO errors" />
+        <Data name="FrameErrors" inMemoryType="unsigned16" documentUnit=" errors" comment="Framing error count" />
+        <Data name="Collisions" inMemoryType="unsigned16" documentUnit=" collisions" comment="Hardware interface collision count" />
+        <Data name="CarrierErrors" inMemoryType="unsigned16" documentUnit=" loss events" comment="Number of carrier loss events" />
     </Packet>
 
     <Enum name="TleType_t" comment="TLE algorithm type enumeration">
@@ -496,22 +512,22 @@ See TrilliumPacket.c (in the Orion SDK) for details.
         <Data name="State" enum="TleState_t" encodedType="unsigned8" comment="State of the filter (running or not)" />
         <Data name="Reserved" inMemoryType="null" encodedType="unsigned16" />
         <Data name="SampleCount" inMemoryType="unsigned16" comment="Number of samples used in the estimate" />
-        <Data name="Latitude"  inMemoryType="float64" encodedType="signed32" max="pi/2" comment="Filter's estimated latitude in radians" />
-        <Data name="Longitude" inMemoryType="float64" encodedType="signed32" max="pi" comment="Filter's estimated longitude in radians" />
-        <Data name="Altitude"  inMemoryType="float64" encodedType="signed24" scaler="100" comment="Filter's estimated altitude in meters above ellipsoid" />
-        <Data name="CE90" inMemoryType="float32" encodedType="signed16" max="1000" comment="90th percentile circular error radius in meters" />
-        <Data name="VE90" inMemoryType="float32" encodedType="signed16" max="1000" comment="90th percentile vertical error in meters" />
-        <Data name="SE90" inMemoryType="float32" encodedType="signed16" max="1000" comment="90th percentile spherical error in meters" />
-        <Data name="EllipseMajor" inMemoryType="float32" encodedType="signed16" max="1000" comment="Confidence ellipse major axis in meters" />
-        <Data name="EllipseMinor" inMemoryType="float32" encodedType="signed16" max="1000" comment="Confidence ellipse minor axis in meters" />
-        <Data name="EllipseAngle" inMemoryType="float32" encodedType="signed16" max="pi" comment="Conifdence ellipse rotation in radians" />
-        <Data name="PanError"  inMemoryType="float32" encodedType="signed16" max="pi" comment="Cumulative pan error in radians" />
-        <Data name="TiltError" inMemoryType="float32" encodedType="signed16" max="pi" comment="Cumulative tilt error in radians" />
-        <Data name="AltError"  inMemoryType="float32" encodedType="signed16" max="100" comment="Cumulative altitude error in meters" />
-        <Data name="PanUncertainty"  inMemoryType="float32" encodedType="unsigned16" max="pi/10" comment="Pan uncertainty in radians" />
-        <Data name="TiltUncertainty" inMemoryType="float32" encodedType="unsigned16" max="pi/10" comment="Tilt uncertainty in radians" />
-        <Data name="AltUncertainty"  inMemoryType="float32" encodedType="unsigned16" max="10" comment="Altitude uncertainty in meters" />
-        <Data name="PercentOrbit" inMemoryType="float32" encodedType="unsigned8" min="0" max="200" default="0" comment="Percent of completed orbit to converge on an estimate" />
+        <Data name="Latitude"  inMemoryType="float64" encodedType="signed32" max="pi/2" documentToMethod="Degrees" comment="Filter's estimated latitude in radians" />
+        <Data name="Longitude" inMemoryType="float64" encodedType="signed32" max="pi" documentToMethod="Degrees" comment="Filter's estimated longitude in radians" />
+        <Data name="Altitude"  inMemoryType="float64" encodedType="signed24" scaler="100" documentUnit=" meters" comment="Filter's estimated altitude in meters above ellipsoid" />
+        <Data name="CE90" inMemoryType="float32" encodedType="signed16" max="1000" documentUnit=" meters" comment="90th percentile circular error radius in meters" />
+        <Data name="VE90" inMemoryType="float32" encodedType="signed16" max="1000" documentUnit=" meters" comment="90th percentile vertical error in meters" />
+        <Data name="SE90" inMemoryType="float32" encodedType="signed16" max="1000" documentUnit=" meters" comment="90th percentile spherical error in meters" />
+        <Data name="EllipseMajor" inMemoryType="float32" encodedType="signed16" max="1000" documentUnit=" meters" comment="Confidence ellipse major axis in meters" />
+        <Data name="EllipseMinor" inMemoryType="float32" encodedType="signed16" max="1000" documentUnit=" meters" comment="Confidence ellipse minor axis in meters" />
+        <Data name="EllipseAngle" inMemoryType="float32" encodedType="signed16" max="pi" documentToMethod="Degrees" comment="Conifdence ellipse rotation in radians" />
+        <Data name="PanError"  inMemoryType="float32" encodedType="signed16" max="pi" documentToMethod="Degrees" comment="Cumulative pan error in radians" />
+        <Data name="TiltError" inMemoryType="float32" encodedType="signed16" max="pi" documentToMethod="Degrees" comment="Cumulative tilt error in radians" />
+        <Data name="AltError"  inMemoryType="float32" encodedType="signed16" max="100" documentUnit=" meters" comment="Cumulative altitude error in meters" />
+        <Data name="PanUncertainty"  inMemoryType="float32" encodedType="unsigned16" max="pi/10" documentToMethod="Degrees" comment="Pan uncertainty in radians" />
+        <Data name="TiltUncertainty" inMemoryType="float32" encodedType="unsigned16" max="pi/10" documentToMethod="Degrees" comment="Tilt uncertainty in radians" />
+        <Data name="AltUncertainty"  inMemoryType="float32" encodedType="unsigned16" max="10" documentUnit=" meters" comment="Altitude uncertainty in meters" />
+        <Data name="PercentOrbit" inMemoryType="float32" encodedType="unsigned8" min="0" max="200" default="0" documentUnit="%" comment="Percent of completed orbit to converge on an estimate" />
         <Data name="Source" enum="TleSource_t" encodedType="unsigned8" default="TLE_SOURCE_GIMBAL_GEO" />
         <Structure name="TleDetects" comment="Detection Data MISB 0903.6">
             <Data name="ID" inMemoryType="unsigned8" />
@@ -554,34 +570,34 @@ See TrilliumPacket.c (in the Orion SDK) for details.
     </Packet>
 
     <Packet name="StareStart" ID="ORION_PKT_STARE_START"
-            comment="This packet is transmitted by the gimbal during step-stare operations to indicate
-                     that the gimbal is staring and a step-stare image should be acquired. The
-                     position data mark the *desired* location that the gimbal is trying to stare at.
-                     The *actual* position can be computed by using the gimbal position, quaternion,
-                     and pan and tilt angles to project the camera line of sight until to the terrain model.
+            comment="This packet is transmitted by the gimbal during step-stare operations to indicate \
+                     that the gimbal is staring and a step-stare image should be acquired. The \
+                     position data mark the *desired* location that the gimbal is trying to stare at. \
+                     The *actual* position can be computed by using the gimbal position, quaternion, \
+                     and pan and tilt angles to project the camera line of sight until to the terrain model. \
                      Once the image has been acquired send a ORION_PKT_STARE_ACK packet to tell the gimbal it can move to the next stare point.">
-        <Data name="systemTime" inMemoryType="unsigned32" comment="Milliseconds since system bootup. This value should be echoed in the ORION_PKT_STARE_ACK respone."/>
-        <Data name="maxStareTime" inMemoryType="float32" encodedType="unsigned8" max="2.55" comment="Seconds remaining before the stare is finished. Send ORION_PKT_STARE_ACK to terminate the stare early."/>
-        <Data name="alongTrackStare" inMemoryType="bitfield1" comment="If set then this is the start of an along track stare, not a cross track track stare"/>
-        <Data name="prevStareTerminatedByTime" inMemoryType="bitfield1" comment="If set then the previous stare operation was terminated by timeout rather than an ORION_PKT_STARE_ACK packet"/>
-        <Data name="stareStartedByTime" inMemoryType="bitfield1" comment="If set then the stare operation was initiated by timeout rather than by achieving the pan and tilt angles necessary to look at the desired location. In this instance it is possible that the actual stare location is significantly different from the desired stare location"/>
-        <Data name="gimbalDataValid" inMemoryType="bitfield1" comment="If set then the gimbal position and attitude data are valid. If not set then only the desired stare position is valid"/>
-        <Data name="stareReset" inMemoryType="bitfield1" comment="If set then the stare position had to be reset due to falling behind."/>
-        <Data name="prevStareTime" inMemoryType="float32" encodedType="unsigned8" max="2.55" comment="Seconds of time elapsed between the previous stare start and stare end. If this number approaches stareTime the image-acquisition system is in danger of not keeping up."/>
-        <Data name="stareLoad" inMemoryType="float32" encodedType="unsigned8" max="1" comment="Amount of time spent stepping and staring, as a ratio to the time between stare starts. As the frequency of stare events goes up this number will go towards 1.0, indicating the system has reached maximum utilization."/>
-        <Data name="posLat" inMemoryType="float64" encodedType="signed32" scaler="180*10000000/pi" comment="Geodetic latitude of the desired stare point in radians, positive North"/>
-        <Data name="posLon" inMemoryType="float64" encodedType="signed32" scaler="180*10000000/pi" comment="Longitude of the desired stare point in radians, positive East"/>
-        <Data name="posAlt" inMemoryType="float64" encodedType="signed32" scaler="10000" comment="Altitude of the desired stare point in meters above the WGS-84 ellipsoid"/>
-        <Data name="gimbalPosLat" inMemoryType="float64" default="0" encodedType="signed32" scaler="180*10000000/pi" comment="Geodetic latitude of the gimbal in radians, positive North"/>
-        <Data name="gimbalPosLon" inMemoryType="float64" default="0" encodedType="signed32" scaler="180*10000000/pi" comment="Longitude of the gimbal in radians, positive East"/>
-        <Data name="gimbalPosAlt" inMemoryType="float64" default="0" encodedType="signed32" scaler="10000" comment="Altitude of the gimbal in meters above the WGS-84 ellipsoid"/>
-        <Data name="gimbalQuat" inMemoryType="float32" default="0" array="4" encodedType="signed16" max="1" comment="Gimbal quaternion describing the rotation from the gimbal mount frame to the North, East, Down navigation frame"/>
-        <Data name="pan" inMemoryType="float32" default="0" encodedType="signed16" max="pi" comment="Gimbal pan angle in radians from -pi to pi"/>
-        <Data name="tilt" inMemoryType="float32" default="0" encodedType="signed16" max="pi" comment="Gimbal tilt angle in radians from -pi to pi"/>
+        <Data name="systemTime" inMemoryType="unsigned32" documentUnit=" ms" comment="Milliseconds since system bootup. This value should be echoed in the ORION_PKT_STARE_ACK respone."/>
+        <Data name="maxStareTime" inMemoryType="float32" encodedType="unsigned8" max="2.55" documentToMethod="StareTime" comment="Seconds remaining before the stare is finished. Send ORION_PKT_STARE_ACK to terminate the stare early."/>
+        <Data name="alongTrackStare" inMemoryType="bitfield1" documentToMethod="True" comment="If set then this is the start of an along track stare, not a cross track track stare"/>
+        <Data name="prevStareTerminatedByTime" inMemoryType="bitfield1" documentToMethod="True" comment="If set then the previous stare operation was terminated by timeout rather than an ORION_PKT_STARE_ACK packet"/>
+        <Data name="stareStartedByTime" inMemoryType="bitfield1" documentToMethod="True" comment="If set then the stare operation was initiated by timeout rather than by achieving the pan and tilt angles necessary to look at the desired location. In this instance it is possible that the actual stare location is significantly different from the desired stare location"/>
+        <Data name="gimbalDataValid" inMemoryType="bitfield1" documentToMethod="True" comment="If set then the gimbal position and attitude data are valid. If not set then only the desired stare position is valid"/>
+        <Data name="stareReset" inMemoryType="bitfield1" documentToMethod="Yes" comment="If set then the stare position had to be reset due to falling behind."/>
+        <Data name="prevStareTime" inMemoryType="float32" encodedType="unsigned8" max="2.55" documentToMethod="StareTime" comment="Seconds of time elapsed between the previous stare start and stare end. If this number approaches stareTime the image-acquisition system is in danger of not keeping up."/>
+        <Data name="stareLoad" inMemoryType="float32" encodedType="unsigned8" max="1" documentFunction="unsignedToFloat32" comment="Amount of time spent stepping and staring, as a ratio to the time between stare starts. As the frequency of stare events goes up this number will go towards 1.0, indicating the system has reached maximum utilization."/>
+        <Data name="posLat" inMemoryType="float64" encodedType="signed32" scaler="180*10000000/pi" documentToMethod="Degrees" comment="Geodetic latitude of the desired stare point in radians, positive North"/>
+        <Data name="posLon" inMemoryType="float64" encodedType="signed32" scaler="180*10000000/pi" documentToMethod="Degrees" comment="Longitude of the desired stare point in radians, positive East"/>
+        <Data name="posAlt" inMemoryType="float64" encodedType="signed32" scaler="10000" documentToMethod="Altitude" comment="Altitude of the desired stare point in meters above the WGS-84 ellipsoid"/>
+        <Data name="gimbalPosLat" inMemoryType="float64" default="0" encodedType="signed32" scaler="180*10000000/pi" documentToMethod="Degrees" comment="Geodetic latitude of the gimbal in radians, positive North"/>
+        <Data name="gimbalPosLon" inMemoryType="float64" default="0" encodedType="signed32" scaler="180*10000000/pi" documentToMethod="Degrees" comment="Longitude of the gimbal in radians, positive East"/>
+        <Data name="gimbalPosAlt" inMemoryType="float64" default="0" encodedType="signed32" scaler="10000" documentToMethod="Altitude" comment="Altitude of the gimbal in meters above the WGS-84 ellipsoid"/>
+        <Data name="gimbalQuat" inMemoryType="float32" default="0" array="4" encodedType="signed16" max="1" documentToMethod="Quat" comment="Gimbal quaternion describing the rotation from the gimbal mount frame to the North, East, Down navigation frame"/>
+        <Data name="pan" inMemoryType="float32" default="0" encodedType="signed16" max="pi" documentToMethod="Degrees" comment="Gimbal pan angle in radians from -pi to pi"/>
+        <Data name="tilt" inMemoryType="float32" default="0" encodedType="signed16" max="pi" documentToMethod="Degrees" comment="Gimbal tilt angle in radians from -pi to pi"/>
         <Data name="rangeSource" enum="RangeDataSrc_t" encodedType="unsigned8" default="RANGE_SRC_NONE" comment="Target range data source" />
-        <Data name="slantRange" inMemoryType="float32" encodedType="unsigned24" scaler="100" default="0" comment="Slant range to target, if available (see rangeSource)" />
-        <Data name="alongStareAngle" inMemoryType="float32" encodedType="signed16" max="pi" default="0" comment="Angle in radians of the view of the path with respect to the perpendicular ideal view. Positive angles indicate looking ahead, negative are looking behind."/>
-        <Data name="crossStareAngle" inMemoryType="float32" encodedType="signed16" max="pi" default="0" comment="Cross track angle in radians of the stare location, which will be zero if cross stepping is not being used. Negative if staring left of the path."/>
+        <Data name="slantRange" inMemoryType="float32" encodedType="unsigned24" scaler="100" default="0" documentToMethod="SlantRange" comment="Slant range to target, if available (see rangeSource)" />
+        <Data name="alongStareAngle" inMemoryType="float32" encodedType="signed16" max="pi" default="0" documentToMethod="StareAngle" comment="Angle in radians of the view of the path with respect to the perpendicular ideal view. Positive angles indicate looking ahead, negative are looking behind."/>
+        <Data name="crossStareAngle" inMemoryType="float32" encodedType="signed16" max="pi" default="0" documentToMethod="StareAngle" comment="Cross track angle in radians of the stare location, which will be zero if cross stepping is not being used. Negative if staring left of the path."/>
     </Packet>
 
     <Packet name="OrionResetSource" ID="ORION_PKT_RESET_SOURCE" parameterInterface="true" comment="Reset information for a processor in the Orion Gimbal. This packet is transmitted by each processor in the gimbal following its bootup">
@@ -629,32 +645,32 @@ See TrilliumPacket.c (in the Orion SDK) for details.
         <Data name="Key" inMemoryType="unsigned8" comment="UAS Local Set key" />
         <Data name="SubKey" inMemoryType="unsigned8" comment="UAS Local Set sub-key, if applicable (e.g., security metadata)"/>
         <Data name="Length" inMemoryType="unsigned8" comment="Data length, in bytes" />
-        <Data name="Value" inMemoryType="unsigned8" array="127" variableArray="Length" comment="Variable-length value string"/>
+        <Data name="Value" inMemoryType="unsigned8" encodedType="unsigned8" array="127" variableArray="Length" documentFunction="displayAsciiString(Length, " comment="Variable-length value string"/>
     </Packet>
 
     <Packet name="OrionSensorData" ID="ORION_PKT_SENSOR_DATA" comment="Raw sensor data from the Orion Crown board.">
-        <Data name="Gyros" inMemoryType="float32" array="3" encodedType="signed16" max="300*(pi/180)" comment="Measured angular rate in body axes in radians per second"/>
-        <Data name="Accels" inMemoryType="float32" array="3" encodedType="signed16" max="98.1" comment="Measured specific force in body axes in meters per second per second"/>
-        <Data name="Baro" inMemoryType="float32" encodedType="unsigned16" max="110000" comment="Measured barometric pressure in Pascals"/>
-        <Data name="OAT" inMemoryType="float32" encodedType="unsigned16" scaler="100" comment="Measured outside air temperature in degrees Kelvin"/>
-        <Data name="time" inMemoryType="unsigned32" comment="system time stamp in milliseconds of this IMU data"/>
-        <Data name="gyroTemp" inMemoryType="float32" encodedType="unsigned16" scaler="100" comment="Gyro die temperature in degrees Kelvin"/>
-        <Data name="gyroDt" inMemoryType="float32" default="0.005" encodedType="unsigned16" scaler="1000000" comment="Elapsed gyro time in seconds. Use this time to compute delta angle from the gyro rate"/>
-        <Data name="accelDt" inMemoryType="float32" default="0.005" encodedType="unsigned16" scaler="1000000" comment="Elapsed accelerometer time in seconds. Use this time to compute delta velocity from the specific force"/>
-        <Data name="ppsAge" inMemoryType="signed16" default="-1" comment="PPS pulse age in milliseconds before the system time reported in this packet"/>
+        <Data name="Gyros" inMemoryType="float32" array="3" encodedType="signed16" max="300*(pi/180)" documentToMethod="AngularRate" comment="Measured angular rate in body axes in radians per second"/>
+        <Data name="Accels" inMemoryType="float32" array="3" encodedType="signed16" max="98.1" documentToMethod="AxesForce" comment="Measured specific force in body axes in meters per second per second"/>
+        <Data name="Baro" inMemoryType="float32" encodedType="unsigned16" max="110000" documentToMethod="BarometricPressure" comment="Measured barometric pressure in Pascals"/>
+        <Data name="OAT" inMemoryType="float32" encodedType="unsigned16" scaler="100" documentToMethod="KelvinTemperature" comment="Measured outside air temperature in degrees Kelvin"/>
+        <Data name="time" inMemoryType="unsigned32" documentUnit=" ms" comment="system time stamp in milliseconds of this IMU data"/>
+        <Data name="gyroTemp" inMemoryType="float32" encodedType="unsigned16" scaler="100" documentToMethod="KelvinTemperature" comment="Gyro die temperature in degrees Kelvin"/>
+        <Data name="gyroDt" inMemoryType="float32" default="0.005" encodedType="unsigned16" scaler="1000000" documentUnit=" seconds" comment="Elapsed gyro time in seconds. Use this time to compute delta angle from the gyro rate"/>
+        <Data name="accelDt" inMemoryType="float32" default="0.005" encodedType="unsigned16" scaler="1000000" documentUnit=" seconds" comment="Elapsed accelerometer time in seconds. Use this time to compute delta velocity from the specific force"/>
+        <Data name="ppsAge" inMemoryType="signed16" default="-1" documentUnit=" ms" comment="PPS pulse age in milliseconds before the system time reported in this packet"/>
         <Data name="counter" inMemoryType="unsigned8" default="0" comment="IMU packet counter, rolls over every 256"/>
     </Packet>
 
 
     <Packet name="GpsData" ID="ORION_PKT_GPS_DATA" comment=
-        "Raw GPS data. This packet is normally sent by the gimbal once per second, unless the
-        gimbal is in INS debug mode, in which case this packet is sent for every GPS report.
-        This packet can also be sent to the gimbal in order to provide GPS information. Sending
-        this packet to the gimbal will override any internal GPS. The ideal rate to send this
-        packet to the gimbal is 4Hz.
+        "Raw GPS data. This packet is normally sent by the gimbal once per second, unless the \
+        gimbal is in INS debug mode, in which case this packet is sent for every GPS report. \
+        This packet can also be sent to the gimbal in order to provide GPS information. Sending \
+        this packet to the gimbal will override any internal GPS. The ideal rate to send this \
+        packet to the gimbal is 4Hz. \
 
-        Note that the position information of this packet is *not* the definitive
-        position of the gimbal. That information comes from the INS in the gimbal and is
+        Note that the position information of this packet is *not* the definitive \
+        position of the gimbal. That information comes from the INS in the gimbal and is \
         visible in the GeolocateTelemetryCore packet.">
 
         <Enum name="gpsSource_t" comment="Enumeration for source of GPS data.">
@@ -684,18 +700,18 @@ See TrilliumPacket.c (in the Orion SDK) for details.
 
         <Data name="multiAntHeadingValid" inMemoryType="bitfield1" comment="Set if the GPS has a multi antenna heading solution"/>
         <Data name="reserved" inMemoryType="null" encodedType="bitfield3"/>
-        <Data name="FixType" inMemoryType="bitfield4" comment="uBlox fix type"/>
+        <Data name="FixType" enum="ubloxFixType_t" inMemoryType="bitfield4" comment="uBlox fix type"/>
         <Data name="FixState" inMemoryType="unsigned8" comment="uBlox fix state"/>
         <Data name="TrackedSats" inMemoryType="unsigned8" comment="The number of satellites used in the GPS solution"/>
         <Data name="PDOP" inMemoryType="float32" encodedType="unsigned8" scaler="10" comment="Position dilution of precision"/>
-        <Data name="Latitude" inMemoryType="float64" encodedType="signed32" scaler="180*10000000/pi" comment="Geodetic latitude in radians, positive North"/>
-        <Data name="Longitude" inMemoryType="float64" encodedType="signed32" scaler="180*10000000/pi" comment="Longitude in radians, positive East"/>
-        <Data name="Altitude" inMemoryType="float64" encodedType="signed32" scaler="10000" comment="Altitude in meters above the WGS-84 ellipsoid"/>
-        <Data name="VelNED" inMemoryType="float32" array="3" encodedType="signed32" scaler="1000" comment="Velocity in North, East, Down meters per second"/>
-        <Data name="Hacc" inMemoryType="float32" encodedType="signed32" scaler="1000" comment="Horizontal accuracy in meters"/>
-        <Data name="Vacc" inMemoryType="float32" encodedType="signed32" scaler="1000" comment="Vertical accuracy in meters"/>
-        <Data name="SpeedAcc" inMemoryType="float32" encodedType="signed32" scaler="1000" comment="Speed accuracy in meters per second"/>
-        <Data name="HeadingAcc" inMemoryType="float32" encodedType="signed32" scaler="5729578" comment="Course accuracy in radians"/>
+        <Data name="Latitude" inMemoryType="float64" encodedType="signed32" scaler="180*10000000/pi" documentToMethod="Degrees" comment="Geodetic latitude in radians, positive North"/>
+        <Data name="Longitude" inMemoryType="float64" encodedType="signed32" scaler="180*10000000/pi" documentToMethod="Degrees" comment="Longitude in radians, positive East"/>
+        <Data name="Altitude" inMemoryType="float64" encodedType="signed32" scaler="10000" documentToMethod="Altitude" comment="Altitude in meters above the WGS-84 ellipsoid"/>
+        <Data name="VelNED" inMemoryType="float32" array="3" encodedType="signed32" scaler="1000" documentToMethod="NED" comment="Velocity in North, East, Down meters per second"/>
+        <Data name="Hacc" inMemoryType="float32" encodedType="signed32" scaler="1000" documentToMethod="MeterAccuracy" comment="Horizontal accuracy in meters"/>
+        <Data name="Vacc" inMemoryType="float32" encodedType="signed32" scaler="1000" documentToMethod="MeterAccuracy" comment="Vertical accuracy in meters"/>
+        <Data name="SpeedAcc" inMemoryType="float32" encodedType="signed32" scaler="1000" documentToMethod="Speed" comment="Speed accuracy in meters per second"/>
+        <Data name="HeadingAcc" inMemoryType="float32" encodedType="signed32" scaler="5729578" documentToMethod="Degrees" comment="Course accuracy in radians"/>
         <Data name="ITOW" inMemoryType="unsigned32" comment="GPS time of week in milliseconds"/>
         <Data name="Week" inMemoryType="unsigned16" comment="GPS week number since Jan 6 1980"/>
         <Data name="GeoidUndulation" inMemoryType="float32" encodedType="signed16" scaler="100" comment="Height of the mean seal level geoid with respect to the WGS-84 ellipsoid, in meters"/>
@@ -728,9 +744,9 @@ See TrilliumPacket.c (in the Orion SDK) for details.
     </Packet>
 
     <Packet name="InsQuality" ID="ORION_PKT_INS_QUALITY"
-            comment="This packet is transmitted once per second by the gimbal to communicate the quality of the inertial navigation system (INS) data.
-                     The INS is responsible for fusing the crown board IMU and GPS to determine the position, velocity, attitude, and IMU errors.
-                     The quality of the INS data directly impacts the quality of the data in the GeolocateTelemetryCore packet. This data are only
+            comment="This packet is transmitted once per second by the gimbal to communicate the quality of the inertial navigation system (INS) data. \
+                     The INS is responsible for fusing the crown board IMU and GPS to determine the position, velocity, attitude, and IMU errors. \
+                     The quality of the INS data directly impacts the quality of the data in the GeolocateTelemetryCore packet. This data are only \
                      sent once per second as the quality data changes slowly.">
 
         <Enum name="insMode_t" comment="Enumeration for the inertial navigation operational mode">
@@ -753,7 +769,7 @@ See TrilliumPacket.c (in the Orion SDK) for details.
             <Value name="numImuTypes" comment="Number of known IMU types" />
         </Enum>
 
-        <Data name="systemTime" inMemoryType="unsigned32" comment="Milliseconds since system bootup"/>
+        <Data name="systemTime" inMemoryType="unsigned32" documentUnit=" ms" comment="Milliseconds since system bootup"/>
         <Data name="gpsSource" enum="gpsSource_t" comment="The source of GPS data"/>
         <Data name="reserved" inMemoryType="null" encodedType="bitfield5" comment="Reserved packet space"/>
         <Data name="imuType" enum="imuType_t" encodedType="bitfield3" comment="IMU type"/>
@@ -766,48 +782,85 @@ See TrilliumPacket.c (in the Orion SDK) for details.
         <Data name="posRejected" inMemoryType="bitfield1" comment="1 if the INS rejected the last position update because the chi-square value was too large."/>
         <Data name="velRejected" inMemoryType="bitfield1" comment="1 if the INS rejected the last velocity update because the chi-square value was too large."/>
         <Data name="hdgRejected" inMemoryType="bitfield1" comment="1 if the INS rejected the last heading update because the chi-square value was too large."/>
-        <Data name="gpsPeriod" inMemoryType="float32" encodedType="unsigned8" scaler="100" comment="Time in seconds between GPS measurements, 0 if no measurement"/>
-        <Data name="hdgPeriod" inMemoryType="float32" encodedType="unsigned8" scaler="100" comment="Time in seconds between heading measurements, 0 if no measurement"/>
-        <Data name="posChiSquare" inMemoryType="float32" encodedType="float16" comment="Chi-square statistic of the last position observation"/>
-        <Data name="velChiSquare" inMemoryType="float32" encodedType="float16" comment="Chi-square statistic of the last velocity observation"/>
-        <Data name="hdgChiSquare" inMemoryType="float32" encodedType="float16" comment="Chi-square statistic of the last heading observation"/>
-        <Data name="attConfidence" inMemoryType="float32" array="3" encodedType="unsigned16" scaler="10000" comment="Attitude confidence in radians as a body Roll, Pitch, Yaw vector"/>
-        <Data name="velConfidence" inMemoryType="float32" array="3" encodedType="unsigned16" scaler="100" comment="Velocity confidence in meters per second as a North, East, Down vector"/>
-        <Data name="posConfidence" inMemoryType="float32" array="3" encodedType="unsigned16" scaler="100" comment="Position confidence in meters as a North, East, Down vector"/>
-        <Data name="gyroConfidence" dependsOn="hasGyroBias" inMemoryType="float32" array="3" encodedType="unsigned16" scaler="100000" comment="Rate gyro bias confidence in radians per second as a body Roll, Pitch, Yaw vector"/>
-        <Data name="accelConfidence" dependsOn="hasAccelBias" inMemoryType="float32" array="3" encodedType="unsigned16" scaler="30000" comment="Accelerometer bias confidence in m/s/s as a body X, Y, Z vector"/>
-        <Data name="gravityConfidence" dependsOn="hasGravityBias" inMemoryType="float32" encodedType="unsigned16" scaler="30000" comment="Gravity bias confidence in m/s/s"/>
-        <Data name="clockBiasConfidence" dependsOn="hasClockBias" inMemoryType="float32" encodedType="unsigned16" scaler="10000" comment="Clock bias confidence (for tightly coupled) in meters"/>
-        <Data name="clockDriftConfidence" dependsOn="hasClockBias" inMemoryType="float32" encodedType="unsigned16" scaler="10000" comment="Clock drift confience (for tightly coupled) in meters per second"/>
-        <Data name="gyroBias" dependsOn="hasGyroBias" inMemoryType="float32" array="3" encodedType="signed16" scaler="100000" comment="Rate gyro bias estimate in radians per second as a body Roll, Pitch, Yaw vector"/>
-        <Data name="accelBias" dependsOn="hasAccelBias" inMemoryType="float32" array="3" encodedType="unsigned16" scaler="30000" comment="Accelerometer bias estimate in m/s/s as a body X, Y, Z vector"/>
-        <Data name="gravityBias" dependsOn="hasGravityBias" inMemoryType="float32" encodedType="unsigned16" scaler="30000" comment="Gravity bias estimate in m/s/s"/>
-        <Data name="clockBias" dependsOn="hasClockBias" inMemoryType="float32" encodedType="signed16" scaler="100" comment="Clock bias estimate (for tightly coupled) in meters"/>
-        <Data name="clockDrift" dependsOn="hasClockBias" inMemoryType="float32" encodedType="signed16" scaler="1000" comment="Clock drift estimate (for tightly coupled) in meters per second"/>
-        <Data name="numTightSatPosUpdates" dependsOn="hasClockBias" inMemoryType="unsigned8" comment="Number of satellites that contributed to tightly coupled position updates"/>
-        <Data name="numTightSatVelUpdates" dependsOn="hasClockBias" inMemoryType="unsigned8" comment="Number of satellites that contributed to tightly coupled velocity updates"/>
-        <Data name="numTightPosUpdates" dependsOn="hasClockBias" inMemoryType="unsigned8" comment="Number of signals that contributed to tightly coupled position updates"/>
-        <Data name="numTightVelUpdates" dependsOn="hasClockBias" inMemoryType="unsigned8" comment="Number of signals that contributed to tightly coupled velocity updates"/>
-        <Data name="panTiltBias" dependsOn="hasPanTiltBias" inMemoryType="float32" encodedType="signed16" array="NUM_GIMBAL_AXES" max="10*pi/180" comment="Pan and tilt boresight biases"/>
+        <Data name="gpsPeriod" inMemoryType="float32" encodedType="unsigned8" scaler="100" documentUnit=" seconds" comment="Time in seconds between GPS measurements, 0 if no measurement"/>
+        <Data name="hdgPeriod" inMemoryType="float32" encodedType="unsigned8" scaler="100" documentUnit=" seconds" comment="Time in seconds between heading measurements, 0 if no measurement"/>
+        <Data name="posChiSquare" inMemoryType="float32" encodedType="float16" documentToMethod="ChiSquare" comment="Chi-square statistic of the last position observation"/>
+        <Data name="velChiSquare" inMemoryType="float32" encodedType="float16" documentToMethod="ChiSquare" comment="Chi-square statistic of the last velocity observation"/>
+        <Data name="hdgChiSquare" inMemoryType="float32" encodedType="float16" documentToMethod="ChiSquare" comment="Chi-square statistic of the last heading observation"/>
+        <Data name="attConfidence" inMemoryType="float32" array="3" encodedType="unsigned16" scaler="10000" documentToMethod="16QUAT" comment="Attitude confidence in radians as a body Roll, Pitch, Yaw vector"/>
+        <Data name="velConfidence" inMemoryType="float32" array="3" encodedType="unsigned16" scaler="100" documentToMethod="16NED" comment="Velocity confidence in meters per second as a North, East, Down vector"/>
+        <Data name="posConfidence" inMemoryType="float32" array="3" encodedType="unsigned16" scaler="100" documentToMethod="16NED" comment="Position confidence in meters as a North, East, Down vector"/>
+        <Data name="gyroConfidence" dependsOn="hasGyroBias" inMemoryType="float32" array="3" encodedType="unsigned16" scaler="100000" documentToMethod="GyroBias" comment="Rate gyro bias confidence in radians per second as a body Roll, Pitch, Yaw vector"/>
+        <Data name="accelConfidence" dependsOn="hasAccelBias" inMemoryType="float32" array="3" encodedType="unsigned16" scaler="30000" documentToMethod="AccelerometerBias" comment="Accelerometer bias confidence in m/s/s as a body X, Y, Z vector"/>
+        <Data name="gravityConfidence" dependsOn="hasGravityBias" inMemoryType="float32" encodedType="unsigned16" scaler="30000" documentUnit=" m/s/s" comment="Gravity bias confidence in m/s/s"/>
+        <Data name="clockBiasConfidence" dependsOn="hasClockBias" inMemoryType="float32" encodedType="unsigned16" scaler="10000" documentUnit=" meters" comment="Clock bias confidence (for tightly coupled) in meters"/>
+        <Data name="clockDriftConfidence" dependsOn="hasClockBias" inMemoryType="float32" encodedType="unsigned16" scaler="10000" documentUnit=" m/s" comment="Clock drift confience (for tightly coupled) in meters per second"/>
+        <Data name="gyroBias" dependsOn="hasGyroBias" inMemoryType="float32" array="3" encodedType="signed16" scaler="100000" documentToMethod="16QUAT" comment="Rate gyro bias estimate in radians per second as a body Roll, Pitch, Yaw vector"/>
+        <Data name="accelBias" dependsOn="hasAccelBias" inMemoryType="float32" array="3" encodedType="unsigned16" scaler="30000" documentToMethod="AccelerometerBias" comment="Accelerometer bias estimate in m/s/s as a body X, Y, Z vector"/>
+        <Data name="gravityBias" dependsOn="hasGravityBias" inMemoryType="float32" encodedType="unsigned16" scaler="30000" documentUnit=" m/s/s" comment="Gravity bias estimate in m/s/s"/>
+        <Data name="clockBias" dependsOn="hasClockBias" inMemoryType="float32" encodedType="signed16" scaler="100" documentUnit=" meters" comment="Clock bias estimate (for tightly coupled) in meters"/>
+        <Data name="clockDrift" dependsOn="hasClockBias" inMemoryType="float32" encodedType="signed16" scaler="1000" documentUnit=" meters/s" comment="Clock drift estimate (for tightly coupled) in meters per second"/>
+        <Data name="numTightSatPosUpdates" dependsOn="hasClockBias" inMemoryType="unsigned8" documentUnit=" satellites" comment="Number of satellites that contributed to tightly coupled position updates"/>
+        <Data name="numTightSatVelUpdates" dependsOn="hasClockBias" inMemoryType="unsigned8" documentUnit=" satellites" comment="Number of satellites that contributed to tightly coupled velocity updates"/>
+        <Data name="numTightPosUpdates" dependsOn="hasClockBias" inMemoryType="unsigned8" documentUnit=" signals" comment="Number of signals that contributed to tightly coupled position updates"/>
+        <Data name="numTightVelUpdates" dependsOn="hasClockBias" inMemoryType="unsigned8" documentUnit=" signals" comment="Number of signals that contributed to tightly coupled velocity updates"/>
+        <Data name="panTiltBias" dependsOn="hasPanTiltBias" inMemoryType="float32" encodedType="signed16" array="NUM_GIMBAL_AXES" max="10*pi/180" documentToMethod="PanTilt" comment="Pan and tilt boresight biases"/>
         <Data name="panTiltChiSquare" dependsOn="hasPanTiltBias" inMemoryType="float32" encodedType="unsigned8" max="10" comment="Pan and tilt chi-square statistic"/>
     </Packet>
 
     <Documentation comment="---"/>
     <Documentation name="Packets for gimbal control" paragraph="1" comment="These packets are sent by the user to control the gimbal."/>
 
-    <Structure name="OrionCmd" comparefile="compare/compareOrionPublic" printfile="compare/printOrionPublic" comment="Structure for holding a gimbal axis command">
+    <Structure name="OrionCmd" comparefile="compare/compareOrionPublic" printfile="compare/printOrionPublic" comment="Structure for holding a gimbal axis command (legacy format).">
+        <Data name="Target" inMemoryType="float32" array="NUM_GIMBAL_AXES" encodedType="signed16" scaler="1000.0" documentToMethod="PanTilt" comment="Pan and tilt commands in radians or radians per second. Interpretation depends on Mode."/>
+        <Data name="Mode" enum="OrionMode_t" encodedType="unsigned8" comment="Operational mode of the gimbal. Note that not all modes can be directly commanded."/>
+        <Data name="Stabilized" inMemoryType="unsigned8" comment="Non-zero to enable inertial stabilization. If zero then Target is with respect to the gimbal mount, otherwise Target is with respect to the inertial or image space."/>
+        <Data name="ImpulseTime" inMemoryType="float32" encodedType="unsigned8" scaler="10.0" documentUnit=" seconds" comment="Amount of time in seconds for changing the gimbal position"/>
+    </Structure>
+
+    <Structure name="OrionCmdExtended" comment="Extended command structure. Identical to OrionCmd plus sequence number and flags.">
         <Data name="Target" inMemoryType="float32" array="NUM_GIMBAL_AXES" encodedType="signed16" scaler="1000.0" comment="Pan and tilt commands in radians or radians per second. Interpretation depends on Mode."/>
         <Data name="Mode" enum="OrionMode_t" encodedType="unsigned8" comment="Operational mode of the gimbal. Note that not all modes can be directly commanded."/>
         <Data name="Stabilized" inMemoryType="unsigned8" comment="Non-zero to enable inertial stabilization. If zero then Target is with respect to the gimbal mount, otherwise Target is with respect to the inertial or image space."/>
         <Data name="ImpulseTime" inMemoryType="float32" encodedType="unsigned8" scaler="10.0" comment="Amount of time in seconds for changing the gimbal position"/>
+        <Data name="SequenceNum" inMemoryType="unsigned16" comment="Assigned sequence number for command/response correlation."/>
+        <Data name="Flags" inMemoryType="unsigned8" comment="Command flags."/>
+    </Structure>
+
+    <Structure name="OrionCmdExtendedResponse" comment="Extended response structure. All diagnostic fields populated by gimbal.">
+        <Data name="Target" inMemoryType="float32" array="NUM_GIMBAL_AXES" encodedType="signed16" scaler="1000.0" comment="Echo of commanded pan and tilt."/>
+        <Data name="Mode" enum="OrionMode_t" encodedType="unsigned8" comment="Echo of commanded mode."/>
+        <Data name="Stabilized" inMemoryType="unsigned8" comment="Echo of stabilization flag."/>
+        <Data name="ImpulseTime" inMemoryType="float32" encodedType="unsigned8" scaler="10.0" comment="Echo of impulse time."/>
+        <Data name="SequenceNum" inMemoryType="unsigned16" comment="Echo of command sequence number."/>
+        <Data name="ClevisTime" inMemoryType="unsigned32" encodedType="unsigned24" comment="TimerReadUs()/1000 at command execution, milliseconds since boot or last reset."/>
+        <Data name="DropsDetected" inMemoryType="unsigned8" comment="Uplink drop count = SequenceNum - last_seq_received - 1."/>
+        <Data name="StabGyroRate" inMemoryType="float32" array="3" encodedType="signed16" max="2*pi" comment="Stabilization gyro angular rates in rad/s, 3 axes."/>
+        <Data name="EncoderPos" inMemoryType="float32" array="NUM_GIMBAL_AXES" encodedType="signed16" max="pi" comment="Encoder positions in radians, pan/tilt."/>
+        <Data name="EncoderRate" inMemoryType="float32" array="NUM_GIMBAL_AXES" encodedType="signed16" max="2*pi" comment="Encoder angular rates in rad/s, pan/tilt."/>
+        <Data name="Flags" inMemoryType="unsigned8" comment="Echo of command flags."/>
     </Structure>
 
     <Packet name="OrionCmd" ID="ORION_PKT_CMD" comment=
-        "Basic commands for control of gimbal pan and tilt. Send this packet to the gimbal to effect basic pan and tilt control.
-        The gimbal will echo the packet as confirmation of receiving it. Note that this packet cannot be used to command the Geopoint
-        or Path modes; those modes need to be commanded through their respective packets. If the gimbal is in Geopoint or Path mode
+        "Basic commands for control of gimbal pan and tilt. Send this packet to the gimbal to effect basic pan and tilt control. \
+        The gimbal will echo the packet as confirmation of receiving it. Note that this packet cannot be used to command the Geopoint \
+        or Path modes; those modes need to be commanded through their respective packets. If the gimbal is in Geopoint or Path mode \
         receiving this packet will cancel those modes.">
         <Data name="Cmd" struct="OrionCmd" comment="Pan/tilt command" />
+    </Packet>
+
+    <Packet name="OrionCmdExtended" ID="ORION_PKT_CMD" comment=
+        "Extended command for gimbal pan and tilt. Uses same packet ID as OrionCmd.
+        Send this to enable extended mode with timing correlation. Gimbal responds with OrionCmdExtendedResponse.
+        Flags: bit0=DwellMode (hold position), bit1=EnablePidPiggyback (private).">
+        <Data name="Cmd" struct="OrionCmdExtended" comment="Extended pan/tilt command." />
+    </Packet>
+
+    <Packet name="OrionCmdExtendedResponse" ID="ORION_PKT_CMD" comment=
+        "Extended response from gimbal. Uses same packet ID as OrionCmd.
+        Sent by gimbal in response to OrionCmdExtended. Contains all diagnostic fields.
+        If Flags bit1=1, an OrionPidData packet immediately follows this response.">
+        <Data name="Cmd" struct="OrionCmdExtendedResponse" comment="Extended response with diagnostics." />
     </Packet>
 
 
@@ -846,31 +899,31 @@ See TrilliumPacket.c (in the Orion SDK) for details.
             <Value name="geopointStareClosure" value="0x03" comment="Logical OR of geopointStare and geopointClosure."/>
             <Value name="geopointReturnToMode" value="0x04" comment="Set this bit to return to the current operation mode after the closure threshold is reached" />
         </Enum>
-        <Data name="targetLat" inMemoryType="float64" encodedType="signed32" scaler="180*10000000/pi" comment="Geodetic latitude of the target in radians, positive North"/>
-        <Data name="targetLon" inMemoryType="float64" encodedType="signed32" scaler="180*10000000/pi" comment="Longitude of the target in radians, positive East"/>
-        <Data name="targetAlt" inMemoryType="float64" encodedType="signed32" scaler="10000" comment="Altitude of the target in meters above the WGS-84 ellipsoid"/>
-        <Data name="targetVelNED" inMemoryType="float32" array="3" encodedType="signed16" scaler="100" comment="Velocity of the target in North, East, Down meters per second"/>
-        <Data name="joystickRange" inMemoryType="float32" encodedType="unsigned16" default="0" scaler="1" comment="Estimated range to target in meters. If non-zero *and* if geopoint is already running the position information in this packet is ignored and only the velocity and range information is used to propagate the geopoint command position. This is used for cases where a joystick is being used to drive the geopoint. If the gimbal has its own range estimate then a non-zero joystickRange will be replaced with the gimbal's internal range estimate. If you want the gimbal use the joystick mode but you cannot compute the range, use a range less than 10 meters and the gimbal will not do the range adjustment"/>
+        <Data name="targetLat" inMemoryType="float64" encodedType="signed32" scaler="180*10000000/pi" documentToMethod="Degrees" comment="Geodetic latitude of the target in radians, positive North"/>
+        <Data name="targetLon" inMemoryType="float64" encodedType="signed32" scaler="180*10000000/pi" documentToMethod="Degrees" comment="Longitude of the target in radians, positive East"/>
+        <Data name="targetAlt" inMemoryType="float64" encodedType="signed32" scaler="10000" documentUnit=" meters" comment="Altitude of the target in meters above the WGS-84 ellipsoid"/>
+        <Data name="targetVelNED" inMemoryType="float32" array="3" encodedType="signed16" scaler="100" documentToMethod="16NED" comment="Velocity of the target in North, East, Down meters per second"/>
+        <Data name="joystickRange" inMemoryType="float32" encodedType="unsigned16" default="0" scaler="1" documentUnit=" meters" comment="Estimated range to target in meters. If non-zero *and* if geopoint is already running the position information in this packet is ignored and only the velocity and range information is used to propagate the geopoint command position. This is used for cases where a joystick is being used to drive the geopoint. If the gimbal has its own range estimate then a non-zero joystickRange will be replaced with the gimbal's internal range estimate. If you want the gimbal use the joystick mode but you cannot compute the range, use a range less than 10 meters and the gimbal will not do the range adjustment"/>
         <Data name="options" enum="geopointOptions" default="geopointNone" comment="Options for the geopoint packet."/>
     </Packet>
 
     <Packet name="OrionPath" ID="ORION_PKT_PATH" comment=
-        "The path packet contains a series of waypoints that define a path in 3D space. Sending this packet enables the path
-         track logic, which will cause the gimbal to look at the nearest point on the path; or look directly downward. Path mode
+        "The path packet contains a series of waypoints that define a path in 3D space. Sending this packet enables the path \
+         track logic, which will cause the gimbal to look at the nearest point on the path; or look directly downward. Path mode \
           is canceled by sending a normal OrionCmd packet.">
         <Enum name="maxPathPoints" comment="Maximum number of points in a path.">
             <Value name="MAX_PATH_POINTS" value="15" comment="Maximum number of points in a path"/>
         </Enum>
 
-        <Data name="numPoints" inMemoryType="unsigned8" comment="Number of points in the path"/>
-        <Data name="pointDown" inMemoryType="bitfield1" comment="If numPoints is zero, and this is set, then the gimbal will point downwards"/>
+        <Data name="numPoints" inMemoryType="unsigned8" documentUnit=" points" comment="Number of points in the path"/>
+        <Data name="pointDown" inMemoryType="bitfield1" documentToMethod="Enabled" comment="If numPoints is zero, and this is set, then the gimbal will point downwards"/>
         <Data name="reserved" inMemoryType="null" encodedType="bitfield3" comment="Reserved for future expansion"/>
-        <Data name="numCrossTrackSteps" inMemoryType="bitfield4" comment="Number of steps for across track stepping. Must be more than 1 to enable cross track stepping."/>
+        <Data name="numCrossTrackSteps" inMemoryType="bitfield4" documentUnit=" steps" comment="Number of steps for across track stepping. Must be more than 1 to enable cross track stepping."/>
         <Structure name="Point" array="MAX_PATH_POINTS" variableArray="numPoints" comment="List of path points">
-            <Data name="posEcef" inMemoryType="float32" array="3" encodedType="signed24" scaler="1" comment="ECEF position in meters"/>
+            <Data name="posEcef" inMemoryType="float32" array="3" encodedType="signed24" scaler="1" documentToMethod="Points" comment="ECEF position in meters"/>
         </Structure>
-        <Data name="alongTrackStepAngle" inMemoryType="float32" encodedType="unsigned16" max="pi" default="0" comment="Angle in radians for step-stare functionality along track. Set to zero for no step-stare. If doing downward pointing the gimbal must be receiving ORION_PKT_RANGE_DATA."/>
-        <Data name="crossTrackStepRatio" inMemoryType="float32" encodedType="unsigned8" max="2.55" default="0" comment="Ratio of cross track step angle to along track step angle. Set to zero for no cross track stepping."/>
+        <Data name="alongTrackStepAngle" inMemoryType="float32" encodedType="unsigned16" max="pi" default="0" documentToMethod="TrackStepAngle" comment="Angle in radians for step-stare functionality along track. Set to zero for no step-stare. If doing downward pointing the gimbal must be receiving ORION_PKT_RANGE_DATA."/>
+        <Data name="crossTrackStepRatio" inMemoryType="float32" encodedType="unsigned8" max="2.55" default="0" documentToMethod="TrackStepRatio" comment="Ratio of cross track step angle to along track step angle. Set to zero for no cross track stepping."/>
     </Packet>
 
     <Packet name="StareAck" ID="ORION_PKT_STARE_ACK" parameterInterface="true" comment="This packet tells the gimbal that the step-stare image has been acquired and the gimbal can move to the next step stare point.">
@@ -887,7 +940,7 @@ See TrilliumPacket.c (in the Orion SDK) for details.
 
     <Packet name="OrionCameraState" ID="ORION_PKT_CAMERA_STATE" comment=
         "Command a camera in the gimbal.">
-        <Data name="Zoom" inMemoryType="float32" encodedType="signed16" scaler="100" comment="Zoom is calculated from fov as: Zoom = PixelPitch*ArrayWidth*0.5/(MinFocalLength*tan(FOV*0.5)) array width and pixel pitch come from the OrionCameras packet
+        <Data name="Zoom" inMemoryType="float32" encodedType="signed16" scaler="100" comment="Zoom is calculated from fov as: Zoom = PixelPitch*ArrayWidth*0.5/(MinFocalLength*tan(FOV*0.5)) array width and pixel pitch come from the OrionCameras packet \
                                                                                                 Sending less than 1 interprets as do not change, 1 is full wide, 2 is 2X, etc."/>
         <Data name="Focus" inMemoryType="float32" encodedType="signed16" scaler="10000" default="-1" comment="Focus command/position on imagers with manual focus control, expected between 0 and 1.0, exactly 0 commands autofocus, -1 is don't change"/>
         <Data name="KeepActiveCamera" inMemoryType="unsigned8" encodedType="bitfield1" default="0" comment="Set to 1 to maintain the currently active camera. If this bit is set to zero and the Index field does not match the currently active camera index, the gimbal will switch cameras"/>
@@ -913,7 +966,7 @@ See TrilliumPacket.c (in the Orion SDK) for details.
         <Data name="AceLevel" inMemoryType="signed8" comment="Active Contrast Enhancement (ACE) level, (default=1, effective min=-8, effective max=8)"/>
         <Data name="DdeThreshold" inMemoryType="unsigned8" comment="DDE spatial threshold, (default=24, effective min=1, effective max=100)"/>
         <Data name="AgcMidpoint" inMemoryType="unsigned8" default="128" comment="AGC output midpoint, (default=128, effective min=0, effective max=255)"/>
-        <Data name="IntegrationTime" inMemoryType="float32" encodedType="unsigned8" min="1" max="30" default="8" comment="Integration time, in milliseconds, (default=8, effective min=2, effective max=12)"/>
+        <Data name="IntegrationTime" inMemoryType="float32" encodedType="unsigned8" min="1" max="30" default="8" documentToMethod="IntegrationTime" comment="Integration time, in milliseconds, (default=8, effective min=2, effective max=12)"/>
 
         <Enum name="FlirAgcType_t" comment="FLIR AGC type enumeration">
             <Value name="AGC_TYPE_DEFAULT" />
@@ -921,25 +974,29 @@ See TrilliumPacket.c (in the Orion SDK) for details.
         </Enum>
 
         <Data name="AgcType" enum="FlirAgcType_t" encodedType="unsigned8" default="AGC_TYPE_DEFAULT"/>
-        <Data name="AgcGamma" inMemoryType="float32" encodedType="unsigned8" default="1.0" min="0.5" max="4.0" comment="Agc Gamma (default = 1.0, effective min = 0.5, effective max = 4.0)"/>
-        <Data name="AgcLinearPercent" inMemoryType="float32" encodedType="unsigned8" default="50.0" min="0.0" max="100.0" comment="Agc Linear Percent (default = 50.0, effective min = 0.0, effective max = 100.0)" />
+        <Data name="AgcGamma" inMemoryType="float32" encodedType="unsigned8" default="1.0" min="0.5" max="4.0" documentToMethod="Gamma" comment="Agc Gamma (default = 1.0, effective min = 0.5, effective max = 4.0)"/>
+        <Data name="AgcLinearPercent" inMemoryType="float32" encodedType="unsigned8" default="50.0" min="0.0" max="100.0" documentToMethod="Percent" comment="Agc Linear Percent (default = 50.0, effective min = 0.0, effective max = 100.0)" />
+	<Data name="TceEnable" inMemoryType="bitfield1" default="0" comment="Trillium Ccontrast Enhancement enable (default=0, Enabled=1, Disabled=0)"/>
+	<Data name="TceGamma" inMemoryType="unsigned8" default="90" comment="The average brightness applied to the entire image when running TCE"/>
+        <Data name="TceClipLimit" inMemoryType="unsigned8" default="15" comment="The boundary from midpoint each TCE region is allowed to roam"/>
+        <Data name="TceAlpha" inMemoryType="unsigned8" default="248" comment="The amount of TCE vs global histogram is applied"/>
     </Packet>
 
     <Packet name="OrionAptinaSettings" ID="ORION_PKT_APTINA_SETTINGS" comparefile="compare/compareOrionPublic" printfile="compare/printOrionPublic" comment="Aptina-specific camera settings.">
         <Data name="Index" inMemoryType="unsigned8" comment="Index of the camera that these settings should apply to. Use 0xFF to apply to any connected Aptina camera."/>
-        <Data name="MinExposure" inMemoryType="float32" encodedType="unsigned16" comment="Minimum exposure time in milliseconds, (default=0.1, effective min=0.05, effective max=33.0)" min="0.05" max="33"/>
-        <Data name="MaxExposure" inMemoryType="float32" encodedType="unsigned16" comment="Maximum exposure time in milliseconds, (default=8.0, effective min=0.05, effective max=33.0)" min="0.05" max="33"/>
-        <Data name="MinGain" inMemoryType="float32" encodedType="unsigned16" comment="Minimum sensor luminance gain, (default=1, effective min=1, effective max=32)" min="1" max="32"/>
-        <Data name="MaxGain" inMemoryType="float32" encodedType="unsigned16" comment="Maximum sensor luminance gain, (default=32, effective min=1, effective max=32)" min="1" max="32"/>
+        <Data name="MinExposure" inMemoryType="float32" encodedType="unsigned16" documentFunction="exposureToMilliseconds" comment="Minimum exposure time in milliseconds, (default=0.1, effective min=0.05, effective max=33.0)" min="0.05" max="33"/>
+        <Data name="MaxExposure" inMemoryType="float32" encodedType="unsigned16" documentFunction="exposureToMilliseconds" comment="Maximum exposure time in milliseconds, (default=8.0, effective min=0.05, effective max=33.0)" min="0.05" max="33"/>
+        <Data name="MinGain" inMemoryType="float32" encodedType="unsigned16" documentToMethod="MinMaxGain" comment="Minimum sensor luminance gain, (default=1, effective min=1, effective max=32)" min="1" max="32"/>
+        <Data name="MaxGain" inMemoryType="float32" encodedType="unsigned16" documentToMethod="MinMaxGain" comment="Maximum sensor luminance gain, (default=32, effective min=1, effective max=32)" min="1" max="32"/>
         <Data name="Brightness" inMemoryType="signed8" comment="Brightness adjustment, (default=-8, effective min=-100, effective max=110)"/>
-        <Data name="Contrast" inMemoryType="float32" encodedType="signed8" max="1" comment="Contrast adjustment, (default=-0.4, effective min=-1.0, effective max=1.0)"/>
-        <Data name="Saturation" inMemoryType="float32" encodedType="signed8" max="1" comment="Saturation adjustment, (default=0.3, effective min=-1.0, effective max=1.0)"/>
-        <Data name="Sharpness" inMemoryType="float32" encodedType="unsigned8" max="5" comment="Sharpening filter strength, (default=2.0, effective min=0.0, effective max=5.0)" />
+        <Data name="Contrast" inMemoryType="float32" encodedType="signed8" max="1" documentFunction="cameraContrast" comment="Contrast adjustment, (default=-0.4, effective min=-1.0, effective max=1.0)"/>
+        <Data name="Saturation" inMemoryType="float32" encodedType="signed8" max="1" documentFunction="cameraContrast" comment="Saturation adjustment, (default=0.3, effective min=-1.0, effective max=1.0)"/>
+        <Data name="Sharpness" inMemoryType="float32" encodedType="unsigned8" max="5" documentFunction="cameraSharpness" comment="Sharpening filter strength, (default=2.0, effective min=0.0, effective max=5.0)" />
         <Data name="DebugEnable" inMemoryType="bitfield1" default="0" comment="Set to 1 to enable AGC debugging information, (default=0, effective min=0, effective max=1)" />
         <Data name="Hue" inMemoryType="signed8" default="0" comment="Hue adjustment, (default=0, effective min=-10, effective max=10)" />
-        <Data name="Aperture" inMemoryType="float32" encodedType="unsigned8" max="32" default="0" comment="Aperture command, set to 0 for auto" />
-        <Data name="MinAperture" inMemoryType="float32" encodedType="unsigned8" max="32" default="0" comment="Minimum aperture setting, or 0 for not supported" />
-        <Data name="MaxAperture" inMemoryType="float32" encodedType="unsigned8" max="32" default="0" comment="Maximum aperture setting, or 0 for not supported" />
+        <Data name="Aperture" inMemoryType="float32" encodedType="unsigned8" max="32" default="0" documentFunction="cameraAperature" comment="Aperture command, set to 0 for auto" />
+        <Data name="MinAperture" inMemoryType="float32" encodedType="unsigned8" max="32" default="0" documentFunction="cameraAperature" comment="Minimum aperture setting, or 0 for not supported" />
+        <Data name="MaxAperture" inMemoryType="float32" encodedType="unsigned8" max="32" default="0" documentFunction="cameraAperature" comment="Maximum aperture setting, or 0 for not supported" />
         <Data name="Flip" inMemoryType="unsigned8" default="0" comment="Set to non-zero to vertically flip the video, (default=0, effective min=0, effective max=1)" />
     </Packet>
 
@@ -957,7 +1014,7 @@ See TrilliumPacket.c (in the Orion SDK) for details.
         <Data name="Index" inMemoryType="unsigned8" comment="Index of the camera that these settings should apply to. Use 0xFF to apply to any connected Hitachi camera."/>
         <Data name="IntegrationTime" inMemoryType="signed16" comment="Integration time in microseconds, or negative to disable shutter-priority mode, (default=-1, effective min=100, effective max=16667)" />
         <Data name="Aperture" inMemoryType="float32" encodedType="signed16" scaler="10" comment="Aperture f-number, or negative to disable aperture-priority mode, (default=1.4, effective min=-3276.6, effective max=3276.7)" />
-        <Data name="Sharpness" inMemoryType="float32" encodedType="unsigned8" max="5" default="1" comment="Sharpening filter strength, (default=1.0, effective min=0.0, effective max=5.0)" />
+        <Data name="Sharpness" inMemoryType="float32" encodedType="unsigned8" max="5" default="1" documentToMethod="HitachiSharpness" comment="Sharpening filter strength, (default=1.0, effective min=0.0, effective max=5.0)" />
         <Data name="NightMode" inMemoryType="unsigned8" default="0" comment="Set to 1 to remove IR cut filter, or 0 to enable it, (default=0, effective min=0, effective max=1)" />
     </Packet>
 
@@ -1025,6 +1082,16 @@ See TrilliumPacket.c (in the Orion SDK) for details.
         <Data name="MaxExposure" inMemoryType="float32" encodedType="unsigned16" scaler="1000000" min="1" comment="Maximum auto exposure time in ms" />^M
     </Packet>
 
+    <Structure name="CameraAngularOffsets" comparefile="compare/compareOrionPublic" printfile="compare/printOrionPublic" comment="Camera angular offset error data, between this camera and another unified camera.">
+        <Data name="ErrorPanRads" inMemoryType="float32" encodedType="signed16" max="pi/2" printscaler="180/pi" comment="Aligment offset in radians between this camera and another unified camera; in pan axis."/>
+        <Data name="ErrorTiltRads" inMemoryType="float32" encodedType="signed16" max="pi/2" printscaler="180/pi" comment="Aligment offset in radians between this camera and another unified camera; in tilt axis."/>
+    </Structure>
+
+    <Packet name="OrionUnifiedCamErrorSettings" ID="ORION_PKT_UNIFIED_CAM_ERR_SETTINGS" comparefile="compare/compareOrionPublic" printfile="compare/printOrionPublic" comment="A packet to indicate the total angular error between two cameras.">
+        <Data name="NumCameras" inMemoryType="unsigned8" comment="The number of cameras installed"/>
+        <Data name="UnifiedCamAngularOffsets" struct="CameraAngularOffsets" array="NUM_CAMERAS" variableArray="NumCameras" />
+    </Packet>
+    
     <Packet name="OrionOmniVisSettings" ID="ORION_PKT_OMNIVIS_SETTINGS" comparefile="compare/compareOrionPublic" printfile="compare/printOrionPublic" comment="OmniVision-specific camera settings.">
         <Data name="Index" inMemoryType="unsigned8" comment="Index of the camera that these settings should apply to. Use 0xFF to apply to any connected OmniVis camera."/>
         <Data name="ExpMode" inMemoryType="unsigned8" encodedType="unsigned8" comment="Sets exposure mode; 0:off, 1:auto" />
@@ -1073,6 +1140,55 @@ See TrilliumPacket.c (in the Orion SDK) for details.
         <Data name="ColorMode" enum="SierraColorMode_t" default="SIERRA_COLOR_DISABLED" encodedType="bitfield3" comment="Sets the scene colorization mode. 0:disabled color, 1:full color, 2:high detail, 3:normal detail"/>
     </Packet>
     
+    <Packet name="OrionSionyxSettings" ID="ORION_PKT_SIONYX_SETTINGS" comparefile="compare/compareOrionPublic" printfile="compare/printOrionPublic" comment="Sionyx-specific camera settings.">
+        <Enum name="SionyxFrameRate_t" comment="Frame Rate enumeration for Sionyx cameras">
+            <Value name="SIONYX_60_10_FPS" comment="60 FPS native, skipped to 10 FPS" />
+            <Value name="SIONYX_60_12_FPS" comment="60 FPS native, skipped to 12 FPS" />
+            <Value name="SIONYX_60_15_FPS" comment="60 FPS native, skipped to 15 FPS" />
+            <Value name="SIONYX_60_20_FPS" comment="60 FPS native, skipped to 20 FPS" />
+            <Value name="SIONYX_60_30_FPS" comment="60 FPS native, skipped to 30 FPS" />
+            <Value name="SIONYX_60_FPS" comment="60 FPS native" />
+            <Value name="SIONYX_90_15_FPS" comment="90 FPS native, skipped to 15 FPS" />
+            <Value name="SIONYX_90_18_FPS" comment="90 FPS native, skipped to 18 FPS" />
+            <Value name="SIONYX_90_22_5_FPS" comment="90 FPS native, skipped to 22.5 FPS" />
+            <Value name="SIONYX_90_30_FPS" comment="90 FPS native, skipped to 30 FPS" />
+            <Value name="SIONYX_90_45_FPS" comment="90 FPS native, skipped to 45 FPS" />
+            <Value name="SIONYX_90_FPS" comment="90 FPS native" />
+			<Value name="SIONYX_120_20_FPS" comment="120 FPS native, skipped to 20 FPS" />
+			<Value name="SIONYX_120_24_FPS" comment="120 FPS native, skipped to 24 FPS" />
+			<Value name="SIONYX_120_30_FPS" comment="120 FPS native, skipped to 30 FPS" />
+			<Value name="SIONYX_120_40_FPS" comment="120 FPS native, skipped to 40 FPS" />
+			<Value name="SIONYX_120_60_FPS" comment="120 FPS native, skipped to 60 FPS" />
+			<Value name="SIONYX_FPS_COUNT" comment="Frame rate count" />
+        </Enum>
+	    <Enum name="SionyxExposureMode_t" comment="Exposure mode enumeration for Sionyx cameras">
+            <Value name="SIONYX_EXPOSURE_MANUAL" comment="Manual exposure mode" />
+            <Value name="SIONYX_EXPOSURE_SEMI_AUTO" comment="Semi-auto exposure mode, closed loop of AEC/AGC with influence by brightness trim and integration min/max lines." />
+            <Value name="SIONYX_EXPOSURE_AUTO" comment="Auto exposure mode, closed loop of AEC/AGC" />
+        </Enum>
+        <Data name="Index" inMemoryType="unsigned8" comment="Index of the camera that these settings should apply to. Use 0xFF to apply to any connected Sionyx camera."/>
+        <Data name="ExposureTime" inMemoryType="float32" encodedType="unsigned16" scaler="100" comment="Sets the exposure time, max is 1/frame rate in milliseconds. Minimum: 0, Maximum: 200.0"/>
+        <Data name="AnalogGain" inMemoryType="unsigned8" encodedType="bitfield6" comment="Sets the analog gain value. Minimum: 2, Maximum: 32"/>
+        <Data name="DigitalGain" inMemoryType="unsigned8" encodedType="bitfield7" comment="Sets the digital gain value. Minimum: 1, Maximum: 64"/>
+        <Data name="FrameRate" enum="SionyxFrameRate_t" encodedType="bitfield5" comment="Sets the frame rate (calculates frame skip internally)."/>
+        <Data name="ExposureMode" inMemoryType="unsigned8" encodedType="bitfield2" comment="Sets exposure mode."/>
+        <Data name="ToneMapping" inMemoryType="unsigned8" encodedType="bitfield3"  comment="Sets the tone mapping alogorithm; 0:Global Gamma (default), 1:Linear Tone Mapping, 2-7:Local Adaptive Log Compression (1-6).  Minimum: 0, Maximum: 7"/>
+        <Data name="Sharpening" inMemoryType="unsigned16" encodedType="bitfield15" comment="Adjusts the contour enhancement level; 50:default Minimum: 0 Maximum: 1023"/>
+        <Data name="ImageOrientation" inMemoryType="unsigned8" encodedType="bitfield2" comment="Sets the cameras image orientation; 0:None, 1:Flipped Vertically, 2:Mirrored Horizontal, 3:Flipped Vertically and Mirrored Horizontally.  Minimum: 0, Maximum: 3"/>
+        <Data name="BrightnessTrim" inMemoryType="signed16" comment="Brightness trim when using semi-auto mode. Min: -32768 (No luminance) Max: 32767 (Highly saturated)."/>
+        <Data name="IntegrationLineMin" inMemoryType="unsigned16" comment="Min integration time (in lines) when using semi-auto mode. Min: 1 Max: IntegrationLineMax. Note: MinExposureMs = IntegrationLineMin/4798 * 33.33."/>
+        <Data name="IntegrationLineMax" inMemoryType="unsigned16" comment="Max integration time (in lines) when using semi-auto mode. Min: IntegrationLineMin Max: (MaxExposureMs * 4798/33.33)"/>
+    </Packet>
+
+    <Packet name="OrionLynredSettings" ID="ORION_PKT_LYNRED_SETTINGS" comparefile="compare/compareOrionPublic" printfile="compare/printOrionPublic" comment="Lynred specific camera settings.">
+        <Data name="Index" inMemoryType="unsigned8" comment="Index of the camera that these settings should apply to. Use 0xFF to apply to any connected Lynred camera."/>
+        <Data name="ContrastMode" inMemoryType="unsigned8" bitfieldGroup="true" encodedType="bitfield1" comment="Sets the contrast mode. 0=Auto, 1=Manual"/>     
+        <Data name="ICEMovingAverage" inMemoryType="unsigned16" encodedType="bitfield9" comment="Sets the ICE moving average frames (n+1) in Auto contrast mode. Value: between 0 and 511, 0 = 1 frame. Default=50" />
+        <Data name="Reserved" inMemoryType="null" encodedType="bitfield6" comment="Remaining Portion of bitfield"/>
+        <Data name="ICEMinThreshold" inMemoryType="unsigned8" encodedType="unsigned8" comment="Sets the manual low ICE clip threshold as a percentage of frame: 0-100%, default is 0%" />
+        <Data name="ICEMaxThreshold" inMemoryType="unsigned8" encodedType="unsigned8" comment="Sets the manual high ICE clip threshold as a percentage of frame: 1-100%, default is 100%"/>
+    </Packet>
+
     <Packet name="VideoOptions" ID="ORION_PKT_VIDEO_OPTIONS" comparefile="compare/compareOrionPublic" printfile="compare/printOrionPublic" comment="Video output options">
         <Data name="Stabilized" inMemoryType="unsigned32" encodedType="bitfield1" comment="Set to 1 to enable digital video stabilization, or 0 to disable" />
         <Data name="ShowTrackBox" inMemoryType="unsigned32" encodedType="bitfield1" comment="Set to 1 to render the track box on the video, or 0 to only send KLV track box position" />
@@ -1090,7 +1206,7 @@ See TrilliumPacket.c (in the Orion SDK) for details.
         <!-- DON'T FORGET TO UPDATE THE RESERVED BITFIELD WIDTH IF YOU ADD NEW FIELDS -->
         <!-- !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!! -->
         <Data name="Reserved" inMemoryType="null" encodedType="bitfield20" constant="0" comment="Reserved, set to zero" />
-        <Data name="MaxShift" inMemoryType="float32" encodedType="unsigned8" max="1" default="0.1" comment="Maximum stabilization shift as a percentage of frame size, or 0 for no change" />
+        <Data name="MaxShift" inMemoryType="float32" encodedType="unsigned8" max="1" default="0.1" documentFunction="displayMaxShift" comment="Maximum stabilization shift as a percentage of frame size, or 0 for no change" />
         <Structure name="TelemetryOptions" dependsOn="HasTelemetryOptions">
             <Data name="CameraPos" inMemoryType="unsigned32" encodedType="bitfield1" />
             <Data name="TargetPos" inMemoryType="unsigned32" encodedType="bitfield1" />
@@ -1116,26 +1232,28 @@ See TrilliumPacket.c (in the Orion SDK) for details.
 
     <Packet name="TrackOptions" ID="ORION_PKT_TRACK_OPTIONS" comparefile="compare/compareOrionPublic" printfile="compare/printOrionPublic" comment="Scene/object track options">
         <Data name="DebugEnable" inMemoryType="unsigned32" encodedType="bitfield1" comment="Set to 1 to enable debug logging" />
-        <Data name="KpScene" inMemoryType="float32" encodedType="unsigned8" scaler="10" comment="Scene mode proportional gain" />
-        <Data name="KiScene" inMemoryType="float32" encodedType="unsigned8" scaler="10" comment="Scene mode integral gain" />
-        <Data name="KpTrack" inMemoryType="float32" encodedType="unsigned8" scaler="10" comment="Track mode proportional gain" />
-        <Data name="KiTrack" inMemoryType="float32" encodedType="unsigned8" scaler="10" comment="Track mode integral gain" />
-        <Data name="MaxRate" inMemoryType="float32" encodedType="unsigned8" scaler="100" comment="Maximum angular rate command, in FOV/s" />
-        <Data name="MaxAccel" inMemoryType="float32" encodedType="unsigned8" scaler="20" comment="Maximum angular acceleration command, in FOV/s/s" />
-        <Data name="TrackSize" inMemoryType="float32" encodedType="unsigned8" scaler="1000" comment="Track box size, as a percent of the frame" />
-        <Data name="TrackMode" inMemoryType="unsigned8" comment="[TrackMode](#trackmode)" />
-        <Data name="TrackAlpha" inMemoryType="float32" encodedType="unsigned8" max="1" default="0.7" comment="Track box filter alpha" />
-        <Data name="RateAlpha" inMemoryType="float32" encodedType="unsigned8" max="1" default="0.2" comment="Inertial rate seed filter alpha" />
-        <Data name="MinSceneConf" inMemoryType="float32" encodedType="unsigned8" max="1" default="0.5" comment="Minimum scene confidence" />
-        <Data name="MinTrackConf" inMemoryType="float32" encodedType="unsigned8" max="1" default="0.3" comment="Minimum track box confidence" />
-        <Data name="MaxCoastTime" inMemoryType="float32" encodedType="unsigned8" scaler="100" default="1.5" comment="Maximum coast time, in seconds" />
-        <Data name="TrackDelay" inMemoryType="unsigned8" default="0" comment="Tracker feedback loop delay, in frames" />
-        <Data name="DisableMti" inMemoryType="unsigned8" default="0" comment="Set to 1 to disable MTI tracks" />
-        <Data name="DetectionMode" inMemoryType="unsigned16" default="0" comment="[DetectionMode](#detectionmode)" />
-        <Data name="DetectionThreshold" inMemoryType="unsigned8" default="6" comment=" " />
-        <Data name="DetectionMaxTelemTrks" inMemoryType="unsigned8" default="3" comment=" " />
-        <Data name="TrackOffsetPan" inMemoryType="float32" default="0" comment="Send a TrackOptions command with this value set to nudge the track offset by the given amount in radians (positive pushes the cursor right" />
-        <Data name="TrackOffsetTilt" inMemoryType="float32" default="0" comment="Send a TrackOptions command with this value set to nudge the track offset by the given amount in radians (positive pushes the cursor down" />
+        <Data name="KpScene" inMemoryType="float32" encodedType="unsigned8" scaler="10" documentUnit=" proportional gain" comment="Scene mode proportional gain" />
+        <Data name="KiScene" inMemoryType="float32" encodedType="unsigned8" scaler="10" documentUnit=" integral gain" comment="Scene mode integral gain" />
+        <Data name="KpTrack" inMemoryType="float32" encodedType="unsigned8" scaler="10" documentUnit=" proportional gain" comment="Track mode proportional gain" />
+        <Data name="KiTrack" inMemoryType="float32" encodedType="unsigned8" scaler="10" documentUnit=" integral gain" comment="Track mode integral gain" />
+        <Data name="MaxRate" inMemoryType="float32" encodedType="unsigned8" scaler="100" documentUnit=" FOV/s" comment="Maximum angular rate command, in FOV/s" />
+        <Data name="MaxAccel" inMemoryType="float32" encodedType="unsigned8" scaler="20" documentUnit=" FOV/s/s" comment="Maximum angular acceleration command, in FOV/s/s" />
+        <Data name="TrackSize" inMemoryType="float32" encodedType="unsigned8" scaler="1000" documentUnit=" %" comment="Track box size, as a percent of the frame" />
+        <Data name="TrackMode" inMemoryType="unsigned8" documentFunction="getTrackMode" comment="[TrackMode](#trackmode)" />
+        <Data name="TrackAlpha" inMemoryType="float32" encodedType="unsigned8" max="1" default="0.7" documentToMethod="Float32" comment="Track box filter alpha" />
+        <Data name="RateAlpha" inMemoryType="float32" encodedType="unsigned8" max="1" default="0.2" documentToMethod="Float32" comment="Inertial rate seed filter alpha" />
+        <Data name="MinSceneConf" inMemoryType="float32" encodedType="unsigned8" max="1" default="0.5" documentToMethod="Float32" comment="Minimum scene confidence" />
+        <Data name="MinTrackConf" inMemoryType="float32" encodedType="unsigned8" max="1" default="0.3" documentToMethod="Float32" comment="Minimum track box confidence" />
+        <Data name="MaxCoastTime" inMemoryType="float32" encodedType="unsigned8" scaler="100" default="1.5" documentUnit=" seconds" comment="Maximum coast time, in seconds" />
+        <Data name="TrackDelay" inMemoryType="unsigned8" default="0" documentUnit=" frames" comment="Tracker feedback loop delay, in frames (0 for non-TrilliumTracker, TrilliumTracker defaults to 1)" />
+        <Data name="DisableMti" inMemoryType="unsigned8" default="0" documentToMethod="Disabled" comment="Set to 1 to disable MTI tracks" />
+        <Data name="DetectionMode" inMemoryType="unsigned16" default="0" documentFunction="getDetectionMode" comment="[DetectionMode](#detectionmode)" />
+        <Data name="DetectionThreshold" inMemoryType="unsigned8" default="6" documentUnit=" Detection Threshold"  comment=" " />
+        <Data name="DetectionMaxTelemTrks" inMemoryType="unsigned8" default="3" documentUnit=" Max Telemetry Tracks" comment=" " />
+        <Data name="TrackOffsetPan" inMemoryType="float32" default="0" documentFunction="displayAsRadians" comment="Send a TrackOptions command with this value set to nudge the track offset by the given amount in radians (positive pushes the cursor right" />
+        <Data name="TrackOffsetTilt" inMemoryType="float32" default="0" documentFunction="displayAsRadians" comment="Send a TrackOptions command with this value set to nudge the track offset by the given amount in radians (positive pushes the cursor down" />
+        <Data name="TrackInitSensitivity" inMemoryType="unsigned8" encodedType="unsigned8" max="10" default="2" comment="TrilliumTracker initialization Sensitivity" />
+        <Data name="LearningRate" inMemoryType="float32" encodedType="unsigned16" scaler="10000" default="0.0750" comment="TrilliumTracker Learning Rate" />
     </Packet>
 
 <Documentation name="TrackMode Description" title="TrackMode" paragraph="3" comment=
@@ -1201,19 +1319,19 @@ See TrilliumPacket.c (in the Orion SDK) for details.
         <Data name="Index" inMemoryType="unsigned8" default="1" comment="Index of the track (0 indicates primary-ctr of fov, 1 and higher are secondary)" />
         <Data name="ID" inMemoryType="unsigned32" />
         <Data name="Status" inMemoryType="unsigned8" />
-        <Data name="Latitude"  inMemoryType="float64" encodedType="signed32" max="pi/2" comment="Filter's estimated latitude in radians" />
-        <Data name="Longitude" inMemoryType="float64" encodedType="signed32" max="pi" comment="Filter's estimated longitude in radians" />
-        <Data name="Altitude"  inMemoryType="float64" encodedType="signed24" scaler="100" comment="Filter's estimated altitude in meters above ellipsoid" />
-        <Data name="SigmaLatitude"  inMemoryType="float32" encodedType="signed16" max="pi/2" comment="Sigma latitude in radians" />
-        <Data name="SigmaLongitude" inMemoryType="float32" encodedType="signed16" max="pi" comment="Sigma longitude in radians" />
-        <Data name="SigmaAltitude" inMemoryType="float32" encodedType="signed16" max="pi" comment="Sigma altitude in meters above ellipsoid" />
-        <Data name="EllipseMajor" inMemoryType="float32" encodedType="signed16" max="1000" comment="Confidence ellipse major axis in meters" />
-        <Data name="EllipseMinor" inMemoryType="float32" encodedType="signed16" max="1000" comment="Confidence ellipse minor axis in meters" />
-        <Data name="EllipseAngle" inMemoryType="float32" encodedType="signed16" max="pi" comment="Conifdence ellipse rotation in radians" />
-        <Data name="VelNED" inMemoryType="float32" array="3" encodedType="signed32" scaler="1000" comment="Velocity in North, East, Down meters per second"/>
-        <Data name="SigmaVelNED" inMemoryType="float32" array="3" encodedType="unsigned16"  min="0" max="1000" default="0" comment="Sigma in North, East, Down meters per second"/>
+        <Data name="Latitude"  inMemoryType="float64" encodedType="signed32" max="pi/2" documentToMethod="LatRads" comment="Filter's estimated latitude in radians" />
+        <Data name="Longitude" inMemoryType="float64" encodedType="signed32" max="pi" documentToMethod="LonRads" comment="Filter's estimated longitude in radians" />
+        <Data name="Altitude"  inMemoryType="float64" encodedType="signed24" scaler="100" documentUnit=" meters" comment="Filter's estimated altitude in meters above ellipsoid" />
+        <Data name="SigmaLatitude"  inMemoryType="float32" encodedType="signed16" max="pi/2" documentToMethod="SigmaLat" comment="Sigma latitude in radians" />
+        <Data name="SigmaLongitude" inMemoryType="float32" encodedType="signed16" max="pi" documentToMethod="SigmaLonAlt" comment="Sigma longitude in radians" />
+        <Data name="SigmaAltitude" inMemoryType="float32" encodedType="signed16" max="pi" documentToMethod="SigmaLonAlt" comment="Sigma altitude in meters above ellipsoid" />
+        <Data name="EllipseMajor" inMemoryType="float32" encodedType="signed16" max="1000" documentToMethod="EllipseValue" comment="Confidence ellipse major axis in meters" />
+        <Data name="EllipseMinor" inMemoryType="float32" encodedType="signed16" max="1000" documentToMethod="EllipseValue" comment="Confidence ellipse minor axis in meters" />
+        <Data name="EllipseAngle" inMemoryType="float32" encodedType="signed16" max="pi" documentToMethod="EllipseAngle" comment="Conifdence ellipse rotation in radians" />
+        <Data name="VelNED" inMemoryType="float32" array="3" encodedType="signed32" scaler="1000" documentToMethod="NED" comment="Velocity in North, East, Down meters per second"/>
+        <Data name="SigmaVelNED" inMemoryType="float32" array="3" encodedType="unsigned16"  min="0" max="1000" default="0" documentToMethod="SigmaNED" comment="Sigma in North, East, Down meters per second"/>
         <Data name="State" enum="GeoTrackerState_t" inMemoryType="unsigned8" comment="State of the filter (running or not)" />
-        <Data name="Course" inMemoryType="float32" encodedType="signed16" max="360.0" comment="Estimated Course in deg" />
+        <Data name="Course" inMemoryType="float32" encodedType="signed16" max="360.0" documentToMethod="Course" comment="Estimated Course in deg" />
 
     </Packet>
 
@@ -1257,7 +1375,7 @@ See TrilliumPacket.c (in the Orion SDK) for details.
         <Structure name="CameraInformation" array="3" comment="Camera recording information for 1st, 2nd, 3rd cameras.">
             <Data name="Status" enum="VideoRecordState_t" encodedType="unsigned8" comment="Current status of the camera."/>
             <Data name="StreamId" inMemoryType="unsigned8" comment="The current index in the MPEG-TS stream."/>
-            <Data name="Bitrate" inMemoryType="unsigned16" comment="The current bitrate of the camera, in KBps."/>
+            <Data name="Bitrate" inMemoryType="unsigned16" documentUnit=" kbps" comment="The current bitrate of the camera, in KBps."/>
             <Data name="FrameStatistics" inMemoryType="float32" encodedType="signed16" scaler="1000" comment="Percentage of frames that are being processed.(0.0f-1.0f)"/>
             <Data name="Enabled" inMemoryType="bitfield1" comment="enable for recording/streaming" />
             <Data name="Reserved0" inMemoryType="unsigned64" comment="Reserved"/>
@@ -1268,7 +1386,7 @@ See TrilliumPacket.c (in the Orion SDK) for details.
         <Data name="EnableOrionData" inMemoryType="bitfield1" comment="Enable Orion data inserted into the MPEG-TS stream [SID:0x69]"/>
         <Data name="OBREnabled" inMemoryType="bitfield1" comment="Indication if the onboard recording/streaming tool is active"/>
         <Data name="Reserved1" inMemoryType="bitfield3" comment="Reserved bits"/>
-        <Data name="UdpDestIp" inMemoryType="unsigned32" comment="destination IPv4 address"/>
+        <Data name="UdpDestIp" inMemoryType="unsigned32" documentToMethod="IPv4" comment="destination IPv4 address"/>
         <Data name="UdpPort" inMemoryType="unsigned16" comment="destination port"/>
         <Data name="UdpBitrate" inMemoryType="unsigned32" comment="Total stream bitrate, in KBps"/>
         <Data name="KlvMode" enum="KlvMode_t" encodedType="unsigned8" comment="Active KLV encoding method"/>
@@ -1294,18 +1412,18 @@ See TrilliumPacket.c (in the Orion SDK) for details.
         <Data name="Ident" inMemoryType="bitfield1" comment="Always 0 from clients, used to ignore command packet"/>
         <Data name="StreamOnRestart" inMemoryType="bitfield1" comment="Enable the system to start streaming on restart automatically, doesn't work for recording, or recording/streaming."/>
         <Data name="EnableOBR" inMemoryType="bitfield1" comment="Set the onboard recording/streaming tool enable state"/>
-        <Data name="UdpDestIp" inMemoryType="unsigned32" comment="destination IPv4 address"/>
+        <Data name="UdpDestIp" inMemoryType="unsigned32" documentToMethod="IPv4" comment="destination IPv4 address"/>
         <Data name="UdpPort" inMemoryType="unsigned16" comment="desitnation port"/>
-        <Data name="UdpBitrateCamera0" inMemoryType="unsigned32" comment="Video encoding target bitrate per camera, in KBps."/>
-        <Data name="UdpBitrateCamera1" inMemoryType="unsigned32" comment="Video encoding target bitrate per camera, in KBps."/>
-        <Data name="UdpBitrateCamera2" inMemoryType="unsigned32" comment="Video encoding target bitrate per camera, in KBps."/>
+        <Data name="UdpBitrateCamera0" inMemoryType="unsigned32" comment="Video encoding target bitrate per camera, in KBps. Cannot be 0."/>
+        <Data name="UdpBitrateCamera1" inMemoryType="unsigned32" comment="Video encoding target bitrate per camera, in KBps. Cannot be 0."/>
+        <Data name="UdpBitrateCamera2" inMemoryType="unsigned32" comment="Video encoding target bitrate per camera, in KBps. Cannot be 0."/>
         <Data name="KlvMode" enum="KlvMode_t" encodedType="unsigned8" comment="Set KLV encoding method"/>
         <Data name="EnableCamera0" inMemoryType="bitfield1" bitfieldGroup="true" comment="Enable recording/streaming on camera index 0" />
         <Data name="EnableCamera1" inMemoryType="bitfield1" comment="Enable recording/streaming on camera index 1" />
         <Data name="EnableCamera2" inMemoryType="bitfield1" comment="Enable recording/streaming on camera index 2" />
         <Data name="EnableCamera3" inMemoryType="bitfield1" comment="Enable recording/streaming on camera index 3" />
         <Data name="Reserved1" inMemoryType="bitfield4" comment="Reserved for future cameras" />
-        <Data name="UdpBitrateCamera3" inMemoryType="unsigned32" default="6000" comment="Video encoding target bitrate per camera, in KBps."/>
+        <Data name="UdpBitrateCamera3" inMemoryType="unsigned32" default="6000" documentUnit=" kbps" comment="Video encoding target bitrate per camera, in KBps. Cannot be 0."/>
      </Packet>
 
      <Packet name="VideoRecordClock" ID="ORION_PKT_VIDEORECORD_CLOCK" comparefile="compare/compareOrionPublic" printfile="compare/printOrionPublic" comment="Get Current PTS of VideoRecord and PTS of PayloadRouter">
@@ -1390,8 +1508,8 @@ See TrilliumPacket.c (in the Orion SDK) for details.
         <Data name="AuxOperatingMode" inMemoryType="bitfield1" comment="Two possible modes here, FailSafe=0, and Normal Mode=1, defaults to failSafe in cases where this laser is not connected to aux power" />
         <Data name="VccUndervoltage"  inMemoryType="bitfield1" comment="Flag to indicate whenever Vcc(aux supply voltage) drops bellow V_usd(undervoltage shutdown, typ = 2V Max = 2.7V), defaults to 0" />
         <Data name="Reserved" inMemoryType="bitfield2" constant="0" comment="Reserved for future use" />
-        <Data name="LaserTemp" inMemoryType="float32" encodedType="unsigned8" scaler="1.0" comment="LaserTemp" />
-        <Data name="WaitTimer" inMemoryType="unsigned16" comment="Time remaining, in milliseconds, before the laser will accept another command" />
+        <Data name="LaserTemp" inMemoryType="float32" encodedType="unsigned8" scaler="1.0" documentToMethod="Temperature" comment="LaserTemp" />
+        <Data name="WaitTimer" inMemoryType="unsigned16" documentUnit=" ms" comment="Time remaining, in milliseconds, before the laser will accept another command" />
     </Structure>
 
     <Packet name="OrionLaserStates" ID="ORION_PKT_LASER_STATES" comment="Information about the current state of lasers installed in the gimbal.">
@@ -1456,33 +1574,33 @@ See TrilliumPacket.c (in the Orion SDK) for details.
 
     <Packet name="OrionLimitsData" ID="ORION_PKT_LIMITS" comparefile="compare/compareOrionPublic" printfile="compare/printOrionPublic" comment=
         "Gimbal limits of operation. This includes the max and min pan and tilt angles, as well as the angular rate and the maximum current consumption.">
-        <Data name="MinPos"  inMemoryType="float32" array="NUM_GIMBAL_AXES" encodedType="signed16" scaler="1000.0" printscaler="180/pi" comment="Minimum position in radians"/>
-        <Data name="MaxPos"  inMemoryType="float32" array="NUM_GIMBAL_AXES" encodedType="signed16" scaler="1000.0" printscaler="180/pi" comment="Maximum position in radians"/>
-        <Data name="MaxVel"  inMemoryType="float32" array="NUM_GIMBAL_AXES" encodedType="unsigned16" scaler="1000.0" printscaler="180/pi" comment="Maximum velocity in radians per second"/>
-        <Data name="MaxAccel"  inMemoryType="float32" array="NUM_GIMBAL_AXES" encodedType="unsigned16" scaler="1.0" printscaler="180/pi" comment="Maximum acceleration in radians per second per second"/>
-        <Data name="ContCur"  inMemoryType="float32" array="NUM_GIMBAL_AXES" encodedType="unsigned16" scaler="1000.0" comment="Maximum continuous current in Amps"/>
-        <Data name="PeakCur"  inMemoryType="float32" array="NUM_GIMBAL_AXES" encodedType="unsigned16" scaler="1000.0" comment="Maximum peak current in Amps"/>
-        <Data name="PeakCurTime"  inMemoryType="float32" array="NUM_GIMBAL_AXES" encodedType="unsigned16" scaler="1000.0" comment="Peak current time in seconds"/>
-        <Data name="InitCur"  inMemoryType="float32" array="NUM_GIMBAL_AXES" encodedType="unsigned16" scaler="1000.0" comment="Initialization current in Amps"/>
-        <Data name="MaxPower" inMemoryType="float32" array="NUM_GIMBAL_AXES" encodedType="unsigned8" scaler="1.0" default="0" comment="Maximum motor output power, in watts. Set to zero for no limit"/>
+        <Data name="MinPos"  inMemoryType="float32" array="NUM_GIMBAL_AXES" encodedType="signed16" scaler="1000.0" printscaler="180/pi" documentToMethod="PanTilt" comment="Minimum position in radians"/>
+        <Data name="MaxPos"  inMemoryType="float32" array="NUM_GIMBAL_AXES" encodedType="signed16" scaler="1000.0" printscaler="180/pi" documentToMethod="PanTilt" comment="Maximum position in radians"/>
+        <Data name="MaxVel"  inMemoryType="float32" array="NUM_GIMBAL_AXES" encodedType="unsigned16" scaler="1000.0" printscaler="180/pi" documentToMethod="PanTiltVel" comment="Maximum velocity in radians per second"/>
+        <Data name="MaxAccel"  inMemoryType="float32" array="NUM_GIMBAL_AXES" encodedType="unsigned16" scaler="1.0" printscaler="180/pi" documentToMethod="PanTiltAccel" comment="Maximum acceleration in radians per second per second"/>
+        <Data name="ContCur"  inMemoryType="float32" array="NUM_GIMBAL_AXES" encodedType="unsigned16" scaler="1000.0" documentToMethod="Current" comment="Maximum continuous current in Amps"/>
+        <Data name="PeakCur"  inMemoryType="float32" array="NUM_GIMBAL_AXES" encodedType="unsigned16" scaler="1000.0" documentToMethod="Current" comment="Maximum peak current in Amps"/>
+        <Data name="PeakCurTime"  inMemoryType="float32" array="NUM_GIMBAL_AXES" encodedType="unsigned16" scaler="1000.0" documentToMethod="Current" comment="Peak current time in seconds"/>
+        <Data name="InitCur"  inMemoryType="float32" array="NUM_GIMBAL_AXES" encodedType="unsigned16" scaler="1000.0" documentToMethod="Current" comment="Initialization current in Amps"/>
+        <Data name="MaxPower" inMemoryType="float32" array="NUM_GIMBAL_AXES" encodedType="unsigned8" scaler="1.0" default="0" documentFunction="displayWatts" comment="Maximum motor output power, in watts. Set to zero for no limit"/>
     </Packet>
 
     <Packet name="InsOptions" ID="ORION_PKT_INS_OPTIONS" comparefile="compare/compareOrionPublic" printfile="compare/printOrionPublic" 
-            comment="INS options give configuration options for the inertial navigation system (INS) in the gunbal.
-                     Changing the INS options will cause the INS to be restarted if the platform rotation changes. When using platform rotation note the order:
-                     First yaw about the gimbal's z-axis to create an intermediate axis. Then pitch about the intermediate y-axis to
-                     create a second intermediate axis. Finally roll about the second intermediate x-axis to reach the platform orientation.
+            comment="INS options give configuration options for the inertial navigation system (INS) in the gunbal. \
+                     Changing the INS options will cause the INS to be restarted if the platform rotation changes. When using platform rotation note the order: \
+                     First yaw about the gimbal's z-axis to create an intermediate axis. Then pitch about the intermediate y-axis to \
+                     create a second intermediate axis. Finally roll about the second intermediate x-axis to reach the platform orientation. \
                      When using an IMU in the payload ball the enablePlatformRotation can still be used, but will only effect heading observations and the GPS lever arm, it will not rotate the IMU data.">
         <Data name="enablePlatformRotation" inMemoryType="bitfield1"
-              comment="The INS will be run in the platform reference frame if this is set.
-                       The platform reference frame is defined by the rotation from the
-                       gimbal reference frame to the platform frame. Set this if the
-                       gimbal is installed such that the gimbal reference frame is often
+              comment="The INS will be run in the platform reference frame if this is set. \
+                       The platform reference frame is defined by the rotation from the \
+                       gimbal reference frame to the platform frame. Set this if the \
+                       gimbal is installed such that the gimbal reference frame is often \
                        near pitch of +/- 90 degrees."/>
         <Data name="enableCourseIsHeading" inMemoryType="bitfield1"
-              comment="If set then the INS will use the course of the GPS as a heading input
-                       for initialization and heading updates when the heading confidence is
-                       poor. This is appropriate for fixed wing aircraft if enablePlatformRotation
+              comment="If set then the INS will use the course of the GPS as a heading input \
+                       for initialization and heading updates when the heading confidence is \
+                       poor. This is appropriate for fixed wing aircraft if enablePlatformRotation \
                        is set (or if the gimbal native axis is aligned with the aircraft axis)."/>
         <Data name="disableMagnetometer" inMemoryType="bitfield1" comment="If set then the INS will ignore any magnetometer measurements."/>
         <Data name="disableGPS" inMemoryType="bitfield1" comment="If set then the INS will ignore any GPS measurements."/>
@@ -1494,7 +1612,7 @@ See TrilliumPacket.c (in the Orion SDK) for details.
         <Data name="disableL1" inMemoryType="bitfield1" comment="If set the INS will ignore L1 band for tightly coupled observations."/>
         <Data name="disableL2" inMemoryType="bitfield1" comment="If set the INS will ignore the L2 band for tightly coupled observations."/>
         <Data name="disableL5" inMemoryType="bitfield1" comment="If set the INS will ignore the L5 band for tightly coupled observations."/>
-        <Data name="elevationMask" inMemoryType="float32" encodedType="bitfield4" min="0" max="5*pi/180" comment="Elevation mask for tightly coupled satellites"/>
+        <Data name="elevationMask" inMemoryType="float32" encodedType="bitfield4" min="0" max="5*pi/180" documentFunction="displayElevationMask" comment="Elevation mask for tightly coupled satellites"/>
         <Data name="enablePayloadIns" inMemoryType="bitfield1" comment="If set the IMU inputs to the INS are coming from the payload ball, not the gimbal crown. Note that enablePlatformRotation is interpreted differently in that case"/>
         <Data name="enableNonLinearHeading" inMemoryType="bitfield1"
               comment="If set then the INS will attempt to observe the heading use nonlinear methods. This may be helpful for hovering vehicles that do not have any other heading observation."/>
@@ -1504,19 +1622,19 @@ See TrilliumPacket.c (in the Orion SDK) for details.
         <Data name="enableCustomIMURotation" inMemoryType="bitfield1" comment="Set to enable a custom rotation from IMU axis to INS axis. Should not be set at the same time as `enableSensonorMV`."/>
         <Data name="reserved" inMemoryType="null" encodedType="bitfield7" comment="reserved space for future expansion"/>
         
-        <Data name="gimbalToPlatformEuler" inMemoryType="float32" array="NUM_AXES" encodedType="signed16" max="pi" printscaler="180/pi" comment="Roll, Pitch, Yaw angles in radians from -pi to pi. The angles give the Euler rotation (yaw first, then pitch, then roll) from the platform reference frame into the gimbal reference frame."/>
-        <Data name="initialHeading" inMemoryType="float32" encodedType="signed16" max="pi" printscaler="180/pi" comment="Initial heading angle in radians for the INS"/>
-        <Data name="gpsLeverArm" inMemoryType="float32" array="3" encodedType="signed16" scaler="1000" default="0" comment="X, Y, Z meters from first (primary) GPS antenna to IMU in the gimbal reference frame, or the platform reference frame if enablePlatformRotation is on"/>
-        <Data name="headingObservationBiasAngle" inMemoryType="float32" encodedType="signed16" default="0" max="pi" printscaler="180/pi" comment="For external heading observations (including magnetometer) subtract this angle in radians from the heading observation to get the heading in INS or platform frame"/>
-        <Data name="secondGPSLeverArm" inMemoryType="float32" array="3" encodedType="signed16" scaler="1000" default="0" comment="X, Y, Z meters from second GPS antenna to IMU in the gimbal reference frame, or the platform reference frame if enablePlatformRotation is on. This only applies if Novatel Align data are being received."/>
-        <Data name="alignHeadingNoise" inMemoryType="float32" encodedType="unsigned16" default="0" max="pi" printscaler="180/pi" comment="Sensor noise in radians for align heading observation. Use zero for the default sensor noise from the Align hardware."/>
-        <Data name="imuToInsEuler" inMemoryType="float32" array="NUM_AXES" default="0" encodedType="signed16" max="pi" printscaler="180/pi" comment="Roll, Pitch, Yaw angles in radians from -pi to pi. The angles give the Euler rotation (yaw first, then pitch, then roll) from the INS reference frame into the IMU reference frame."/>
+        <Data name="gimbalToPlatformEuler" inMemoryType="float32" array="NUM_AXES" encodedType="signed16" max="pi" printscaler="180/pi" documentFunction="displayEuler" comment="Roll, Pitch, Yaw angles in radians from -pi to pi. The angles give the Euler rotation (yaw first, then pitch, then roll) from the platform reference frame into the gimbal reference frame."/>
+        <Data name="initialHeading" inMemoryType="float32" encodedType="signed16" max="pi" printscaler="180/pi" documentToMethod="Degrees" comment="Initial heading angle in radians for the INS"/>
+        <Data name="gpsLeverArm" inMemoryType="float32" array="3" encodedType="signed16" scaler="1000" default="0" documentFunction="displayMetersOffset" comment="X, Y, Z meters from first (primary) GPS antenna to IMU in the gimbal reference frame, or the platform reference frame if enablePlatformRotation is on"/>
+        <Data name="headingObservationBiasAngle" inMemoryType="float32" encodedType="signed16" default="0" max="pi" printscaler="180/pi" documentToMethod="Degrees" comment="For external heading observations (including magnetometer) subtract this angle in radians from the heading observation to get the heading in INS or platform frame"/>
+        <Data name="secondGPSLeverArm" inMemoryType="float32" array="3" encodedType="signed16" scaler="1000" default="0" documentFunction="displayMetersOffset" comment="X, Y, Z meters from second GPS antenna to IMU in the gimbal reference frame, or the platform reference frame if enablePlatformRotation is on. This only applies if Novatel Align data are being received."/>
+        <Data name="alignHeadingNoise" inMemoryType="float32" encodedType="unsigned16" default="0" max="pi" printscaler="180/pi" documentToMethod="Degrees" comment="Sensor noise in radians for align heading observation. Use zero for the default sensor noise from the Align hardware."/>
+        <Data name="imuToInsEuler" inMemoryType="float32" array="NUM_AXES" default="0" encodedType="signed16" max="pi" printscaler="180/pi" documentFunction="displayEuler" comment="Roll, Pitch, Yaw angles in radians from -pi to pi. The angles give the Euler rotation (yaw first, then pitch, then roll) from the INS reference frame into the IMU reference frame."/>
     </Packet>
 
     <Packet name="OrionNetworkSettings" ID="ORION_PKT_NETWORK_SETTINGS" comment="Change the IP network settings in the gimbal.">
-        <Data name="Ip" inMemoryType="unsigned32" comment="IPv4 address"/>
-        <Data name="Mask" inMemoryType="unsigned32" comment="IPv4 network mask"/>
-        <Data name="Gateway" inMemoryType="unsigned32" comment="IPv4 gateway address"/>
+        <Data name="Ip" inMemoryType="unsigned32" documentToMethod="IPv4" comment="IPv4 address"/>
+        <Data name="Mask" inMemoryType="unsigned32" documentToMethod="IPv4" comment="IPv4 network mask"/>
+        <Data name="Gateway" inMemoryType="unsigned32" documentToMethod="IPv4" comment="IPv4 gateway address"/>
         <Data name="LowDelay" inMemoryType="unsigned8" default="0" comment="Set to 1 to use low-delay TCP mode (i.e. disable Nagle's Algorithm)."/>
         <Data name="Mtu" inMemoryType="unsigned16" default="0" comment="Ethernet MTU size, set to zero for hardware default" />
         <Data name="SecondaryTcpPort" inMemoryType="unsigned16" default="0" comment="Port number for secondary TCP server port; set to zero to disable"/>
@@ -1525,14 +1643,73 @@ See TrilliumPacket.c (in the Orion SDK) for details.
     </Packet>
 
     <Packet name="OrionNetworkByteSettings" ID="ORION_PKT_NETWORK_SETTINGS" comparefile="compare/compareOrionPublic" printfile="compare/printOrionPublic" comment="Change the IP network settings in the gimbal.">
-        <Data name="Ip" inMemoryType="unsigned8" array="4" comment="IPv4 address"/>
-        <Data name="Mask" inMemoryType="unsigned8" array="4" comment="IPv4 network mask"/>
-        <Data name="Gateway" inMemoryType="unsigned8" array="4" comment="IPv4 gateway address"/>
+        <Data name="Ip" inMemoryType="unsigned8" array="4" documentToMethod="IPv4" comment="IPv4 address"/>
+        <Data name="Mask" inMemoryType="unsigned8" array="4" documentToMethod="IPv4" comment="IPv4 network mask"/>
+        <Data name="Gateway" inMemoryType="unsigned8" array="4" documentToMethod="IPv4" comment="IPv4 gateway address"/>
         <Data name="LowDelay" inMemoryType="unsigned8" default="0" comment="Set to 1 to use low-delay TCP mode (i.e. disable Nagle's Algorithm)."/>
         <Data name="Mtu" inMemoryType="unsigned16" default="0" comment="Ethernet MTU size, set to zero for hardware default"/>
         <Data name="SecondaryTcpPort" inMemoryType="unsigned16" default="0" comment="Port number for secondary TCP server port; set to zero to disable"/>
         <Data name="LowBandwidth" inMemoryType="unsigned8" default="0" comment="Set to 1 to use low-bandwidth mode (i.e., minimize geolocate telemetry downlink" />
         <Data name="MaxTcpClients" inMemoryType="unsigned8" default="0" comment="Maximum number of TCP telemetry clients; set to zero for 'no change'" />
+    </Packet>
+
+    <Packet name="OrionAdvancedEncodingSettings" ID="ORION_PKT_ADVANCED_ENCODING" comparefile="compare/compareOrionPublic" printfile="compare/printOrionPublic" comment="Command advanced encoding settings for video streams.">
+        
+        <Enum name="EncodingControlRate_t" comment="Video encoding control rates.">
+            <Value name="ENCODE_CONTROL_DISABLE" comment="Disable hardware encoding rate control." />
+            <Value name="ENCODE_CONTROL_CONSTANT" comment="Constant bitrate with constant frame rate." />
+            <Value name="ENCODE_CONTROL_CBR_VFR" comment="Constant bitrate with variable frame rate." />
+            <Value name="ENCODE_CONTROL_VBR_CFR" comment="Variable bitrate with constant frame rate." />
+            <Value name="ENCODE_CONTROL_VBR_VFR" comment="Variable bitrate with variable frame rate." />
+            <Value name="ENCODE_CONTROL_QUALITY" comment="Constant quality." />
+        </Enum>
+
+        <Enum name="BitrateBandIndex_t" comment="Named bitrate band indexes to map to specific encoder settings.">
+            <Value name="ENCODE_IDX_BITRATE_LOW" comment="Encoding band index for mapping to lowest bitrate settings."/>
+            <Value name="ENCODE_IDX_BITRATE_MED" comment="Encoding band index for mapping to medium bitrate settings."/>
+            <Value name="ENCODE_IDX_BITRATE_HIGH" comment="Encoding band index for mapping to high bitrate settings."/>
+            <Value name="ENCODE_IDX_BITRATE_COUNT" comment="Count of encoding band idexes."/>
+        </Enum>
+
+        <Enum name="EntropyMode_t" comment="Video encoding entropy mode options.">
+            <Value name="ENTROPY_MODE_NONE" comment="Encoder is master of entropy mode and can possibly fall back to CAVLC or CABAC." />
+            <Value name="ENTROPY_MODE_CAVLC" comment="Context-Adaptive Variable-Length Coding. Consumes lower processing resource, but is less efficient, i.e. it may result in larger file sizes for same quality." />
+            <Value name="ENTROPY_MODE_CABAC" comment="Context-Adaptive Binary Arithmetic Coding. More resource intensive algorithm, but will result in better compression efficiency, i.e. smaller sizes with better quality." />
+        </Enum>
+
+        <Enum name="IntraRefreshMode_t" comment="Video encoding intra-refresh mode options.">
+            <Value name="INTRA_REFRESH_NONE" comment="Intra-refresh is disabled." />
+            <Value name="INTRA_REFRESH_RANDOM" comment="Intra-refresh and will update random intra-frame macroblocks at the IntraRefreshMbs rate." />
+            <Value name="INTRA_REFRESH_CYCLIC" comment="Not currently supported." />
+        </Enum>
+
+        <Enum name="LoopFilterMode_t" comment="Enables or disables the deblocking filter which can aid with reducing block artifacts, especially at lower bitrates or aggressive compression.">
+            <Value name="LOOP_FILTER_NONE" comment="Loop filter mode is not specified and encoder can fallback or select mode." />
+            <Value name="LOOP_FILTER_ENABLED" comment="Loop filter mode is enabled." />
+            <Value name="LOOP_FILTER_DISABLED" comment="Loop filter mode is disabled." />
+            <Value name="LOOP_FILTER_DISABLED_SLICE" comment="Mode that is intended for use when SliceMode is enabled." />
+        </Enum>
+
+        <Enum name="SliceMode_t" comment="Enables or disables the encoder to use slices, allowing emission of part of the frame before the whole is encoded. When slices are enabled with UDP transmission, a single packet loss can equate to slice loss rather than whole frame loss.">
+            <Value name="SLICE_MODE_DISABLED" comment="Slice mode is disabled." />
+            <Value name="SLICE_MODE_ENABLED" comment="Slice mode is enabled and will consult the slice mode macroblock rate." />
+        </Enum>
+
+        <Structure name="VideoEncodingSettings" array="ENCODE_IDX_BITRATE_COUNT" comment="Encoding settings across different bitrate zones, e.g. ENCODE_MODE_BITRATE_LOW/MED/HIGH">
+            <Data name="BitrateThresholdBps" inMemoryType="unsigned32" documentUnit="bps" min="0" max="6000000" comment="Set bitrate threshold in bits per second for comparison against active OrionNetworkByteVideo bitrate, used to determine which band of these settings should be active. Threshold values should progressively increase and ENCODE_MODE_BITRATE_LOW settings will be defaulted if no defined thresholds are met."/>
+            <Data name="ControlRate" enum="EncodingControlRate_t" encodedType="unsigned8" comment="Sets the video encoding control rate, i.e. whether bitrate, framerate, or both should be held constant."/>
+            <Data name="EntropyMode" enum="EntropyMode_t" encodedType="unsigned8" comment="Sets the encoding entropy mode, prioritizing processing overhead or compression efficiency."/>
+            <Data name="IdrInterval" inMemoryType="unsigned16" encodedType="unsigned16" comment="Instantaneous decoder refresh interval, e.g. the interval where a specialized I-frame, or keyframe, is sent to clear the decoder."/>
+            <Data name="IntraRefreshMode" enum="IntraRefreshMode_t" encodedType="unsigned8" comment="Sets the encoding intra-refresh mode, only available when ControlRate uses a constant bitrate mode, e.g. Constant or CBR-VFR."/>
+            <Data name="IntraRefreshMbs" inMemoryType="unsigned16" documentUnit="MacroBlocks" encodedType="unsigned16" min="0" max="243000" comment="Sets the intra-refresh macroblock period, or number of 16 x 16 pixel blocks per second. Max rate is (image_width_px * image_height_px * FPS) / 256.  "/>
+            <Data name="LoopFilterMode" enum="LoopFilterMode_t" encodedType="unsigned8" comment="Enables or disables the deblocking filter which can aid with reducing block artifacts, especially at lower bitrates or aggressive compression."/>
+            <Data name="SliceMode" enum="SliceMode_t" encodedType="unsigned8" comment="Enables or disables the encoder to use slices, allowing emission of part of the frame before the whole is encoded. "/>
+            <Data name="QuantIFrameMin" inMemoryType="unsigned8" min="0" max="51" comment="Set the min value used by the encoder's quantization for I-Frames when compressing video. Defines how much quality can be lost to save bitrate, where higher values allow more quality.  Should be less than QuantIFrameMax."/>
+            <Data name="QuantIFrameMax" inMemoryType="unsigned8" min="0" max="51" comment="Set the max value used by the encoder's quantization for I-Frames when compressing video. Defines how much quality can be lost to save bitrate, where higher values allow more quality.  Should be greater than QuantIFrameMin."/>
+            <Data name="QuantPFrameMin" inMemoryType="unsigned8" min="0" max="51" comment="Set the min value used by the encoder's quantization for P-Frames when compressing video. Defines how much quality can be lost to save bitrate, where higher values allow more quality.  Should be less than QuantPFrameMax."/>
+            <Data name="QuantPFrameMax" inMemoryType="unsigned8" min="0" max="51" comment="Set the max value used by the encoder's quantization for P-Frames when compressing video. Defines how much quality can be lost to save bitrate, where higher values allow more quality.  Should be greater than QuantPFrameMin."/>
+            <Data name="Reserved" inMemoryType="null" encodedType="unsigned64" constant="0" comment="Reserved bytes for encoder configuration expansion." />
+        </Structure>
     </Packet>
 
     <Packet name="OrionNetworkVideo" ID="ORION_PKT_NETWORK_VIDEO" comment="Change the IP settings for video delivery.">
@@ -1547,9 +1724,9 @@ See TrilliumPacket.c (in the Orion SDK) for details.
             <Value name="STREAM_TYPE_NONE" value="255" comment="Disable video streaming" />
         </Enum>
 
-        <Data name="DestIp" inMemoryType="unsigned32" comment="destination IPv4 address"/>
+        <Data name="DestIp" inMemoryType="unsigned32" documentToMethod="IPv4" comment="destination IPv4 address"/>
         <Data name="Port" inMemoryType="unsigned16" comment="desitnation port"/>
-        <Data name="Bitrate" inMemoryType="unsigned32" default="0" comment="Video encoding target bitrate, in bits per second"/>
+        <Data name="Bitrate" inMemoryType="unsigned32" default="0" documentUnit=" bps" comment="Video encoding target bitrate, in bits per second"/>
         <Data name="Ttl" inMemoryType="signed8" default="-1" comment="TTL value for UDP video packets. Values less than or equal to zero will use default values of 64 for unicast and 1 for multicast." />
         <Data name="StreamType" enum="StreamType_t" encodedType="unsigned8" default="STREAM_TYPE_H264" comment="Output stream format specifier" />
         <Data name="MjpegQuality" inMemoryType="unsigned8" default="30" comment="MJPEG quality value, from 10 to 95" />
@@ -1559,10 +1736,9 @@ See TrilliumPacket.c (in the Orion SDK) for details.
         <Data name="KlvMode" enum="KlvMode_t" encodedType="unsigned8" default="KlvModeLegacy" comment="Active KLV encoding method"/>
     </Packet>
 
-
     <Packet name="OrionNetworkByteVideo" ID="ORION_PKT_NETWORK_VIDEO" comparefile="compare/compareOrionPublic" printfile="compare/printOrionPublic" comment="Change the IP settings for video delivery.">
 
-        <Data name="DestIp" inMemoryType="unsigned8" array="4" comment="destination IPv4 address"/>
+        <Data name="DestIp" inMemoryType="unsigned8" array="4" documentToMethod="IPv4" comment="destination IPv4 address"/>
         <Data name="Port" inMemoryType="unsigned16" comment="desitnation port"/>
         <Data name="Bitrate" inMemoryType="unsigned32" default="0" comment="Video encoding target bitrate, in bits per second"/>
         <Data name="Ttl" inMemoryType="signed8" default="-1" comment="TTL value for UDP video packets. Values less than or equal to zero will use default values of 64 for unicast and 1 for multicast." />
@@ -1602,6 +1778,7 @@ See TrilliumPacket.c (in the Orion SDK) for details.
             <Value name="CAMERA_PROTO_OMNIVIS" comment="OmniVision camera"/>
             <Value name="CAMERA_PROTO_SIERRA" comment="SierraOlympia camera"/>
             <Value name="CAMERA_PROTO_SIONYX" comment="Sionyx camera"/>
+            <Value name="CAMERA_PROTO_LYNRED" comment="Lynred camera"/>
             <Value name="NUM_CAMERA_PROTOS" comment="Number of available camera protocols"/>
         </Enum>
 
@@ -1612,14 +1789,14 @@ See TrilliumPacket.c (in the Orion SDK) for details.
             <Data name="GpioActiveState" inMemoryType="unsigned8" encodedType="null" comment="Polarity of Gpio"/>
             <Data name="Type" enum="OrionCameraType_t" encodedType="unsigned8" comment="The type of camera"/>
             <Data name="Proto" enum="OrionCameraProtocol_t" encodedType="unsigned8" comment="The communications protocol of the camera"/>
-            <Data name="MinFocalLength" inMemoryType="float32" encodedType="unsigned32" scaler="1000" comment="Minimum focal length in millimeters"/>
-            <Data name="MaxFocalLength" inMemoryType="float32" encodedType="unsigned32" scaler="1000" comment="Minimum focal length in millimeters"/>
-            <Data name="PixelPitch" inMemoryType="float32" encodedType="unsigned16" scaler="1000000" comment="Spacing of pixels in millimeters"/>
-            <Data name="ArrayWidth" inMemoryType="unsigned16" comment="Number of horizontal pixels in the focal plane array"/>
-            <Data name="ArrayHeight" inMemoryType="unsigned16" comment="Number of vertical pixels in the focal plane array"/>
+            <Data name="MinFocalLength" inMemoryType="float32" encodedType="unsigned32" scaler="1000" documentToMethod="UMScaled" comment="Minimum focal length in millimeters"/>
+            <Data name="MaxFocalLength" inMemoryType="float32" encodedType="unsigned32" scaler="1000" documentToMethod="UMScaled" comment="Minimum focal length in millimeters"/>
+            <Data name="PixelPitch" inMemoryType="float32" encodedType="unsigned16" scaler="1000000" documentToMethod="NMPixelsScaled" comment="Spacing of pixels in millimeters"/>
+            <Data name="ArrayWidth" inMemoryType="unsigned16" documentUnit=" px" comment="Number of horizontal pixels in the focal plane array"/>
+            <Data name="ArrayHeight" inMemoryType="unsigned16" documentUnit=" px" comment="Number of vertical pixels in the focal plane array"/>
             <Data name="FrameRate" inMemoryType="float32" encodedType="null" comment="Frequency at which images are coming off the camera"/>
-            <Data name="AlignMin" inMemoryType="float32" array="NUM_GIMBAL_AXES" encodedType="signed16" max="pi" printscaler="180/pi" comment="boresight alignment offsets in radians"/>
-            <Data name="AlignMax" inMemoryType="float32" array="NUM_GIMBAL_AXES" encodedType="signed16" max="pi" printscaler="180/pi" comment="boresight alignment offsets in radians"/>
+            <Data name="AlignMin" inMemoryType="float32" array="NUM_GIMBAL_AXES" documentToMethod="PanTiltOffset" encodedType="signed16" max="pi" printscaler="180/pi" comment="boresight alignment offsets in radians"/>
+            <Data name="AlignMax" inMemoryType="float32" array="NUM_GIMBAL_AXES" documentToMethod="PanTiltOffset" encodedType="signed16" max="pi" printscaler="180/pi" comment="boresight alignment offsets in radians"/>
         </Structure>
     </Packet>
 
@@ -1628,13 +1805,13 @@ See TrilliumPacket.c (in the Orion SDK) for details.
     <Packet name="OrionClevisVersion" ID="ORION_PKT_CLEVIS_VERSION" comparefile="compare/compareOrionPublic" printfile="compare/printOrionPublic" comment="Software version for the clevis board in the Orion gimbal.">
         <Data name="Version" inMemoryType="fixedstring" array="16" comment="Version of the clevis board software"/>
         <Data name="PartNumber" inMemoryType="fixedstring" array="16" comment="Hardware details of the clevis board"/>
-        <Data name="OnTime" inMemoryType="unsigned32" default="0" comment="Board on time in minutes"/>
+        <Data name="OnTime" inMemoryType="unsigned32" default="0" documentUnit=" minutes" comment="Board on time in minutes"/>
     </Packet>
 
     <Packet name="OrionCrownVersion" ID="ORION_PKT_CROWN_VERSION" comparefile="compare/compareOrionPublic" printfile="compare/printOrionPublic" comment="Software version for the crown board in the Orion gimbal.">
         <Data name="Version" inMemoryType="fixedstring" array="16" comment="Version of the crown board software"/>
         <Data name="PartNumber" inMemoryType="fixedstring" array="16" comment="Hardware details of the crown board"/>
-        <Data name="OnTime" inMemoryType="unsigned32" default="0" comment="Board on time in minutes"/>
+        <Data name="OnTime" inMemoryType="unsigned32" default="0" documentUnit=" minutes" comment="Board on time in minutes"/>
     </Packet>
 
     <Packet name="OrionPayloadVersion" ID="ORION_PKT_PAYLOAD_VERSION" comparefile="compare/compareOrionPublic" printfile="compare/printOrionPublic" comment="Software version for the payload board in the Orion gimbal.">
@@ -1691,35 +1868,35 @@ See TrilliumPacket.c (in the Orion SDK) for details.
     <Packet name="OrionExtHeadingData" ID="ORION_PKT_EXT_HEADING_DATA" parameterInterface="true"
             comment="Externally supplied heading information. Send this packet to supply a correction to the heading of the
                      inertial navigation system of the gimbal. This packet will be echoed back to the user if INS logging is enabled.">
-        <Data name="extHeading" inMemoryType="float32" encodedType="signed16" max="pi" comment="External true heading observation in radians from -pi to pi"/>
-        <Data name="noise" inMemoryType="float32" encodedType="unsigned16" max="2*pi" default="3" comment="Sensor noise of the heading observation in radians. Send 0 to cause the INS to simply shift its heading. Otherwise the extHeading will be fed into the INS kalman filter with this sensor noise."/>
+        <Data name="extHeading" inMemoryType="float32" encodedType="signed16" max="pi" documentToMethod="Degrees" comment="External true heading observation in radians from -pi to pi"/>
+        <Data name="noise" inMemoryType="float32" encodedType="unsigned16" max="2*pi" default="3" documentToMethod="Degrees" comment="Sensor noise of the heading observation in radians. Send 0 to cause the INS to simply shift its heading. Otherwise the extHeading will be fed into the INS kalman filter with this sensor noise."/>
         <Data name="headingInGimbalAxis" inMemoryType="bitfield1" default="0" comment="Set this if the provided heading is in gimbal native axis rather than the platform axis. This will cause the gimbal to rotate the heading reference as needed to the platform axis used by the INS. This will have no effect if the INS options do not specify a platform rotation."/>
         <Data name="headingFromAlign" inMemoryType="bitfield1" default="0" comment="Set this if the provided heading came from an align system."/>
         <Data name="reserved" inMemoryType="null" encodedType="bitfield14" default="0"/>
-        <Data name="pitch" inMemoryType="float32" default="0" encodedType="signed16" max="pi" comment="Pitch angle in radians from -pi to pi of the vector used to compute heading."/>
+        <Data name="pitch" inMemoryType="float32" default="0" encodedType="signed16" max="pi" documentToMethod="Degrees" comment="Pitch angle in radians from -pi to pi of the vector used to compute heading."/>
     
     </Packet>
 
     <Packet name="OrionRangeData" ID="ORION_PKT_RANGE_DATA" parameterInterface="true" comment=
         "Ranging information from the gimbal to its target. The gimbal will use this information to compute the target
         location and populate that informtaion in its telemetry output.">
-        <Data name="range" inMemoryType="float32" encodedType="unsigned32" scaler="100" comment="Range to target in meters"/>
-        <Data name="maxAgeMs" inMemoryType="unsigned16" comment="Maximum data age before expiration in milliseconds"/>
+        <Data name="range" inMemoryType="float32" encodedType="unsigned32" scaler="100" documentUnit=" meters" comment="Range to target in meters"/>
+        <Data name="maxAgeMs" inMemoryType="unsigned16" documentUnit=" ms" comment="Maximum data age before expiration in milliseconds"/>
         <Data name="source" enum="RangeDataSrc_t" encodedType="unsigned8" comment="Source of range information"/>
     </Packet>
 
     <Structure name="PRFDetect" comment="Single PRF detection information">
         <Data name="PRF" inMemoryType="unsigned16" encodedType="unsigned16" comment="Detected PRF value"/>
-        <Data name="panAngle" inMemoryType="float32" encodedType="float32" comment="Pan angle from gimbal pos to detected signal, + is right"/>
-        <Data name="tiltAngle" inMemoryType="float32" encodedType="float32" comment="Tilt angle from gimbal pos to detected signal, + is up"/>
+        <Data name="panAngle" inMemoryType="float32" encodedType="float32" documentToMethod="Degrees" comment="Pan angle from gimbal pos to detected signal, + is right"/>
+        <Data name="tiltAngle" inMemoryType="float32" encodedType="float32" documentToMethod="Degrees" comment="Tilt angle from gimbal pos to detected signal, + is up"/>
     </Structure>
  
     <Packet name="OrionPRFDetects" ID="ORION_PKT_PRF_DETECT" comment="Command and control for PRF detecting gimbals">
-        <Data name="detectState" inMemoryType="unsigned8" encodedType="unsigned8" 
+        <Data name="detectState" inMemoryType="unsigned8" encodedType="unsigned8" documentToMethod="DetectState" 
             comment="Set to zero to disable PRF detect, set to 1 to enable, set to 2 for faux"/>
-        <Data name="fauxSequence" inMemoryType="unsigned64" encodedType="unsigned64" 
+        <Data name="fauxSequence" inMemoryType="unsigned64" encodedType="unsigned64" documentToMethod="FauxPRFs"
             comment="Sequence of faux PRFs when using faux PRF mode. Nibbles 0-2 are the first PRF value, 3-6 and so on"/>
-        <Data name="trackState" inMemoryType="unsigned8" encodedType="unsigned8" comment="Set to zero to disable track, set to 1 to track"/>
+        <Data name="trackState" inMemoryType="unsigned8" encodedType="unsigned8" documentToMethod="TrackState" comment="Set to zero to disable track, set to 1 to track"/>
         <Data name="reserved" inMemoryType="null" encodedType="unsigned64" comment="Reserved bytes"/>
         <Data name="detects" struct="PRFDetect" array="5" comment="Current detects"/>
     </Packet>
@@ -1743,13 +1920,13 @@ See TrilliumPacket.c (in the Orion SDK) for details.
         <Data name="useTargetHfov" inMemoryType="unsigned8" comment="command Use Target HFOV"/>
         <Data name="referenceFrame" enum="ScanPlanReferenceFrame_t" encodedType="unsigned8" comment="Coordinate System Frame" />
         <Data name="enableAutonomousRate" inMemoryType="unsigned8" comment="Enables autonomous control of HFOV rate"/>
-        <Data name="sweepAngleDeg" inMemoryType="float32" encodedType="unsigned32" scaler="100" comment="Max sweep angle in degrees" />
-        <Data name="hfovRateDeg" inMemoryType="float32" encodedType="unsigned32" scaler="100" comment="Max sweep Rate in degress deg/s" />
-        <Data name="hfovDeg" inMemoryType="float32" encodedType="unsigned32" scaler="100" comment="hfov in degs (controls the zoom)" />
-        <Data name="maxTargetDistanceKm" inMemoryType="float32" encodedType="unsigned32" scaler="100" comment="Max distance to target in Km" />
-        <Data name="minTargetDistanceKm" inMemoryType="float32" encodedType="unsigned32" scaler="100" comment="Min distance to target in Km" />
-        <Data name="horizonPercent" inMemoryType="float32" encodedType="signed32" scaler="100" comment="Percent of horizon in hfov" />
-        <Data name="yawOffsetDeg" inMemoryType="float32" encodedType="signed32" scaler="100" comment="Yaw offset in degress" />
+        <Data name="sweepAngleDeg" inMemoryType="float32" encodedType="unsigned32" scaler="100" documentUnit="°" comment="Max sweep angle in degrees" />
+        <Data name="hfovRateDeg" inMemoryType="float32" encodedType="unsigned32" scaler="100" documentUnit=" deg/s" comment="Max sweep Rate in degress deg/s" />
+        <Data name="hfovDeg" inMemoryType="float32" encodedType="unsigned32" scaler="100" documentUnit="°" comment="hfov in degs (controls the zoom)" />
+        <Data name="maxTargetDistanceKm" inMemoryType="float32" encodedType="unsigned32" scaler="100" documentUnit=" Km" comment="Max distance to target in Km" />
+        <Data name="minTargetDistanceKm" inMemoryType="float32" encodedType="unsigned32" scaler="100" documentUnit=" Km" comment="Min distance to target in Km" />
+        <Data name="horizonPercent" inMemoryType="float32" encodedType="signed32" scaler="100" documentUnit="%" comment="Percent of horizon in hfov" />
+        <Data name="yawOffsetDeg" inMemoryType="float32" encodedType="signed32" scaler="100" documentUnit="°" comment="Yaw offset in degress" />
     </Packet>
 
 </Protocol>

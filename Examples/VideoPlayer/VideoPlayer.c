@@ -1,6 +1,6 @@
-#include "OrionPublicPacket.h"
-#include "fielddecode.h"
 #include "OrionComm.h"
+#include "fielddecode.h"
+#include "OrionPublicPacket.h"
 #include "StreamDecoder.h"
 #include "FFmpeg.h"
 #include "KlvParser.h"

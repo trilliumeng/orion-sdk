@@ -1,5 +1,5 @@
-#include "OrionPublicPacket.h"
 #include "OrionComm.h"
+#include "OrionPublicPacket.h"
 
 #include <stdio.h>
 #include <stdlib.h>

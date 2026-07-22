@@ -1,0 +1,323 @@
+/**
+ * Auto-generated cross-language test harness
+ * Generated from: {{ protocol.name }} v{{ protocol.version }}
+ *
+ * Usage:
+ *   ./test_harness encode <PacketName>
+ *   ./test_harness decode <PacketName> <hex_bytes>
+ *   ./test_harness list
+ *
+ * Compile with:
+ *   gcc -o test_harness test_harness.c OrionPublicPacket.c OrionPublicPacketShim.c \
+ *       TrilliumPacket.c fieldencode.c fielddecode.c scaledencode.c scaleddecode.c \
+ *       floatspecial.c -I. -lm
+ */
+
+#include "OrionPublicPacketShim.h"
+#include <stdio.h>
+#include <stdlib.h>
+#include <string.h>
+#include <ctype.h>
+#include <inttypes.h>
+
+/* Helper: print bytes as hex string */
+static void print_hex(const uint8_t *data, int len) {
+    for (int i = 0; i < len; i++) {
+        printf("%02X", data[i]);
+    }
+}
+
+/* Helper: parse hex string to bytes */
+static int parse_hex(const char *hex, uint8_t *out, int max_len) {
+    int len = 0;
+    while (*hex && len < max_len) {
+        if (!isxdigit(hex[0]) || !isxdigit(hex[1])) {
+            hex++;
+            continue;
+        }
+        unsigned int byte;
+        sscanf(hex, "%2x", &byte);
+        out[len++] = (uint8_t)byte;
+        hex += 2;
+    }
+    return len;
+}
+
+/*============================================================================
+ * WRAPPER FUNCTIONS - For packets with simple Packet functions (not PacketStructure)
+ *============================================================================*/
+
+{% for pkt_info in packets_info %}
+{% if pkt_info.has_c_impl and pkt_info.needs_wrapper %}
+{% set packet = pkt_info.packet %}
+/* Wrapper for {{ packet.name }} - calls encode{{ packet.name }}Packet with struct fields */
+static void encode{{ packet.name }}PacketStructure(void* pkt, const {{ packet.name }}_t* user) {
+    encode{{ packet.name }}Packet(pkt
+{%- for field in packet.fields -%}
+{%- set info = pkt_info.fields_info[loop.index0] -%}
+{%- if not info.get('is_null_encoded') and not info.get('is_null_in_memory') and not info.get('constant') -%}
+, user->{{ field.name }}
+{%- endif -%}
+{%- endfor -%}
+);
+}
+
+/* Wrapper for {{ packet.name }} - calls decode{{ packet.name }}Packet with struct field pointers */
+static int decode{{ packet.name }}PacketStructure(const void* pkt, {{ packet.name }}_t* user) {
+{% set ns = namespace(has_bitfields=false) %}
+{%- for field in packet.fields -%}
+{%- set info = pkt_info.fields_info[loop.index0] -%}
+{%- if not info.get('is_null_encoded') and not info.get('is_null_in_memory') and not info.get('constant') -%}
+{%- if info.get('is_bitfield') -%}
+{% set ns.has_bitfields = true %}
+    unsigned {{ field.name }}_tmp;
+{%- endif -%}
+{%- endif -%}
+{%- endfor %}
+    int result = decode{{ packet.name }}Packet(pkt
+{%- for field in packet.fields -%}
+{%- set info = pkt_info.fields_info[loop.index0] -%}
+{%- if not info.get('is_null_encoded') and not info.get('is_null_in_memory') and not info.get('constant') -%}
+{%- if info.get('is_array') or info.get('is_string') -%}
+, user->{{ field.name }}
+{%- elif info.get('is_bitfield') -%}
+, &{{ field.name }}_tmp
+{%- else -%}
+, &user->{{ field.name }}
+{%- endif -%}
+{%- endif -%}
+{%- endfor -%}
+);
+{%- for field in packet.fields -%}
+{%- set info = pkt_info.fields_info[loop.index0] -%}
+{%- if not info.get('is_null_encoded') and not info.get('is_null_in_memory') and not info.get('constant') -%}
+{%- if info.get('is_bitfield') %}
+    user->{{ field.name }} = {{ field.name }}_tmp;
+{%- endif -%}
+{%- endif -%}
+{%- endfor %}
+    return result;
+}
+
+{% endif %}
+{% endfor %}
+
+/*============================================================================
+ * ENCODE FUNCTIONS - Encode packets with test values, output hex
+ *============================================================================*/
+
+{% for pkt_info in packets_info %}
+{% if pkt_info.has_c_impl %}
+{% set packet = pkt_info.packet %}
+{% if pkt_info.get('is_simple_packet') %}
+{# Simple packet - no _t struct, call encode function directly with parameters #}
+static void encode_{{ packet.name }}(void) {
+    OrionPkt_t pkt;
+    memset(&pkt, 0, sizeof(pkt));
+
+    /* Declare and initialize test values */
+{% for param in pkt_info.simple_params %}
+    {{ param.type }} {{ param.name }} = {{ pkt_info.simple_test_values[loop.index0] }};
+{% endfor %}
+
+    /* Encode to packet */
+    encode{{ packet.name }}Packet(&pkt
+{%- for param in pkt_info.simple_params -%}
+, {{ param.name }}
+{%- endfor -%}
+);
+    MakeOrionPacket(&pkt, get{{ packet.name }}PacketID(), pkt.Length);
+
+    /* Output: packet payload as hex (excluding sync/id/length/checksum) */
+    printf("ENCODED:");
+    print_hex(pkt.Data, pkt.Length);
+    printf("\n");
+}
+
+{% else %}
+{# Struct-based packet - use _t struct #}
+static void encode_{{ packet.name }}(void) {
+    {{ packet.name }}_t user;
+    OrionPkt_t pkt;
+
+    memset(&user, 0, sizeof(user));
+    memset(&pkt, 0, sizeof(pkt));
+
+    /* Set test values */
+{% for assignment in pkt_info.c_assignments %}
+    {{ assignment }};
+{% endfor %}
+
+    /* Encode to packet */
+    encode{{ packet.name }}PacketStructure(&pkt, &user);
+    MakeOrionPacket(&pkt, get{{ packet.name }}PacketID(), pkt.Length);
+
+    /* Output: packet payload as hex (excluding sync/id/length/checksum) */
+    printf("ENCODED:");
+    print_hex(pkt.Data, pkt.Length);
+    printf("\n");
+}
+
+{% endif %}
+{% endif %}
+{% endfor %}
+
+/*============================================================================
+ * DECODE FUNCTIONS - Decode hex bytes, output field values as key=value
+ * Format: fieldName=value (one per line)
+ * Arrays: fieldName=v1,v2,v3,...
+ * Nested structs: fieldName.subField=value
+ *============================================================================*/
+
+{% for pkt_info in packets_info %}
+{% if pkt_info.has_c_impl %}
+{% set packet = pkt_info.packet %}
+{% if pkt_info.get('is_simple_packet') %}
+{# Simple packet - no _t struct, call decode function directly with parameters #}
+static void decode_{{ packet.name }}(const uint8_t *data, int len) {
+    OrionPkt_t pkt;
+    memset(&pkt, 0, sizeof(pkt));
+
+    /* Declare output variables */
+{% for param in pkt_info.simple_params %}
+    {{ param.type }} {{ param.name }};
+{% endfor %}
+
+    /* Copy data to packet structure and set packet ID */
+    pkt.ID = get{{ packet.name }}PacketID();
+    pkt.Length = len;
+    memcpy(pkt.Data, data, len);
+
+    /* Decode */
+    decode{{ packet.name }}Packet(&pkt
+{%- for param in pkt_info.simple_params -%}
+, &{{ param.name }}
+{%- endfor -%}
+);
+
+    /* Output field values in parseable format */
+    printf("DECODED:\n");
+{% for param in pkt_info.simple_params %}
+    printf("{{ param.name }}={{ pkt_info.simple_printf_formats[loop.index0] }}\n", {{ param.name }});
+{% endfor %}
+}
+
+{% else %}
+{# Struct-based packet - use _t struct #}
+static void decode_{{ packet.name }}(const uint8_t *data, int len) {
+    {{ packet.name }}_t user;
+    OrionPkt_t pkt;
+
+    memset(&user, 0, sizeof(user));
+    memset(&pkt, 0, sizeof(pkt));
+
+    /* Copy data to packet structure and set packet ID */
+    pkt.ID = get{{ packet.name }}PacketID();
+    pkt.Length = len;
+    memcpy(pkt.Data, data, len);
+
+    /* Decode */
+    decode{{ packet.name }}PacketStructure(&pkt, &user);
+
+    /* Output field values in parseable format */
+    printf("DECODED:\n");
+{% for field_output in pkt_info.c_field_outputs %}
+    {{ field_output }}
+{% endfor %}
+}
+
+{% endif %}
+{% endif %}
+{% endfor %}
+
+/*============================================================================
+ * MAIN - Command dispatch
+ *============================================================================*/
+
+typedef void (*encode_fn)(void);
+typedef void (*decode_fn)(const uint8_t*, int);
+
+typedef struct {
+    const char *name;
+    encode_fn encode;
+    decode_fn decode;
+} PacketHandler;
+
+static const PacketHandler handlers[] = {
+{% for pkt_info in packets_info %}
+{% if pkt_info.has_c_impl %}
+    { "{{ pkt_info.packet.name }}", encode_{{ pkt_info.packet.name }}, decode_{{ pkt_info.packet.name }} },
+{% endif %}
+{% endfor %}
+    { NULL, NULL, NULL }
+};
+
+static void print_usage(const char *prog) {
+    fprintf(stderr, "Cross-language test harness for {{ protocol.name }} v{{ protocol.version }}\n\n");
+    fprintf(stderr, "Usage:\n");
+    fprintf(stderr, "  %s encode <PacketName>              Encode packet with test values\n", prog);
+    fprintf(stderr, "  %s decode <PacketName> <hex_bytes>  Decode hex bytes\n", prog);
+    fprintf(stderr, "  %s list                             List all packets\n", prog);
+}
+
+static void list_packets(void) {
+    int count = 0;
+    for (int i = 0; handlers[i].name; i++) count++;
+    printf("Available packets (%d total):\n", count);
+    for (int i = 0; handlers[i].name; i++) {
+        printf("  %s\n", handlers[i].name);
+    }
+}
+
+int main(int argc, char *argv[]) {
+    if (argc < 2) {
+        print_usage(argv[0]);
+        return 1;
+    }
+
+    if (strcmp(argv[1], "list") == 0) {
+        list_packets();
+        return 0;
+    }
+
+    if (argc < 3) {
+        print_usage(argv[0]);
+        return 1;
+    }
+
+    const char *cmd = argv[1];
+    const char *packet_name = argv[2];
+
+    /* Find handler */
+    const PacketHandler *handler = NULL;
+    for (int i = 0; handlers[i].name; i++) {
+        if (strcmp(handlers[i].name, packet_name) == 0) {
+            handler = &handlers[i];
+            break;
+        }
+    }
+
+    if (!handler) {
+        fprintf(stderr, "Unknown packet: %s\n", packet_name);
+        fprintf(stderr, "Use '%s list' to see available packets\n", argv[0]);
+        return 1;
+    }
+
+    if (strcmp(cmd, "encode") == 0) {
+        handler->encode();
+    } else if (strcmp(cmd, "decode") == 0) {
+        if (argc < 4) {
+            fprintf(stderr, "decode requires hex_bytes argument\n");
+            return 1;
+        }
+        uint8_t buffer[2048];
+        int len = parse_hex(argv[3], buffer, sizeof(buffer));
+        handler->decode(buffer, len);
+    } else {
+        fprintf(stderr, "Unknown command: %s\n", cmd);
+        print_usage(argv[0]);
+        return 1;
+    }
+
+    return 0;
+}

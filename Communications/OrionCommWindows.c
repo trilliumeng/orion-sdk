@@ -2,33 +2,28 @@
 
 #ifdef _WIN32
 
-#include <winsock2.h>
-#include <stdio.h>
-#include <ws2tcpip.h>
 
-static HANDLE SerialHandle = INVALID_HANDLE_VALUE;
-static SOCKET TcpSocket = INVALID_SOCKET;
-
-static struct sockaddr *GetSockAddr(uint32_t Address, unsigned short Port);
-
-BOOL OrionCommOpenSerial(const char *pPath)
+BOOL OrionCommOpenSerialEx(const char *pPath, CommSocket_t *socket)
 {
+    if(socket == NULL) {
+        return FALSE;
+    }
 	// Declare variables and structures
-    SerialHandle = CreateFileA(pPath, GENERIC_READ | GENERIC_WRITE, 0, NULL,
+    socket->SerialHandle = CreateFileA(pPath, GENERIC_READ | GENERIC_WRITE, 0, NULL,
                               OPEN_EXISTING, FILE_ATTRIBUTE_NORMAL, NULL);
 
     // If the handle is valid
-    if (SerialHandle != INVALID_HANDLE_VALUE)
+    if ( socket->SerialHandle != INVALID_HANDLE_VALUE)
     {
         DCB Params = { sizeof(DCB) };
         COMMTIMEOUTS Timeouts;
 
         // Try to get the current state
-        if (GetCommState(SerialHandle, &Params) == FALSE)
+        if (GetCommState( socket->SerialHandle, &Params) == FALSE)
         {
             // If that failed, close the handle and invalidate it
-            CloseHandle(SerialHandle);
-            SerialHandle = INVALID_HANDLE_VALUE;
+            CloseHandle( socket->SerialHandle);
+            socket->SerialHandle = INVALID_HANDLE_VALUE;
         }
 
         // Otherwise, fill in the fields we care about
@@ -38,19 +33,19 @@ BOOL OrionCommOpenSerial(const char *pPath)
         Params.Parity   = NOPARITY;
 
         // Try changing the serial port settings
-        if (SetCommState(SerialHandle, &Params) == FALSE)
+        if (SetCommState(socket->SerialHandle, &Params) == FALSE)
         {
             // Close and invalidate the handle
-            CloseHandle(SerialHandle);
-            SerialHandle = INVALID_HANDLE_VALUE;
+            CloseHandle(socket->SerialHandle);
+            socket->SerialHandle = INVALID_HANDLE_VALUE;
         }
 
         // If getting the existing timeout values fails
-        if (GetCommTimeouts(SerialHandle, &Timeouts) == FALSE)
+        if (GetCommTimeouts(socket->SerialHandle, &Timeouts) == FALSE)
         {
             // Close and invalidate the handle
-            CloseHandle(SerialHandle);
-            SerialHandle = INVALID_HANDLE_VALUE;
+            CloseHandle(socket->SerialHandle);
+            socket->SerialHandle = INVALID_HANDLE_VALUE;
         }
 
         // Set the timeouts for non-blocking mode
@@ -59,34 +54,34 @@ BOOL OrionCommOpenSerial(const char *pPath)
         Timeouts.ReadTotalTimeoutMultiplier = 0;
 
         // Try passing the new timeout struct
-        if (SetCommTimeouts(SerialHandle, &Timeouts) == FALSE)
+        if (SetCommTimeouts(socket->SerialHandle, &Timeouts) == FALSE)
         {
             // Close and invalidate the handle on failure
-            CloseHandle(SerialHandle);
-            SerialHandle = INVALID_HANDLE_VALUE;
+            CloseHandle(socket->SerialHandle);
+            socket->SerialHandle = INVALID_HANDLE_VALUE;
         }
     }
 
     // Tell the user if this failed or, if not, which COM port they're trying to use
-    if (SerialHandle == INVALID_HANDLE_VALUE)
+    if (socket->SerialHandle == INVALID_HANDLE_VALUE)
         printf("Failed to open %s\n", pPath);
     else
         printf("Looking for gimbal on %s...\n", pPath);
 
     // Return false
-    return SerialHandle != INVALID_HANDLE_VALUE;
+    return socket->SerialHandle != INVALID_HANDLE_VALUE;
 
-}// OrionCommOpenSerial
+}// OrionCommOpenSerialEx
 
 BOOL OrionCommIpStringValid(const char *pAddress)
 {
     uint32_t Address = inet_addr(pAddress);
 
-	BOOL not_any = (Address != INADDR_ANY);
+    BOOL not_any = (Address != INADDR_ANY);
 	//BOOL not_none = (Address != INADDR_NONE); // Apparently on some implementations INADDR_NONE and INADDR_BROADCAST (which is valid!) are the same...
 
     // Return TRUE if this is a valid IP address
-	return not_any;// && not_none;
+    return not_any;// && not_none;
 
 }// OrionCommIpStringValid
 
@@ -97,37 +92,38 @@ BOOL OrionCommSerialPathValid(const char *pPath)
 
 }// OrionCommSerialPathValid
 
-BOOL OrionCommOpenNetworkIp(const char *pAddress)
+BOOL OrionCommOpenNetworkIpEx(const char *pAddress, CommSocket_t *commSocket)
 {
+    commSocket->SerialHandle = INVALID_HANDLE_VALUE;
+
     // Open a new UDP socket for auto-discovery
-    WSADATA WsaData;
-    WSAStartup(MAKEWORD(2, 0), &WsaData);
-    SOCKET UdpHandle = socket(AF_INET, SOCK_DGRAM, 0);
-    uint32_t BroadcastAddr;
+    WSAStartup(MAKEWORD(2, 0), &commSocket->WSAData);
+    commSocket->UdpHandle = socket(AF_INET, SOCK_DGRAM, 0);
 
     // If we were passed a valid IP string
     if (OrionCommIpStringValid(pAddress) == TRUE)
     {
         // Convert the IP address string to a 32-bit IPv4 address value
-        BroadcastAddr = inet_addr(pAddress);
+        commSocket->BroadcastAddr = htonl(inet_addr(pAddress));
 
         // Now print out the broadcast address we're pinging
-        printf("Looking for gimbal on %s...\n", inet_ntoa(((struct sockaddr_in *)GetSockAddr(BroadcastAddr, UDP_OUT_PORT))->sin_addr));
+        GetSockAddr(commSocket->BroadcastAddr, UDP_OUT_PORT, &commSocket->BroadcastStruct);
+        printf("Looking for gimbal on %s...\n", inet_ntoa(commSocket->BroadcastStruct.sin_addr));
         
         // Roll the bytes for our GetSockAddr function
-        BroadcastAddr = ntohl(BroadcastAddr);
+        commSocket->BroadcastAddr = ntohl(commSocket->BroadcastAddr);
     }
     else
     {
         // Close the discovery handle and return a failure
-		if (UdpHandle != INVALID_SOCKET)
-          close(UdpHandle);
+        if (commSocket->UdpHandle != INVALID_SOCKET)
+          closesocket(commSocket->UdpHandle);
 
         return FALSE;
     }
 
     // If the socket looks good
-    if (UdpHandle != INVALID_SOCKET)
+    if (commSocket->UdpHandle != INVALID_SOCKET)
     {
         BOOL Broadcast = TRUE;
         int WaitCount = 0;
@@ -136,13 +132,14 @@ BOOL OrionCommOpenNetworkIp(const char *pAddress)
         u_long Arg = 1;
 
         // Bind to the proper port to get responses from the gimbal
-        bind(UdpHandle, GetSockAddr(INADDR_ANY, UDP_IN_PORT), sizeof(struct sockaddr_in));
+        GetSockAddr(INADDR_ANY, UDP_IN_PORT, &commSocket->SocketStruct);
+        bind(commSocket->UdpHandle, (struct sockaddr *)&commSocket->SocketStruct, sizeof(struct sockaddr_in));
 
         // Make this socket non blocking
-        ioctlsocket(UdpHandle, FIONBIO, &Arg);
+        ioctlsocket(commSocket->UdpHandle, FIONBIO, &Arg);
 
         // Allow the socket to send packets to the broadcast address
-        setsockopt(UdpHandle, SOL_SOCKET, SO_BROADCAST, (char *)&Broadcast, sizeof(BOOL));
+        setsockopt(commSocket->UdpHandle, SOL_SOCKET, SO_BROADCAST, (char *)&Broadcast, sizeof(BOOL));
 
         // Build a version request packet (note that it doesn't matter what you send...)
         MakeOrionPacket(&Pkt, ORION_PKT_CROWN_VERSION, 0);
@@ -153,28 +150,29 @@ BOOL OrionCommOpenNetworkIp(const char *pAddress)
             int Size = sizeof(struct sockaddr_in);
 
             // Send a version request packet
-            sendto(UdpHandle, (char *)&Pkt, Pkt.Length + ORION_PKT_OVERHEAD, 0, GetSockAddr(BroadcastAddr, UDP_OUT_PORT), sizeof(struct sockaddr_in));
+            sendto(commSocket->UdpHandle, (char *)&Pkt, Pkt.Length + ORION_PKT_OVERHEAD, 0, (struct sockaddr *) &commSocket->BroadcastStruct, sizeof(struct sockaddr_in));
 
             // If we get data back forom the gimbal
-            if (recvfrom(UdpHandle, Buffer, 64, 0, GetSockAddr(INADDR_ANY, UDP_IN_PORT), &Size) > 0)
+            GetSockAddr(INADDR_ANY, UDP_IN_PORT, &commSocket->UdpInStruct);
+            if (recvfrom(commSocket->UdpHandle, Buffer, 64, 0, (struct sockaddr *)&commSocket->UdpInStruct , &Size) > 0)
             {
                 // Pull the gimbal's IP address from the datagram header
-                UInt32 Address = ntohl(((struct sockaddr_in *)GetSockAddr(0, 0))->sin_addr.s_addr);
+                commSocket->Address = ntohl(commSocket->UdpInStruct.sin_addr.s_addr);
 
                 // Open a file descriptor for the TCP comm socket
-                TcpSocket = socket(AF_INET, SOCK_STREAM, 0);
+                commSocket->TcpSocket = socket(AF_INET, SOCK_STREAM, 0);
 
                 // Bind to the right incoming port
-                bind(TcpSocket, GetSockAddr(INADDR_ANY, TCP_PORT), sizeof(struct sockaddr_in));
+                bind(commSocket->TcpSocket, GetSockAddr(INADDR_ANY, TCP_PORT, &commSocket->SocketStruct) , sizeof(struct sockaddr_in));
 
                 // Connect to the gimbal's server socket (note this is a blocking call)
-                connect(TcpSocket, GetSockAddr(Address, TCP_PORT), sizeof(struct sockaddr_in));
+                connect(commSocket->TcpSocket, GetSockAddr(commSocket->Address, TCP_PORT, &commSocket->SocketStruct), sizeof(struct sockaddr_in));
 
                 // Now make the socket non-blocking for future reads/writes
-                ioctlsocket(TcpSocket, FIONBIO, &Arg);
+                ioctlsocket(commSocket->TcpSocket, FIONBIO, &Arg);
 
                 // Now print out the IP address that we connected to and break out of the loop
-                printf("Connected to %s\n", inet_ntoa(((struct sockaddr_in *)GetSockAddr(0, 0))->sin_addr));
+                printf("Connected to %s\n", inet_ntoa(commSocket->SocketStruct.sin_addr));
                 break;
             }
 
@@ -186,84 +184,90 @@ BOOL OrionCommOpenNetworkIp(const char *pAddress)
         if (WaitCount >= 20)
         {
             // Broadcast address byte roll, part one million
-            BroadcastAddr = htonl(BroadcastAddr);
+            commSocket->BroadcastAddr = htonl(commSocket->BroadcastAddr);
 
             // Let the user know we failed to connect
-            printf("Failed to connect to %s\n", inet_ntoa(((struct sockaddr_in *)GetSockAddr(BroadcastAddr, UDP_OUT_PORT))->sin_addr));
+
+            printf("Failed to connect to %s\n", inet_ntoa(commSocket->BroadcastStruct.sin_addr));
+            commSocket->TcpSocket = INVALID_SOCKET;
         }
 
         // Close the UDP socket now that we're done with it
-        closesocket(UdpHandle);
+        closesocket(commSocket->UdpHandle);
     }
 
     // Return a possibly valid handle to this socket
-    return TcpSocket != INVALID_SOCKET;
+    return commSocket->TcpSocket != INVALID_SOCKET;
 
-}// OrionCommOpenNetworkIp
+}// OrionCommOpenNetworkIpEx
 
-void OrionCommClose(void)
+void OrionCommCloseEx(CommSocket_t *commSocket)
 {
     // Easy enough, just close the file descriptor
-    CloseHandle(SerialHandle);
-    closesocket(TcpSocket);
+    CloseHandle(commSocket->SerialHandle);
+    closesocket(commSocket->TcpSocket);
+    commSocket->SerialHandle = INVALID_HANDLE_VALUE;
+    commSocket->TcpSocket = INVALID_SOCKET;
 
-}// OrionCommClose
+    // Clear parse state for clean reconnect
+    memset(&commSocket->RxPkt, 0, sizeof(commSocket->RxPkt));
 
-BOOL OrionCommSend(const OrionPkt_t *pPkt)
+}// OrionCommCloseEx
+
+BOOL OrionCommSendEx(const OrionPkt_t *pPkt, CommSocket_t * commSocket)
 {
     DWORD Bytes;
 
     // Write the packet, including header data, to the file descriptor
-    if (SerialHandle != INVALID_HANDLE_VALUE)
-        return WriteFile(SerialHandle, (char *)pPkt, pPkt->Length + ORION_PKT_OVERHEAD, &Bytes, NULL);
+    if (commSocket->SerialHandle != INVALID_HANDLE_VALUE)
+        return WriteFile(commSocket->SerialHandle, (char *)pPkt, pPkt->Length + ORION_PKT_OVERHEAD, &Bytes, NULL);
     else
-        return send(TcpSocket, (char *)pPkt, pPkt->Length + ORION_PKT_OVERHEAD, 0) != SOCKET_ERROR;
+        return send(commSocket->TcpSocket, (char *)pPkt, pPkt->Length + ORION_PKT_OVERHEAD, 0) != SOCKET_ERROR;
 
-}// OrionCommSend
+}// OrionCommSendEx
 
-BOOL OrionCommReceive(OrionPkt_t *pPkt)
+BOOL OrionCommReceiveEx(OrionPkt_t *pPkt, CommSocket_t * commSocket)
 {
-    static OrionPkt_t Pkt = { 0 };
     UInt8 Byte;
 
-    if (SerialHandle != INVALID_HANDLE_VALUE)
+    if (commSocket->SerialHandle != INVALID_HANDLE_VALUE)
     {
         COMSTAT Status;
 
         // As long as there are bytes to be read out of the receive queue
-        while (ClearCommError(SerialHandle, NULL, &Status) && (Status.cbInQue > 0))
+        while (ClearCommError(commSocket->SerialHandle, NULL, &Status) && (Status.cbInQue > 0))
         {
             DWORD BytesRead = 0;
 
             // Read a byte
-            ReadFile(SerialHandle, &Byte, 1, &BytesRead, NULL);
+            ReadFile(commSocket->SerialHandle, &Byte, 1, &BytesRead, NULL);
 
             // If this byte is the end of a valid packet
-            if ((BytesRead == 1) && (LookForOrionPacketInByte(&Pkt, Byte) == TRUE))
+            if ((BytesRead == 1) && (LookForOrionPacketInByte(&commSocket->RxPkt, Byte) == TRUE))
             {
                 // Copy the packet into the passed-in location and return a success
-                *pPkt = Pkt;
+                *pPkt = commSocket->RxPkt;
                 return TRUE;
             }
             // Otherwise, if some sort of error occurred
             else if (BytesRead != 1)
             {
                 // Close and invalidate the serial port
-                CloseHandle(SerialHandle);
-                SerialHandle = INVALID_HANDLE_VALUE;
+                CloseHandle(commSocket->SerialHandle);
+                commSocket->SerialHandle = INVALID_HANDLE_VALUE;
             }
         }
     }
     else
     {
         // As long as we keep getting bytes, keep reading them in one by one
-        while (recv(TcpSocket, (char *)&Byte, 1, 0) == 1)
+        while (recv(commSocket->TcpSocket, (char *)&Byte, 1, 0) == 1)
         {
             // If this byte is the end of a valid packet
-            if (LookForOrionPacketInByte(&Pkt, Byte))
+            if (LookForOrionPacketInByte(&commSocket->RxPkt, Byte))
             {
                 // Copy the packet into the passed-in location and return a success
-                *pPkt = Pkt;
+                *pPkt = commSocket->RxPkt;
                 return TRUE;
             }
         }
@@ -272,34 +276,32 @@ BOOL OrionCommReceive(OrionPkt_t *pPkt)
     // Nope, no packets yet
     return FALSE;
 
-}// OrionCommReceive
+}// OrionCommReceiveEx
 
-BOOL OrionCommIsOpen(void)
+BOOL OrionCommIsOpenEx(CommSocket_t *commSocket)
 {
     // Return TRUE if one of the handles is valid
-    return (SerialHandle != INVALID_HANDLE_VALUE) || (TcpSocket != INVALID_SOCKET);
+    return (commSocket->SerialHandle != INVALID_HANDLE_VALUE) || (commSocket->TcpSocket != INVALID_SOCKET);
 
-}// OrionCommIsOpen
+}// OrionCommIsOpenEx
 
 // Quickly and easily constructs a sockaddr pointer for a bunch of different functions.
 //   Call this function with Address == Port == 0 to access the pointer, or pass in
 //   actual values to construct a new sockaddr.
-static struct sockaddr *GetSockAddr(uint32_t Address, unsigned short Port)
+struct sockaddr *GetSockAddr(uint32_t Address, unsigned short Port, struct sockaddr_in * SockAddr)
 {
-    static struct sockaddr_in SockAddr;
-
-    // If address and port are both zero, don't modify the structure
+           // If address and port are both zero, don't modify the structure
     if (Address || Port)
     {
         // Otherwise, populate it with the requested IP address and port
-        memset(&SockAddr, 0, sizeof(SockAddr));
-        SockAddr.sin_family = AF_INET;
-        SockAddr.sin_addr.s_addr = htonl(Address);
-        SockAddr.sin_port = htons(Port);
+        memset(SockAddr, 0, sizeof(*SockAddr));
+        SockAddr->sin_family = AF_INET;
+        SockAddr->sin_addr.s_addr = htonl(Address);
+        SockAddr->sin_port = htons(Port);
     }
 
-    // Return a casted pointer to the sockaddr_in structure
-    return (struct sockaddr *)&SockAddr;
+           // Return a casted pointer to the sockaddr_in structure
+    return (struct sockaddr *) SockAddr;
 
 }// GetSockAddr
 #endif // _WIN32

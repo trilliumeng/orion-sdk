@@ -1,24 +1,24 @@
 Microsoft Visual Studio Solution File, Format Version 12.00
 # Visual Studio 2013
-Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "CameraInfo", "C:/svn/trunk_clean/Public/Examples/CameraInfo\CameraInfo.vcxproj", "{A65A2FEC-DDBA-3191-9EC4-494AB57C265A}"
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "CameraInfo", "./CameraInfo/CameraInfo.vcxproj", "{A65A2FEC-DDBA-3191-9EC4-494AB57C265A}"
 EndProject
-Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "EncodeDecode", "C:/svn/trunk_clean/Public/Examples/EncodeDecode\EncodeDecode.vcxproj", "{8C1BFEFE-F18C-3124-986A-1AAF24CFC0B1}"
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "EncodeDecode", "./EncodeDecode/EncodeDecode.vcxproj", "{8C1BFEFE-F18C-3124-986A-1AAF24CFC0B1}"
 EndProject
-Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "GeoPoint", "C:/svn/trunk_clean/Public/Examples/GeoPoint\GeoPoint.vcxproj", "{6D4801CB-88DB-35F0-9454-EC5EF45DC302}"
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "GeoPoint", "./GeoPoint/GeoPoint.vcxproj", "{6D4801CB-88DB-35F0-9454-EC5EF45DC302}"
 EndProject
-Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "GpsAndHeading", "C:/svn/trunk_clean/Public/Examples/GpsAndHeading\GpsAndHeading.vcxproj", "{85D5DE5B-7846-3009-B074-88DC7F37E596}"
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "GpsAndHeading", "./GpsAndHeading/GpsAndHeading.vcxproj", "{85D5DE5B-7846-3009-B074-88DC7F37E596}"
 EndProject
-Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "LineOfSight", "C:/svn/trunk_clean/Public/Examples/LineOfSight\LineOfSight.vcxproj", "{855B385A-218E-3675-B51B-56EF9792A844}"
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "LineOfSight", "./LineOfSight/LineOfSight.vcxproj", "{855B385A-218E-3675-B51B-56EF9792A844}"
 EndProject
-Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "PathTrack", "C:/svn/trunk_clean/Public/Examples/PathTrack\PathTrack.vcxproj", "{E9BD6754-FE0A-3A03-A5B8-D6A8F445F582}"
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "PathTrack", "./PathTrack/PathTrack.vcxproj", "{E9BD6754-FE0A-3A03-A5B8-D6A8F445F582}"
 EndProject
-Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "SendCommand", "C:/svn/trunk_clean/Public/Examples/SendCommand\SendCommand.vcxproj", "{E2BC093A-BCA9-32C2-ACF8-3B9B6340ED7E}"
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "SendCommand", "./SendCommand/SendCommand.vcxproj", "{E2BC093A-BCA9-32C2-ACF8-3B9B6340ED7E}"
 EndProject
-Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "SendConfig", "C:/svn/trunk_clean/Public/Examples/SendConfig/SendConfig.vcxproj", "{6953A2F7-83B5-31E2-B7C7-CD8E34D235DE}"
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "SendConfig", "./SendConfig/SendConfig.vcxproj", "{6953A2F7-83B5-31E2-B7C7-CD8E34D235DE}"
 EndProject
-Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "TrackSize", "C:/svn/trunk_clean/Public/Examples/TrackSize/TrackSize.vcxproj", "{BD5E887F-DE32-45E2-9299-295E235D661D}"
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "TrackSize", "./TrackSize/TrackSize.vcxproj", "{BD5E887F-DE32-45E2-9299-295E235D661D}"
 EndProject
-Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "UserData", "C:/svn/trunk_clean/Public/Examples/UserData\UserData.vcxproj", "{AC1F4947-0216-30F9-9DF9-7C96FE98A096}"
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "UserData", ./UserData/UserData.vcxproj", "{AC1F4947-0216-30F9-9DF9-7C96FE98A096}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution

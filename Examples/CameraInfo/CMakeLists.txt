@@ -31,3 +31,8 @@ if(WIN32)
     )
 endif()
 
+
+install(TARGETS CameraInfo
+    BUNDLE DESTINATION .
+    RUNTIME DESTINATION ${CMAKE_INSTALL_BINDIR}
+)

@@ -1,0 +1,392 @@
+{#
+  Shared encoding/decoding macros for structs and packets.
+
+  Both structs.py.j2 and packets.py.j2 have nearly identical encode/decode logic.
+  This file extracts the common parts to avoid duplication.
+
+  Usage:
+    {% import '_encoding_macros.j2' as enc %}
+    {{ enc.encode_field_groups(field_groups, generator, struct_prefix) }}
+    {{ enc.decode_field_groups(field_groups, generator, struct_prefix, class_name) }}
+#}
+
+{# ============================================================================
+   ENCODE MACROS
+   ============================================================================ #}
+
+{%- macro encode_field_groups(field_groups, generator, struct_prefix='') %}
+{% for group in field_groups %}
+{% set first_field = group[0] %}
+{% if first_field.is_bitfield() %}
+{{ encode_bitfield_group(group, generator) }}
+{% else %}
+{% set f = first_field %}
+{% set info = generator.get_field_info(f) %}
+{{ encode_single_field(f, info, generator, struct_prefix) }}
+{% endif %}
+{% endfor %}
+{%- endmacro %}
+
+{%- macro encode_bitfield_group(group, generator) %}
+        # Bitfield group
+        acc = BitfieldAccumulator()
+{% for f in group %}
+{% set info = generator.get_field_info(f) %}
+{% if info.get('scaling') %}
+{% if info.scaling.is_signed %}
+        acc.add_signed_bits(_c_round_signed(self.{{ f.name }}, {{ info.scaling.scaler }}), {{ info.bitfield_bits }})
+{% else %}
+        acc.add_bits(_c_round_unsigned(self.{{ f.name }}, {{ info.scaling.min }}, {{ info.scaling.scaler }}), {{ info.bitfield_bits }})
+{% endif %}
+{% else %}
+        acc.add_bits(self.{{ f.name }}, {{ info.bitfield_bits }})
+{% endif %}
+{% endfor %}
+        data.extend(acc.flush())
+{%- endmacro %}
+
+{%- macro encode_single_field(f, info, generator, struct_prefix, indent='        ') %}
+{% set ind = indent %}
+{% set ind2 = indent + '    ' %}
+{% if info.depends_on %}
+{{ ind }}# Conditional field: {{ f.name }} (depends on {{ info.depends_on }})
+{{ ind }}if self.{{ info.depends_on }}:
+{% set ind = indent + '    ' %}
+{% set ind2 = indent + '        ' %}
+{% endif %}
+{% if info.is_null_encoded %}
+{{ ind }}{% if info.depends_on %}pass  {% endif %}# {{ f.name }} is null-encoded (not on wire)
+{% elif info.is_struct %}
+{{ encode_struct_field(f, info, struct_prefix, ind, ind2) }}
+{% elif info.is_string %}
+{{ encode_string_field(f, info, ind) }}
+{% elif info.is_array %}
+{{ encode_array_field(f, info, ind, ind2) }}
+{% elif info.has_scaling %}
+{{ encode_scaled_field(f, info, ind) }}
+{% else %}
+{{ encode_simple_field(f, info, ind) }}
+{% endif %}
+{%- endmacro %}
+
+{%- macro encode_struct_field(f, info, struct_prefix, ind, ind2) %}
+{% if info.is_array %}
+{% if info.variable_array %}
+{{ ind }}# Variable struct array: {{ f.name }} (length in {{ info.variable_array }})
+{{ ind }}for item in self.{{ f.name }}:
+{{ ind2 }}data.extend(item.encode())
+{% else %}
+{{ ind }}# Fixed struct array: {{ f.name }}
+{{ ind }}for item in self.{{ f.name }}:
+{{ ind2 }}data.extend(item.encode())
+{% endif %}
+{% else %}
+{{ ind }}data.extend(self.{{ f.name }}.encode())
+{% endif %}
+{%- endmacro %}
+
+{%- macro encode_string_field(f, info, ind) %}
+{% if info.get('is_fixed_string', false) %}
+{{ ind }}# Fixed string: {{ f.name }}
+{{ ind }}encoded_str = self.{{ f.name }}.encode('utf-8')[:{{ info.string_length }}]
+{{ ind }}data.extend(encoded_str.ljust({{ info.string_length }}, b'\x00'))
+{% else %}
+{{ ind }}# Variable string: {{ f.name }} (null-terminated)
+{{ ind }}encoded_str = self.{{ f.name }}.encode('utf-8')[:{{ info.string_length - 1 }}]
+{{ ind }}data.extend(encoded_str)
+{{ ind }}data.append(0)  # null terminator
+{% endif %}
+{%- endmacro %}
+
+{%- macro encode_array_field(f, info, ind, ind2) %}
+{% if info.variable_array %}
+{{ ind }}# Variable array: {{ f.name }} (length in {{ info.variable_array }})
+{{ ind }}for item in self.{{ f.name }}:
+{% else %}
+{{ ind }}# Fixed array: {{ f.name }}
+{{ ind }}for item in self.{{ f.name }}:
+{% endif %}
+{% if info.has_scaling %}
+{{ encode_array_scaled_item(info, ind2) }}
+{% else %}
+{{ encode_array_simple_item(info, ind2) }}
+{% endif %}
+{%- endmacro %}
+
+{%- macro encode_array_scaled_item(info, ind) %}
+{% if info.get('scaling') and info.scaling.is_signed %}
+{% if info.is_float64_in_memory %}
+{{ ind }}encoded_val = _c_round_signed_f64(item, {{ info.scaling.scaler }})
+{% else %}
+{{ ind }}encoded_val = _c_round_signed(item, {{ info.scaling.scaler }})
+{% endif %}
+{% else %}
+{% if info.is_float64_in_memory %}
+{{ ind }}encoded_val = _c_round_unsigned_f64(item, {{ info.scaling.min }}, {{ info.scaling.scaler }})
+{% else %}
+{{ ind }}encoded_val = _c_round_unsigned(item, {{ info.scaling.min }}, {{ info.scaling.scaler }})
+{% endif %}
+{% endif %}
+{% if info.get('is_custom_size') and info.get('bit_width') == 24 %}
+{% if info.get('scaling') and info.scaling.is_signed %}
+{{ ind }}data.extend(encode_int24_signed(encoded_val))
+{% else %}
+{{ ind }}data.extend(encode_int24_unsigned(encoded_val))
+{% endif %}
+{% else %}
+{{ ind }}data.extend(struct.pack('{{ info.struct_format }}', encoded_val))
+{% endif %}
+{%- endmacro %}
+
+{%- macro encode_array_simple_item(info, ind) %}
+{% if info.get('is_custom_size') and info.get('bit_width') == 24 %}
+{% if info.get('is_signed') %}
+{{ ind }}data.extend(encode_int24_signed(item))
+{% else %}
+{{ ind }}data.extend(encode_int24_unsigned(item))
+{% endif %}
+{% else %}
+{{ ind }}data.extend(struct.pack('{{ info.struct_format }}', item))
+{% endif %}
+{%- endmacro %}
+
+{%- macro encode_scaled_field(f, info, ind) %}
+{{ ind }}# Scaled field: {{ f.name }}
+{% if info.get('scaling') and info.scaling.is_signed %}
+{% if info.is_float64_in_memory %}
+{{ ind }}encoded_{{ f.name }} = _c_round_signed_f64(self.{{ f.name }}, {{ info.scaling.scaler }})
+{% else %}
+{{ ind }}encoded_{{ f.name }} = _c_round_signed(self.{{ f.name }}, {{ info.scaling.scaler }})
+{% endif %}
+{% else %}
+{% if info.is_float64_in_memory %}
+{{ ind }}encoded_{{ f.name }} = _c_round_unsigned_f64(self.{{ f.name }}, {{ info.scaling.min }}, {{ info.scaling.scaler }})
+{% else %}
+{{ ind }}encoded_{{ f.name }} = _c_round_unsigned(self.{{ f.name }}, {{ info.scaling.min }}, {{ info.scaling.scaler }})
+{% endif %}
+{% endif %}
+{% if info.get('is_custom_size') and info.get('bit_width') == 24 %}
+{% if info.get('scaling') and info.scaling.is_signed %}
+{{ ind }}data.extend(encode_int24_signed(encoded_{{ f.name }}))
+{% else %}
+{{ ind }}data.extend(encode_int24_unsigned(encoded_{{ f.name }}))
+{% endif %}
+{% else %}
+{{ ind }}data.extend(struct.pack('{{ info.struct_format }}', encoded_{{ f.name }}))
+{% endif %}
+{%- endmacro %}
+
+{%- macro encode_simple_field(f, info, ind) %}
+{% if info.get('is_custom_size') and info.get('bit_width') == 24 %}
+{% if info.get('is_signed') %}
+{{ ind }}data.extend(encode_int24_signed(self.{{ f.name }}))
+{% else %}
+{{ ind }}data.extend(encode_int24_unsigned(self.{{ f.name }}))
+{% endif %}
+{% elif info.get('is_float16') %}
+{{ ind }}data.extend(encode_float16(self.{{ f.name }}))
+{% else %}
+{{ ind }}data.extend(struct.pack('{{ info.struct_format }}', self.{{ f.name }}))
+{% endif %}
+{%- endmacro %}
+
+{# ============================================================================
+   DECODE MACROS
+   ============================================================================ #}
+
+{%- macro decode_field_groups(field_groups, generator, struct_prefix='') %}
+{% for group in field_groups %}
+{% set first_field = group[0] %}
+{% if first_field.is_bitfield() %}
+{{ decode_bitfield_group(group, generator) }}
+{% else %}
+{% set f = first_field %}
+{% set info = generator.get_field_info(f) %}
+{{ decode_single_field(f, info, generator, struct_prefix) }}
+{% endif %}
+{% endfor %}
+{%- endmacro %}
+
+{%- macro decode_bitfield_group(group, generator) %}
+        # Bitfield group
+{% set total_bits = namespace(value=0) %}
+{% for f in group %}
+{% set total_bits.value = total_bits.value + generator.get_field_info(f).bitfield_bits %}
+{% endfor %}
+{% set total_bytes = (total_bits.value + 7) // 8 %}
+        reader = BitfieldReader(data[offset:offset+{{ total_bytes }}])
+{% for f in group %}
+{% set info = generator.get_field_info(f) %}
+{% if info.get('scaling') %}
+{% if info.scaling.is_signed %}
+        raw_{{ f.name }} = reader.read_signed_bits({{ info.bitfield_bits }})
+        obj.{{ f.name }} = raw_{{ f.name }} / {{ info.scaling.scaler }}
+{% else %}
+        raw_{{ f.name }} = reader.read_bits({{ info.bitfield_bits }})
+        obj.{{ f.name }} = (raw_{{ f.name }} / {{ info.scaling.scaler }}) + {{ info.scaling.min }}
+{% endif %}
+{% else %}
+        obj.{{ f.name }} = reader.read_bits({{ info.bitfield_bits }})
+{% endif %}
+{% endfor %}
+        offset += {{ total_bytes }}
+{%- endmacro %}
+
+{%- macro decode_single_field(f, info, generator, struct_prefix, indent='        ') %}
+{% set ind = indent %}
+{% set ind2 = indent + '    ' %}
+{% if info.depends_on %}
+{{ ind }}# Conditional field: {{ f.name }} (depends on {{ info.depends_on }})
+{{ ind }}if obj.{{ info.depends_on }}:
+{% set ind = indent + '    ' %}
+{% set ind2 = indent + '        ' %}
+{% endif %}
+{% if info.is_null_encoded %}
+{{ ind }}{% if info.depends_on %}pass  {% endif %}# {{ f.name }} is null-encoded (not on wire)
+{% elif info.is_struct %}
+{{ decode_struct_field(f, info, struct_prefix, ind, ind2) }}
+{% elif info.is_string %}
+{{ decode_string_field(f, info, ind) }}
+{% elif info.is_array %}
+{{ decode_array_field(f, info, ind, ind2) }}
+{% elif info.has_scaling %}
+{{ decode_scaled_field(f, info, ind) }}
+{% else %}
+{{ decode_simple_field(f, info, ind) }}
+{% endif %}
+{%- endmacro %}
+
+{%- macro decode_struct_field(f, info, struct_prefix, ind, ind2) %}
+{% if info.is_array %}
+{% if info.variable_array %}
+{{ ind }}# Variable struct array (length from {{ info.variable_array }})
+{{ ind }}array_len = obj.{{ info.variable_array }}
+{{ ind }}obj.{{ f.name }} = []
+{{ ind }}for _ in range(array_len):
+{{ ind2 }}item, consumed = {{ struct_prefix }}{{ info.struct_ref }}.decode(data, offset)
+{{ ind2 }}offset += consumed
+{{ ind2 }}obj.{{ f.name }}.append(item)
+{% else %}
+{{ ind }}# Fixed struct array
+{{ ind }}array_len = {{ info.array_length }}
+{{ ind }}obj.{{ f.name }} = []
+{{ ind }}for _ in range(array_len):
+{{ ind2 }}item, consumed = {{ struct_prefix }}{{ info.struct_ref }}.decode(data, offset)
+{{ ind2 }}offset += consumed
+{{ ind2 }}obj.{{ f.name }}.append(item)
+{% endif %}
+{% else %}
+{{ ind }}obj.{{ f.name }}, consumed = {{ struct_prefix }}{{ info.struct_ref }}.decode(data, offset)
+{{ ind }}offset += consumed
+{% endif %}
+{%- endmacro %}
+
+{%- macro decode_string_field(f, info, ind) %}
+{% if info.get('is_fixed_string', false) %}
+{{ ind }}# Fixed string
+{{ ind }}raw = data[offset:offset+{{ info.string_length }}]
+{{ ind }}obj.{{ f.name }} = raw.rstrip(b'\x00').decode('utf-8', errors='replace')
+{{ ind }}offset += {{ info.string_length }}
+{% else %}
+{{ ind }}# Variable string (null-terminated)
+{{ ind }}str_end = data.find(0, offset)
+{{ ind }}if str_end == -1:
+{{ ind }}    str_end = len(data)
+{{ ind }}obj.{{ f.name }} = data[offset:str_end].decode('utf-8', errors='replace')
+{{ ind }}offset = str_end + 1  # skip null terminator
+{% endif %}
+{%- endmacro %}
+
+{%- macro decode_array_field(f, info, ind, ind2) %}
+{% if info.variable_array %}
+{{ ind }}# Variable array (length from {{ info.variable_array }})
+{{ ind }}array_len = obj.{{ info.variable_array }}
+{% else %}
+{{ ind }}# Fixed array
+{{ ind }}array_len = {{ info.array_length }}
+{% endif %}
+{{ ind }}obj.{{ f.name }} = []
+{{ ind }}for _ in range(array_len):
+{% if info.get('is_custom_size') and info.get('bit_width') == 24 %}
+{% if info.get('is_signed') or (info.has_scaling and info.get('scaling') and info.scaling.is_signed) %}
+{{ ind2 }}raw_val = decode_int24_signed(data, offset)
+{% else %}
+{{ ind2 }}raw_val = decode_int24_unsigned(data, offset)
+{% endif %}
+{% else %}
+{{ ind2 }}raw_val = struct.unpack_from('{{ info.struct_format }}', data, offset)[0]
+{% endif %}
+{{ ind2 }}offset += {{ info.type_size }}
+{% if info.has_scaling %}
+{% if info.get('scaling') and info.scaling.is_signed %}
+{{ ind2 }}val = raw_val / {{ info.scaling.scaler }}
+{% else %}
+{{ ind2 }}val = (raw_val / {{ info.scaling.scaler }}) + {{ info.scaling.min }}
+{% endif %}
+{{ ind2 }}obj.{{ f.name }}.append(val)
+{% else %}
+{{ ind2 }}obj.{{ f.name }}.append(raw_val)
+{% endif %}
+{%- endmacro %}
+
+{%- macro decode_scaled_field(f, info, ind) %}
+{{ ind }}# Scaled field
+{% if info.get('is_custom_size') and info.get('bit_width') == 24 %}
+{% if info.get('scaling') and info.scaling.is_signed %}
+{{ ind }}raw_{{ f.name }} = decode_int24_signed(data, offset)
+{% else %}
+{{ ind }}raw_{{ f.name }} = decode_int24_unsigned(data, offset)
+{% endif %}
+{% else %}
+{{ ind }}raw_{{ f.name }} = struct.unpack_from('{{ info.struct_format }}', data, offset)[0]
+{% endif %}
+{{ ind }}offset += {{ info.type_size }}
+{% if info.get('scaling') and info.scaling.is_signed %}
+{{ ind }}obj.{{ f.name }} = raw_{{ f.name }} / {{ info.scaling.scaler }}
+{% else %}
+{{ ind }}obj.{{ f.name }} = (raw_{{ f.name }} / {{ info.scaling.scaler }}) + {{ info.scaling.min }}
+{% endif %}
+{%- endmacro %}
+
+{%- macro decode_simple_field(f, info, ind) %}
+{% if info.get('is_custom_size') and info.get('bit_width') == 24 %}
+{% if info.get('is_signed') %}
+{{ ind }}obj.{{ f.name }} = decode_int24_signed(data, offset)
+{% else %}
+{{ ind }}obj.{{ f.name }} = decode_int24_unsigned(data, offset)
+{% endif %}
+{% elif info.get('is_float16') %}
+{{ ind }}obj.{{ f.name }} = decode_float16(data, offset)
+{% else %}
+{{ ind }}obj.{{ f.name }} = struct.unpack_from('{{ info.struct_format }}', data, offset)[0]
+{% endif %}
+{{ ind }}offset += {{ info.type_size }}
+{%- endmacro %}
+
+{# ============================================================================
+   FIELD DECLARATION MACROS
+   ============================================================================ #}
+
+{%- macro declare_field(f, info, struct_prefix='') %}
+{% if info.is_array and info.is_struct %}
+{% if info.array_length is not none and not info.variable_array %}
+    {{ f.name }}: 'List[{{ struct_prefix }}{{ info.struct_ref }}]' = field(default_factory=lambda: [{{ struct_prefix }}{{ info.struct_ref }}() for _ in range({{ info.array_length }})]){% if f.comment %}  # {{ f.comment }}{% endif %}
+{% else %}
+    {{ f.name }}: 'List[{{ struct_prefix }}{{ info.struct_ref }}]' = field(default_factory=list){% if f.comment %}  # {{ f.comment }}{% endif %}
+{% endif %}
+{% elif info.is_array %}
+{% if info.array_length is not none and not info.variable_array %}
+{% if info.has_scaling %}
+    {{ f.name }}: {{ info.type_hint }} = field(default_factory=lambda: [0.0] * {{ info.array_length }}){% if f.comment %}  # {{ f.comment }}{% endif %}
+{% else %}
+    {{ f.name }}: {{ info.type_hint }} = field(default_factory=lambda: [0] * {{ info.array_length }}){% if f.comment %}  # {{ f.comment }}{% endif %}
+{% endif %}
+{% else %}
+    {{ f.name }}: {{ info.type_hint }} = field(default_factory=list){% if f.comment %}  # {{ f.comment }}{% endif %}
+{% endif %}
+{% elif info.is_struct %}
+    {{ f.name }}: '{{ struct_prefix }}{{ info.struct_ref }}' = field(default_factory={{ struct_prefix }}{{ info.struct_ref }}){% if f.comment %}  # {{ f.comment }}{% endif %}
+{% else %}
+    {{ f.name }}: {{ info.type_hint }} = {{ info.default }}{% if f.comment %}  # {{ f.comment }}{% endif %}
+{% endif %}
+{%- endmacro %}

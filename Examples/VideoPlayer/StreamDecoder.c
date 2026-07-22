@@ -14,7 +14,7 @@ static AVFormatContext *pOutputContext = NULL;
 static AVCodecContext *pCodecContext = NULL;
 static AVFrame *pFrame = NULL;
 static AVFrame *pFrameCopy = NULL;
-static AVPacket Packet;
+static AVPacket *Packet;
 
 static uint8_t *pMetaData = NULL;
 static uint64_t MetaDataBufferSize = 0;
@@ -24,23 +24,29 @@ static uint64_t MetaDataBytes = 0;
 static int VideoStream = 0;
 static int DataStream = 0;
 
-int StreamOpen(const char *pUrl, const char *pRecordPath)
-{
-    AVCodec *pCodec;
 
-    // FFmpeg startup stuff
+void initializeFFMPEG()
+{
+#if LIBAVCODEC_VERSION_INT < AV_VERSION_INT(58, 9, 100)
     avcodec_register_all();
     av_register_all();
+#endif
+}
+
+void initializeAVFormat()
+{
     avformat_network_init();
     av_log_set_level(AV_LOG_QUIET);
 
     // Allocate a new format context
     pInputContext = avformat_alloc_context();
+}
 
+int configureAVStream(const char *pUrl, const char *pRecordPath)
+{
     // Have avformat_open_input timeout after 5s
     AVDictionary *pOptions = 0;
     av_dict_set(&pOptions, "timeout", "5000000", 0);
-
     // If the stream doesn't open
     if (avformat_open_input(&pInputContext, pUrl, NULL, &pOptions) < 0)
     {
@@ -48,7 +54,6 @@ int StreamOpen(const char *pUrl, const char *pRecordPath)
         StreamClose();
         return 0;
     }
-
     // If there don't appear to be an valid streams in the transport stream
     if (pInputContext->nb_streams == 0)
     {
@@ -56,13 +61,23 @@ int StreamOpen(const char *pUrl, const char *pRecordPath)
         StreamClose();
         return 0;
     }
+    // Get the stream indices for video and metadata
+    VideoStream = av_find_best_stream(pInputContext, AVMEDIA_TYPE_VIDEO, -1, -1, NULL, 0);
+    DataStream  = av_find_best_stream(pInputContext, AVMEDIA_TYPE_DATA,  -1, -1, NULL, 0);
 
+           // Set the format context to playing
+    av_read_play(pInputContext);
+
+    AVCodec *pCodec;
     // Get the stream indices for video and metadata
     VideoStream = av_find_best_stream(pInputContext, AVMEDIA_TYPE_VIDEO, -1, -1, NULL, 0);
     DataStream  = av_find_best_stream(pInputContext, AVMEDIA_TYPE_DATA,  -1, -1, NULL, 0);
 
     // Set the format context to playing
     av_read_play(pInputContext);
+
+    int i;
+#if LIBAVCODEC_VERSION_INT < AV_VERSION_INT(58, 9, 100)
 
     // Get a codec pointer based on the video stream's codec ID and allocate a context
     pCodec = avcodec_find_decoder(pInputContext->streams[VideoStream]->codec->codec_id);
@@ -74,8 +89,6 @@ int StreamOpen(const char *pUrl, const char *pRecordPath)
     // If the user passed in a record path
     if (pRecordPath && strlen(pRecordPath))
     {
-        int i;
-
         // Pull any additional stream information out of the file
         //   NOTE: Older FFmpeg/libav builds may hang indefinitely here!
         avformat_find_stream_info(pInputContext, NULL);
@@ -90,16 +103,60 @@ int StreamOpen(const char *pUrl, const char *pRecordPath)
             AVStream *pStream = avformat_new_stream(pOutputContext, pInputContext->streams[i]->codec->codec);
             avcodec_copy_context(pStream->codec, pInputContext->streams[i]->codec);
 
-            // Add a stream header if the output format calls for it
+                   // Add a stream header if the output format calls for it
             if (pOutputContext->oformat->flags & AVFMT_GLOBALHEADER)
                 pStream->codec->flags |= CODEC_FLAG_GLOBAL_HEADER;
-                // if running more recent version of ffmpeg, uncomment line below, and comment line above
-                //pStream->codec->flags |= AV_CODEC_FLAG_GLOBAL_HEADER;
+            // if running more recent version of ffmpeg, uncomment line below, and comment line above
+            //pStream->codec->flags |= AV_CODEC_FLAG_GLOBAL_HEADER;
         }
+    }
+#elif LIBAVCODEC_VERSION_INT > AV_VERSION_INT(58, 9, 100)
+    // initialize the input context
+    // Get a codec pointer based on the video stream's codec ID and allocate a context
+    pCodec = avcodec_find_decoder(pInputContext->streams[VideoStream]->codecpar->codec_id);
+    pCodecContext = avcodec_alloc_context3(pCodec);
 
-        // Open the record file and write the header out
-        avio_open(&pOutputContext->pb, pRecordPath, AVIO_FLAG_WRITE);
-        avformat_write_header(pOutputContext, NULL);
+    // Open the newly allocated codec context
+    avcodec_open2(pCodecContext, pCodec, NULL);
+    // If the user passed in a record path
+    if (pRecordPath && strlen(pRecordPath))
+    {
+        // Pull any additional stream information out of the file
+        //   NOTE: Older FFmpeg/libav builds may hang indefinitely here!
+        avformat_find_stream_info(pInputContext, NULL);
+
+        // Allocate a format context for the output file
+        avformat_alloc_output_context2(&pOutputContext, NULL, NULL, pRecordPath);
+        // For each stream in the UDP stream
+        for (i = 0; i < pInputContext->nb_streams; i++)
+        {
+            // Mirror this stream to the output format context
+            const struct AVCodec* codec = avcodec_find_decoder(pInputContext->streams[i]->codecpar->codec_id);
+            AVStream *pStream = avformat_new_stream(pOutputContext, codec);
+            avcodec_parameters_from_context(pStream->codecpar, pOutputContext);
+            // Add a stream header if the output format calls for it
+            if (pOutputContext->oformat->flags & AVFMT_GLOBALHEADER)
+                pCodecContext->flags |= CODEC_FLAG_GLOBAL_HEADER;
+        }
+    }
+#endif
+    // Open the record file and write the header out
+    avio_open(&pOutputContext->pb, pRecordPath, AVIO_FLAG_WRITE);
+    return avformat_write_header(pOutputContext, NULL);
+}
+
+int StreamOpen(const char *pUrl, const char *pRecordPath)
+{
+
+    // FFmpeg startup stuff
+    initializeFFMPEG();
+
+    // Setup the AVCodec format
+    initializeAVFormat();
+
+    // initialize the AV Stream
+    if(configureAVStream(pUrl, pRecordPath) == 0) {
+        return 0;
     }
 
     // Allocate the decode and output frame structures
@@ -107,9 +164,15 @@ int StreamOpen(const char *pUrl, const char *pRecordPath)
     pFrameCopy = av_frame_alloc();
 
     // Finally, initialize the AVPacket structure
-    av_init_packet(&Packet);
-    Packet.data = NULL;
-    Packet.size = 0;
+#if LIBAVCODEC_VERSION_INT < AV_VERSION_INT(58, 9, 100)
+    Packet = malloc(sizeof(AVPacket));
+    av_init_packet(Packet);
+    Packet->data = NULL;
+    Packet->size = 0;
+#elif LIBAVCODEC_VERSION_INT > AV_VERSION_INT(58, 9, 100)
+    Packet = av_packet_alloc();
+    av_new_packet(Packet, 0);
+#endif
 
     // Done - return 1 to indicate success
     return 1;
@@ -118,6 +181,14 @@ int StreamOpen(const char *pUrl, const char *pRecordPath)
 
 void StreamClose(void)
 {
+
+#if LIBAVCODEC_VERSION_INT < AV_VERSION_INT(58, 9, 100)
+    av_free_packet(Packet); // frees the contents of the packet
+    free(Packet); // releases the packet struct
+    Packet = NULL;
+#elif LIBAVCODEC_VERSION_INT > AV_VERSION_INT(58, 9, 100)
+    av_packet_free(&Packet);
+#endif
     // Free the AVFrames
     av_frame_free(&pFrame);
     av_frame_free(&pFrameCopy);
@@ -158,19 +229,21 @@ void StreamClose(void)
 
 int StreamProcess(void)
 {
+
+#if LIBAVCODEC_VERSION_INT < AV_VERSION_INT(58, 9, 100)
     // New video/metadata flags - note that NewMetaData == 1 if it's not in the TS
     int NewVideo = 0, NewMetaData = (pInputContext->nb_streams < 2);
 
     // As long as we can keep reading packets from the UDP socket
-    while (av_read_frame(pInputContext, &Packet) >= 0)
+    while (av_read_frame(pInputContext, Packet) >= 0)
     {
-        int Index = Packet.stream_index;
+        int Index = Packet->stream_index;
 
         // If this packet belongs to the video stream
         if (Index == VideoStream)
         {
             // Pass it to the h.264 decoder
-            avcodec_decode_video2(pCodecContext, pFrame, &NewVideo, &Packet);
+            avcodec_decode_video2(pCodecContext, pFrame, &NewVideo, Packet);
 
             // If this packet finished a video frame
             if (NewVideo)
@@ -206,7 +279,7 @@ int StreamProcess(void)
                 MetaDataBytes = MetaDataSize = 0;
 
             // If we don't have any metadata buffered up yet and this packet is big enough for a US key and size
-            if ((MetaDataBytes == 0) && (Packet.size > 17))
+            if ((MetaDataBytes == 0) && (Packet->size > 17))
             {
                 // UAS LS universal key
                 static const uint8_t KlvHeader[16] = {
@@ -215,11 +288,11 @@ int StreamProcess(void)
                 };
 
                 // Try finding the KLV header in this packet
-                const uint8_t *pStart = memmem(Packet.data, Packet.size, KlvHeader, 16);
+                const uint8_t *pStart = memmem(Packet->data, Packet->size, KlvHeader, 16);
                 const uint8_t *pSize = pStart + 16;
 
                 // If we found the header and the size tag is contained in this packet
-                if ((pStart != 0) && ((pSize - Packet.data) < Packet.size))
+                if ((pStart != 0) && ((pSize - Packet->data) < Packet->size))
                 {
                     // Initialize the header size to US key + 1 size byte and zero KLV tag bytes
                     uint64_t KlvSize = 0, HeaderSize = 17;
@@ -231,7 +304,7 @@ int StreamProcess(void)
                         int Bytes = pSize[0] & 0x07, i;
 
                         // If the entire size field is contained in this packet
-                        if (&pSize[Bytes] < &Packet.data[Packet.size])
+                        if (&pSize[Bytes] < &Packet->data[Packet->size])
                         {
                             // Build the size up from the individual bytes
                             for (i = 0; i < Bytes; i++)
@@ -249,7 +322,7 @@ int StreamProcess(void)
                     if (KlvSize > 0)
                     {
                         // Compute the maximum bytes to copy out of the packet
-                        int MaxBytes = Packet.size - (pStart - Packet.data);
+                        int MaxBytes = Packet->size - (pStart - Packet->data);
                         int TotalSize = HeaderSize + KlvSize;
                         int BytesToCopy = MIN(MaxBytes, TotalSize);
 
@@ -272,10 +345,10 @@ int StreamProcess(void)
             else if (MetaDataBytes < MetaDataSize)
             {
                 // Figure out the number of bytes to copy out of this particular packet
-                int BytesToCopy = MIN(Packet.size, MetaDataSize - MetaDataBytes);
+                int BytesToCopy = MIN(Packet->size, MetaDataSize - MetaDataBytes);
 
                 // Copy into the local buffer in the right spot and increment the index
-                memcpy(&pMetaData[MetaDataBytes], Packet.data, BytesToCopy);
+                memcpy(&pMetaData[MetaDataBytes], Packet->data, BytesToCopy);
                 MetaDataBytes += BytesToCopy;
             }
 
@@ -290,38 +363,49 @@ int StreamProcess(void)
             static int64_t LastPts = -1, LastDts = -1;
 
             // If we just jumped into the middle of the stream or its timestamps have reset
-            if ((LastPts < 0) || (Packet.pts < LastPts))
+            if ((LastPts < 0) || (Packet->pts < LastPts))
             {
                 // Create an adjustment parameter for both PTS and DTS
-                StartPts += (Packet.pts - LastPts) - 1;
-                StartDts += (Packet.dts - LastDts) - 1;
+                StartPts += (Packet->pts - LastPts) - 1;
+                StartDts += (Packet->dts - LastDts) - 1;
             }
 
             // Save the current PTS/DTS for detecting discontinuities
-            LastPts = Packet.pts;
-            LastDts = Packet.dts;
+            LastPts = Packet->pts;
+            LastDts = Packet->dts;
 
             // Adjust the PTS/DTS values to create a continuous stream
-            Packet.pts -= StartPts;
-            Packet.dts -= StartDts;
+            Packet->pts -= StartPts;
+            Packet->dts -= StartDts;
 
             // Rescale all the PTS/DTS nonsense
-            Packet.pts = av_rescale_q(Packet.pts, pOutputContext->streams[Index]->time_base, pInputContext->streams[Index]->time_base);
-            Packet.dts = av_rescale_q(Packet.dts, pOutputContext->streams[Index]->time_base, pInputContext->streams[Index]->time_base);
-            Packet.duration = av_rescale_q(Packet.duration, pOutputContext->streams[Index]->time_base, pInputContext->streams[Index]->time_base);
-            Packet.pos = -1;
+            Packet->pts = av_rescale_q(Packet->pts, pOutputContext->streams[Index]->time_base, pInputContext->streams[Index]->time_base);
+            Packet->dts = av_rescale_q(Packet->dts, pOutputContext->streams[Index]->time_base, pInputContext->streams[Index]->time_base);
+            Packet->duration = av_rescale_q(Packet->duration, pOutputContext->streams[Index]->time_base, pInputContext->streams[Index]->time_base);
+            Packet->pos = -1;
 
             // Write the frame to the file
-            av_interleaved_write_frame(pOutputContext, &Packet);
+            av_interleaved_write_frame(pOutputContext, Packet);
         }
 
         // Free the packet data
-        av_free_packet(&Packet);
+        av_free_packet(Packet);
 
         // Return 1 if both a video frame and KLV packet have been read in
         if (NewVideo && NewMetaData)
             return 1;
     }
+
+#elif LIBAVCODEC_VERSION_INT > AV_VERSION_INT(58, 9, 100)
+
+    //avcodec_receive_frame()
+    // Utilize new Send/Receive api
+    // while still decoding
+
+        // utilize packet data
+        // free packet data
+        av_packet_unref(Packet);
+#endif
 
     // No new data if we made it here
     return 0;

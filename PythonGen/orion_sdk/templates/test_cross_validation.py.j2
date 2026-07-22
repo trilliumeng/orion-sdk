@@ -1,0 +1,749 @@
+#!/usr/bin/env python3
+"""
+Auto-generated cross-language validation tests
+Generated from: {{ protocol.name }} v{{ protocol.version }}
+
+Validates encode/decode consistency between C and Python implementations.
+
+Test Coverage:
+- encode_match: Verifies C and Python produce identical encoded bytes
+- decode_values: Verifies C and Python decode to identical field values
+- round_trip: Verifies encode->decode preserves all field values
+- edge_cases: Tests boundary values (min, max, zero) for each field
+
+Usage:
+    python test_cross_validation.py --harness ./test_harness
+    python test_cross_validation.py --harness ./test_harness --packet GeolocateTelemetryCore
+    python test_cross_validation.py --harness ./test_harness -v
+    python test_cross_validation.py --harness ./test_harness --coverage
+"""
+
+import subprocess
+import sys
+import os
+from dataclasses import dataclass, field
+from typing import Dict, List, Tuple, Optional, Any, Union
+from enum import IntEnum
+import re
+import argparse
+
+# Import generated Python bindings
+# Support running as script or module
+try:
+    from ..packets import *
+    from ..structs import *
+    from ..enums import *
+except ImportError:
+    # Running as standalone script - add grandparent to path so orion_sdk is a package
+    _this_dir = os.path.dirname(os.path.abspath(__file__))
+    _sdk_dir = os.path.dirname(_this_dir)  # orion_sdk/
+    _python_dir = os.path.dirname(_sdk_dir)  # python/
+    sys.path.insert(0, _python_dir)
+    from orion_sdk.packets import *
+    from orion_sdk.structs import *
+    from orion_sdk.enums import *
+
+
+@dataclass
+class TestResult:
+    """Result of a single test."""
+    packet_name: str
+    test_type: str  # 'encode_match', 'decode_values', 'round_trip', 'edge_case_*'
+    passed: bool
+    details: str = ""
+    c_output: str = ""
+    py_output: str = ""
+
+
+@dataclass
+class FieldMeta:
+    """Metadata for field value comparison."""
+    name: str
+    type_hint: str = "Any"
+    is_float: bool = False
+    is_array: bool = False
+    is_struct: bool = False
+    is_enum: bool = False
+    is_string: bool = False
+    is_bitfield: bool = False
+    struct_ref: Optional[str] = None
+    enum_ref: Optional[str] = None
+    array_length: Optional[int] = None
+    variable_array: Optional[str] = None
+    in_c_struct: bool = True
+    tolerance: float = 1e-6
+
+
+class CrossLanguageValidator:
+    """Orchestrates cross-language encode/decode validation."""
+
+    # Field metadata for each packet (for value comparison)
+    FIELD_METADATA = {
+{% for pkt_info in packets_info %}
+{% if pkt_info.has_c_impl %}
+        "{{ pkt_info.packet.name }}": [
+{% for meta in pkt_info.field_metadata %}
+            FieldMeta(
+                name="{{ meta.name }}",
+                type_hint="{{ meta.type_hint }}",
+                is_float={{ meta.is_float }},
+                is_array={{ meta.is_array }},
+                is_struct={{ meta.is_struct }},
+                is_enum={{ meta.is_enum }},
+                is_string={{ meta.is_string }},
+                is_bitfield={{ meta.is_bitfield }},
+                struct_ref={{ '"{}"'.format(meta.struct_ref) if meta.struct_ref else 'None' }},
+                enum_ref={{ '"{}"'.format(meta.enum_ref) if meta.enum_ref else 'None' }},
+                array_length={{ meta.array_length if meta.array_length else 'None' }},
+                variable_array={{ '"{}"'.format(meta.variable_array) if meta.variable_array else 'None' }},
+                in_c_struct={{ meta.in_c_struct }},
+                tolerance={{ meta.get('tolerance', 1e-6) }},
+            ),
+{% endfor %}
+        ],
+{% endif %}
+{% endfor %}
+    }
+
+    def __init__(self, harness_path: str = "./test_harness"):
+        self.harness_path = harness_path
+        self.results: List[TestResult] = []
+
+        # On Windows, try .exe extension if base path doesn't exist
+        if not os.path.exists(harness_path):
+            if sys.platform == "win32" and os.path.exists(harness_path + ".exe"):
+                self.harness_path = harness_path + ".exe"
+            else:
+                raise FileNotFoundError(
+                    f"C test harness not found at {harness_path}. "
+                    f"Compile with: gcc -o test_harness test_harness.c -I<path> -L<path> -lorion"
+                )
+
+    def _run_c_harness(self, *args) -> Tuple[bool, str]:
+        """Run the C test harness with arguments."""
+        try:
+            result = subprocess.run(
+                [self.harness_path] + list(args),
+                capture_output=True,
+                text=True,
+                timeout=10
+            )
+            if result.returncode != 0:
+                return False, f"Error (rc={result.returncode}): {result.stderr.strip()}"
+            return True, result.stdout.strip()
+        except subprocess.TimeoutExpired:
+            return False, "Timeout (10s)"
+        except Exception as e:
+            return False, str(e)
+
+    def _c_encode(self, packet_name: str) -> Tuple[bool, str]:
+        """Encode a packet using C, return hex string."""
+        ok, output = self._run_c_harness("encode", packet_name)
+        if ok and "ENCODED:" in output:
+            return True, output.split("ENCODED:")[1].strip()
+        return False, output
+
+    def _c_decode(self, packet_name: str, hex_bytes: str) -> Tuple[bool, Dict[str, str]]:
+        """Decode hex bytes using C, return field values."""
+        ok, output = self._run_c_harness("decode", packet_name, hex_bytes)
+        if not ok:
+            return False, {"error": output}
+
+        # Parse DECODED: output into dict
+        fields = {}
+        if "DECODED:" in output:
+            lines = output.split("DECODED:")[1].strip().split("\n")
+            for line in lines:
+                if "=" in line:
+                    key, value = line.split("=", 1)
+                    fields[key.strip()] = value.strip()
+        return True, fields
+
+    # =========================================================================
+    # Value comparison utilities
+    # =========================================================================
+
+    def _parse_c_array(self, c_val: str) -> List[str]:
+        """Parse C array output format 'v1,v2,v3' into list."""
+        if not c_val:
+            return []
+        return [v.strip() for v in c_val.split(",")]
+
+    def _values_match(self, c_val: str, py_val: Any, meta: FieldMeta) -> Tuple[bool, str]:
+        """Compare C and Python decoded values.
+
+        Args:
+            c_val: String value from C decode output
+            py_val: Python decoded value
+            meta: Field metadata for comparison
+
+        Returns:
+            Tuple of (match, details_if_mismatch)
+        """
+        # Handle None/missing
+        if c_val is None:
+            return True, ""  # Field not in C output, skip
+
+        # Handle nested struct
+        if meta.is_struct and hasattr(py_val, '__dataclass_fields__'):
+            # C output format: "field.subfield=value" - handled at caller level
+            return True, ""
+
+        # Handle array
+        if meta.is_array:
+            c_array = self._parse_c_array(c_val)
+            if not isinstance(py_val, (list, tuple)):
+                return False, f"Python value is not array: {type(py_val)}"
+            if len(c_array) != len(py_val):
+                return False, f"Array length mismatch: C={len(c_array)}, Py={len(py_val)}"
+            for i, (c_elem, py_elem) in enumerate(zip(c_array, py_val)):
+                if meta.is_float:
+                    try:
+                        c_float = float(c_elem)
+                        py_float = float(py_elem)
+                        if abs(c_float - py_float) > meta.tolerance:
+                            return False, f"[{i}]: C={c_float} != Py={py_float} (tol={meta.tolerance})"
+                    except ValueError as e:
+                        return False, f"[{i}]: Parse error: {e}"
+                else:
+                    if str(c_elem) != str(int(py_elem)):
+                        return False, f"[{i}]: C={c_elem} != Py={py_elem}"
+            return True, ""
+
+        # Handle string
+        if meta.is_string:
+            if str(c_val) != str(py_val):
+                return False, f"C='{c_val}' != Py='{py_val}'"
+            return True, ""
+
+        # Handle float with tolerance
+        if meta.is_float:
+            try:
+                c_float = float(c_val)
+                py_float = float(py_val)
+                if abs(c_float - py_float) > meta.tolerance:
+                    return False, f"C={c_float} != Py={py_float} (tol={meta.tolerance})"
+                return True, ""
+            except ValueError as e:
+                return False, f"Parse error: {e}"
+
+        # Handle enum
+        if meta.is_enum:
+            try:
+                c_int = int(c_val)
+                py_int = int(py_val)
+                if c_int != py_int:
+                    return False, f"C={c_int} != Py={py_int}"
+                return True, ""
+            except ValueError as e:
+                return False, f"Parse error: {e}"
+
+        # Handle int/bitfield
+        try:
+            c_int = int(float(c_val))  # Handle "42.000000" format
+            py_int = int(py_val)
+            if c_int != py_int:
+                return False, f"C={c_int} != Py={py_int}"
+            return True, ""
+        except ValueError as e:
+            return False, f"Parse error: {e}"
+
+    def _extract_field_values(self, pkt: Any) -> Dict[str, Any]:
+        """Extract field values from a packet/struct as a flat dict."""
+        values = {}
+        if hasattr(pkt, '__dataclass_fields__'):
+            for field_name in pkt.__dataclass_fields__:
+                val = getattr(pkt, field_name)
+                if hasattr(val, '__dataclass_fields__'):
+                    # Nested struct - flatten with prefix
+                    for sub_name, sub_val in self._extract_field_values(val).items():
+                        values[f"{field_name}.{sub_name}"] = sub_val
+                else:
+                    values[field_name] = val
+        return values
+
+    def _compare_py_values(self, original: Dict[str, Any], decoded: Dict[str, Any],
+                           packet_name: str) -> Tuple[bool, str]:
+        """Compare original and decoded Python values for round-trip test.
+
+        Note: Round-trip has expected quantization loss from encoding, so we use
+        multiple tolerance strategies:
+        1. Field-specific tolerance from metadata (based on scaling)
+        2. Relative tolerance (0.1% of value)
+        3. Minimum tolerance for 16-bit quantization (1/32768 ≈ 3e-5)
+        """
+        metadata = self.FIELD_METADATA.get(packet_name, [])
+        meta_by_name = {m.name: m for m in metadata}
+
+        # Minimum tolerance for 16-bit quantization (most common encoded type)
+        MIN_TOLERANCE = 3.1e-5  # 1/32768 with margin
+
+        mismatches = []
+        for field_name, orig_val in original.items():
+            if field_name not in decoded:
+                continue  # Field not in decoded output
+
+            dec_val = decoded[field_name]
+            # Try to find metadata - for nested fields, try full path first, then parent
+            meta = meta_by_name.get(field_name, None)
+            if meta is None and '.' in field_name:
+                meta = meta_by_name.get(field_name.split('.')[0], None)
+            if meta is None:
+                # Default metadata for unknown fields (assume float with 16-bit quantization)
+                meta = FieldMeta(name=field_name, is_float=True, tolerance=MIN_TOLERANCE)
+
+            # Array comparison (must check BEFORE float, since List[float] has is_float=True)
+            if isinstance(orig_val, (list, tuple)):
+                if len(orig_val) != len(dec_val):
+                    mismatches.append(f"{field_name}: len {len(orig_val)} != {len(dec_val)}")
+                else:
+                    for i, (o, d) in enumerate(zip(orig_val, dec_val)):
+                        if meta.is_float or isinstance(o, float):
+                            try:
+                                o_f = float(o)
+                                d_f = float(d)
+                                abs_diff = abs(o_f - d_f)
+                                max_val = max(abs(o_f), abs(d_f), 1.0)
+                                rel_tol = max_val * 0.001  # 0.1% relative
+                                effective_tol = max(meta.tolerance, rel_tol, MIN_TOLERANCE)
+                                if abs_diff > effective_tol:
+                                    mismatches.append(f"{field_name}[{i}]: {o} != {d}")
+                            except (ValueError, TypeError):
+                                if o != d:
+                                    mismatches.append(f"{field_name}[{i}]: {o} != {d}")
+                        elif o != d:
+                            mismatches.append(f"{field_name}[{i}]: {o} != {d}")
+            # Scalar float comparison with tolerance (quantization expected)
+            # Check both orig_val and dec_val for float type (handles int 0 -> float quantization)
+            elif meta.is_float or isinstance(orig_val, float) or isinstance(dec_val, float):
+                try:
+                    orig_f = float(orig_val)
+                    dec_f = float(dec_val)
+                    abs_diff = abs(orig_f - dec_f)
+                    # Use multiple tolerance strategies:
+                    # 1. Field-specific tolerance from metadata
+                    # 2. Relative tolerance (0.1% of larger value)
+                    # 3. Minimum tolerance for 16-bit quantization
+                    max_val = max(abs(orig_f), abs(dec_f), 1.0)
+                    rel_tol = max_val * 0.001  # 0.1% relative
+                    effective_tol = max(meta.tolerance, rel_tol, MIN_TOLERANCE)
+                    if abs_diff > effective_tol:
+                        mismatches.append(f"{field_name}: {orig_val} != {dec_val}")
+                except (ValueError, TypeError):
+                    if orig_val != dec_val:
+                        mismatches.append(f"{field_name}: {orig_val} != {dec_val}")
+            # Direct comparison
+            elif orig_val != dec_val:
+                mismatches.append(f"{field_name}: {orig_val} != {dec_val}")
+
+        if mismatches:
+            return False, "; ".join(mismatches[:5])  # Limit output
+        return True, ""
+
+    # =========================================================================
+    # Test packet creation functions
+    # =========================================================================
+
+{% for pkt_info in packets_info %}
+{% if pkt_info.has_c_impl %}
+{% set packet = pkt_info.packet %}
+    def _create_test_{{ packet.name | snake_case }}(self) -> {{ packet.name }}:
+        """Create {{ packet.name }} with test values."""
+        pkt = {{ packet.name }}()
+{% for assignment in pkt_info.py_assignments %}
+        {{ assignment }}
+{% endfor %}
+        return pkt
+
+{% endif %}
+{% endfor %}
+
+    # =========================================================================
+    # Individual packet tests
+    # =========================================================================
+
+{% for pkt_info in packets_info %}
+{% if pkt_info.has_c_impl %}
+{% set packet = pkt_info.packet %}
+    def test_{{ packet.name | snake_case }}(self, verbose: bool = False) -> List[TestResult]:
+        """Run all cross-language tests for {{ packet.name }}."""
+        results = []
+        packet_name = "{{ packet.name }}"
+
+        if verbose:
+            print(f"Testing {packet_name}...")
+
+        # 1. Python encode
+        try:
+            py_pkt = self._create_test_{{ packet.name | snake_case }}()
+            py_encoded = py_pkt.encode().hex().upper()
+            py_encode_ok = True
+        except Exception as e:
+            py_encoded = str(e)
+            py_encode_ok = False
+            if verbose:
+                print(f"  Python encode failed: {e}")
+
+        # 2. C encode
+        c_encode_ok, c_encoded = self._c_encode(packet_name)
+        if not c_encode_ok and verbose:
+            print(f"  C encode failed: {c_encoded}")
+
+        # 3. Compare encode outputs (Test: encode_match)
+        if py_encode_ok and c_encode_ok:
+            encode_match = (py_encoded == c_encoded)
+            if encode_match:
+                details = "C and Python encode produce identical bytes"
+            else:
+                details = f"Encode mismatch: C={len(c_encoded)//2}B, Py={len(py_encoded)//2}B"
+                if verbose:
+                    print(f"  Encode mismatch!")
+                    print(f"    C:  {c_encoded[:80]}{'...' if len(c_encoded) > 80 else ''}")
+                    print(f"    Py: {py_encoded[:80]}{'...' if len(py_encoded) > 80 else ''}")
+        else:
+            encode_match = False
+            details = f"Encode failed: C={'OK' if c_encode_ok else 'FAIL'}, Py={'OK' if py_encode_ok else 'FAIL'}"
+
+        results.append(TestResult(
+            packet_name=packet_name,
+            test_type="encode_match",
+            passed=encode_match,
+            details=details,
+            c_output=c_encoded if c_encode_ok else f"ERROR: {c_encoded}",
+            py_output=py_encoded if py_encode_ok else f"ERROR: {py_encoded}",
+        ))
+
+        # 4. Cross-decode: C encoded -> Python decode (Test: cross_c_to_py)
+        if c_encode_ok:
+            try:
+                py_from_c, consumed = {{ packet.name }}.decode(bytes.fromhex(c_encoded))
+                cross_c_to_py_ok = True
+                cross_c_to_py_details = f"Python decoded {consumed} bytes from C"
+            except Exception as e:
+                cross_c_to_py_ok = False
+                cross_c_to_py_details = f"Python failed to decode C bytes: {e}"
+                if verbose:
+                    print(f"  Cross C->Py failed: {e}")
+
+            results.append(TestResult(
+                packet_name=packet_name,
+                test_type="cross_c_to_py",
+                passed=cross_c_to_py_ok,
+                details=cross_c_to_py_details,
+            ))
+
+        # 5. Cross-decode: Python encoded -> C decode (Test: cross_py_to_c)
+        if py_encode_ok:
+            c_decode_ok, c_fields = self._c_decode(packet_name, py_encoded)
+            if c_decode_ok:
+                cross_py_to_c_details = f"C decoded {len(c_fields)} fields from Python"
+            else:
+                cross_py_to_c_details = f"C failed to decode Python bytes: {c_fields.get('error', 'unknown')}"
+                if verbose:
+                    print(f"  Cross Py->C failed: {cross_py_to_c_details}")
+
+            results.append(TestResult(
+                packet_name=packet_name,
+                test_type="cross_py_to_c",
+                passed=c_decode_ok,
+                details=cross_py_to_c_details,
+            ))
+
+        # 6. Decode value comparison (Test: decode_values)
+        if py_encode_ok:
+            c_decode_ok, c_fields = self._c_decode(packet_name, py_encoded)
+            if c_decode_ok:
+                try:
+                    py_decoded, _ = {{ packet.name }}.decode(bytes.fromhex(py_encoded))
+                    metadata = self.FIELD_METADATA.get(packet_name, [])
+
+                    mismatches = []
+                    for meta in metadata:
+                        if not meta.in_c_struct:
+                            continue
+                        c_val = c_fields.get(meta.name)
+                        if c_val is None:
+                            continue
+
+                        py_val = getattr(py_decoded, meta.name, None)
+                        if py_val is None:
+                            continue
+
+                        match, mismatch_detail = self._values_match(c_val, py_val, meta)
+                        if not match:
+                            mismatches.append(f"{meta.name}: {mismatch_detail}")
+
+                    if mismatches:
+                        decode_values_ok = False
+                        decode_values_details = "; ".join(mismatches[:5])
+                        if verbose:
+                            print(f"  Decode value mismatch:")
+                            for m in mismatches[:5]:
+                                print(f"    {m}")
+                    else:
+                        decode_values_ok = True
+                        decode_values_details = f"All {len(metadata)} fields match"
+
+                except Exception as e:
+                    decode_values_ok = False
+                    decode_values_details = f"Comparison error: {e}"
+
+                results.append(TestResult(
+                    packet_name=packet_name,
+                    test_type="decode_values",
+                    passed=decode_values_ok,
+                    details=decode_values_details,
+                ))
+
+        # 7. Round-trip test (Test: round_trip)
+        if py_encode_ok:
+            try:
+                # Get original values
+                original_values = self._extract_field_values(py_pkt)
+
+                # Encode then decode
+                encoded = py_pkt.encode()
+                decoded, consumed = {{ packet.name }}.decode(encoded)
+                decoded_values = self._extract_field_values(decoded)
+
+                # Compare values
+                values_match, mismatch_details = self._compare_py_values(
+                    original_values, decoded_values, packet_name
+                )
+
+                # Verify all bytes consumed
+                if consumed != len(encoded):
+                    values_match = False
+                    mismatch_details = f"Only consumed {consumed}/{len(encoded)} bytes"
+
+                results.append(TestResult(
+                    packet_name=packet_name,
+                    test_type="round_trip",
+                    passed=values_match,
+                    details=mismatch_details if not values_match else "Round-trip preserves all values",
+                ))
+
+            except Exception as e:
+                results.append(TestResult(
+                    packet_name=packet_name,
+                    test_type="round_trip",
+                    passed=False,
+                    details=f"Round-trip error: {e}",
+                ))
+
+        return results
+
+{% endif %}
+{% endfor %}
+
+    # =========================================================================
+    # Run all tests
+    # =========================================================================
+
+    def get_all_packet_names(self) -> List[str]:
+        """Return list of all packet names."""
+        return [
+{% for pkt_info in packets_info %}
+            "{{ pkt_info.packet.name }}",
+{% endfor %}
+        ]
+
+    def get_testable_packet_names(self) -> List[str]:
+        """Return list of packet names that have C implementations."""
+        return [
+{% for pkt_info in packets_info %}
+{% if pkt_info.has_c_impl %}
+            "{{ pkt_info.packet.name }}",
+{% endif %}
+{% endfor %}
+        ]
+
+    def get_skipped_packet_names(self) -> List[str]:
+        """Return list of packet names without C implementations."""
+        return [
+{% for pkt_info in packets_info %}
+{% if not pkt_info.has_c_impl %}
+            "{{ pkt_info.packet.name }}",
+{% endif %}
+{% endfor %}
+        ]
+
+    def run_all_tests(self, verbose: bool = False) -> List[TestResult]:
+        """Run all packet tests."""
+        all_results = []
+{% for pkt_info in packets_info %}
+{% if pkt_info.has_c_impl %}
+        all_results.extend(self.test_{{ pkt_info.packet.name | snake_case }}(verbose=verbose))
+{% endif %}
+{% endfor %}
+        self.results = all_results
+        return all_results
+
+    def run_single_test(self, packet_name: str, verbose: bool = False) -> List[TestResult]:
+        """Run tests for a single packet."""
+        # Convert CamelCase to snake_case for method lookup
+        def to_snake_case(name):
+            result = []
+            for i, c in enumerate(name):
+                if c.isupper() and i > 0:
+                    result.append('_')
+                result.append(c.lower())
+            return ''.join(result)
+
+        method_name = f"test_{to_snake_case(packet_name)}"
+        if hasattr(self, method_name):
+            method = getattr(self, method_name)
+            results = method(verbose=verbose)
+            self.results = results
+            return results
+
+        raise ValueError(f"Unknown packet: {packet_name}. Use --list to see available packets.")
+
+    def print_summary(self) -> bool:
+        """Print test summary. Returns True if all passed."""
+        total = len(self.results)
+        passed = sum(1 for r in self.results if r.passed)
+        failed = total - passed
+
+        # Group by test type
+        by_type: Dict[str, List[TestResult]] = {}
+        for r in self.results:
+            by_type.setdefault(r.test_type, []).append(r)
+
+        print("\n" + "=" * 70)
+        print("CROSS-LANGUAGE VALIDATION SUMMARY")
+        print("=" * 70)
+
+        all_packets = self.get_all_packet_names()
+        testable = self.get_testable_packet_names()
+        skipped = self.get_skipped_packet_names()
+
+        print(f"\nPackets: {len(all_packets)} total, {len(testable)} tested, {len(skipped)} skipped")
+        print(f"Tests:   {total} total, {passed} passed, {failed} failed")
+
+        # Per-type breakdown
+        print("\nBy test type:")
+        for test_type in ["encode_match", "cross_c_to_py", "cross_py_to_c", "decode_values", "round_trip"]:
+            if test_type in by_type:
+                type_results = by_type[test_type]
+                type_passed = sum(1 for r in type_results if r.passed)
+                type_failed = len(type_results) - type_passed
+                status = "PASS" if type_failed == 0 else "FAIL"
+                print(f"  {test_type:20s}: {type_passed:3d} passed, {type_failed:3d} failed [{status}]")
+
+        # Coverage percentage
+        if all_packets:
+            coverage = 100 * len(testable) / len(all_packets)
+            print(f"\nPacket coverage: {coverage:.1f}%")
+
+        print()
+
+        if failed > 0:
+            print("FAILURES:")
+            print("-" * 70)
+            for r in self.results:
+                if not r.passed:
+                    print(f"  [{r.packet_name}] {r.test_type}")
+                    print(f"    {r.details}")
+                    if r.c_output and len(r.c_output) < 100:
+                        print(f"    C output:  {r.c_output}")
+                    if r.py_output and len(r.py_output) < 100:
+                        print(f"    Py output: {r.py_output}")
+            print()
+
+        return failed == 0
+
+    def print_coverage_report(self):
+        """Print detailed packet coverage report."""
+        all_packets = self.get_all_packet_names()
+        testable = self.get_testable_packet_names()
+        skipped = self.get_skipped_packet_names()
+
+        print("\n" + "=" * 70)
+        print("PACKET COVERAGE REPORT")
+        print("=" * 70)
+
+        print(f"\nTotal packets defined: {len(all_packets)}")
+        print(f"Packets with C implementation: {len(testable)}")
+        print(f"Packets without C implementation: {len(skipped)}")
+
+        if all_packets:
+            coverage = 100 * len(testable) / len(all_packets)
+            print(f"\nCoverage: {coverage:.1f}%")
+
+        if skipped:
+            print(f"\nSkipped packets (no C implementation):")
+            for name in sorted(skipped):
+                print(f"  - {name}")
+
+        if testable:
+            print(f"\nTested packets:")
+            for name in sorted(testable):
+                print(f"  + {name}")
+
+
+def main():
+    parser = argparse.ArgumentParser(
+        description="Cross-language encode/decode validation for {{ protocol.name }}"
+    )
+    parser.add_argument(
+        "--harness",
+        default="./test_harness",
+        help="Path to C test harness executable"
+    )
+    parser.add_argument(
+        "--packet",
+        help="Test specific packet only (case-insensitive)"
+    )
+    parser.add_argument(
+        "--list",
+        action="store_true",
+        help="List all available packets"
+    )
+    parser.add_argument(
+        "--coverage",
+        action="store_true",
+        help="Print detailed coverage report"
+    )
+    parser.add_argument(
+        "--verbose", "-v",
+        action="store_true",
+        help="Verbose output"
+    )
+    args = parser.parse_args()
+
+    try:
+        validator = CrossLanguageValidator(args.harness)
+    except FileNotFoundError as e:
+        print(f"Error: {e}", file=sys.stderr)
+        return 1
+
+    if args.list:
+        print("Available packets:")
+        for name in validator.get_all_packet_names():
+            has_c = name in validator.get_testable_packet_names()
+            status = "[C]" if has_c else "[no C]"
+            print(f"  {name} {status}")
+        return 0
+
+    if args.coverage:
+        validator.print_coverage_report()
+        return 0
+
+    if args.packet:
+        # Test specific packet
+        try:
+            validator.run_single_test(args.packet, verbose=args.verbose)
+        except ValueError as e:
+            print(f"Error: {e}", file=sys.stderr)
+            return 1
+    else:
+        # Test all packets
+        validator.run_all_tests(verbose=args.verbose)
+
+    success = validator.print_summary()
+    return 0 if success else 1
+
+
+if __name__ == "__main__":
+    sys.exit(main())

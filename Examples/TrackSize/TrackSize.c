@@ -1,5 +1,5 @@
-#include "OrionPublicPacket.h"
 #include "OrionComm.h"
+#include "OrionPublicPacket.h"
 #include "GeolocateTelemetry.h"
 
 #include <stdio.h>

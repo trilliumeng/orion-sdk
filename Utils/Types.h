@@ -5,7 +5,17 @@
 // use that to remove some of the pain of standard bit width determination
 #include <stdint.h>
 
+// On C28x, stdint.h doesn't provide uint8_t/int8_t (no 8-bit types in hardware)
+// Only define them if hw_types.h hasn't already been included (via device.h)
+#if (defined(__TMS320C28XX__) || defined(__TMS320C28XX_CLA__)) && !defined(HW_TYPES_H)
+    typedef uint16_t uint8_t;  // C28x: 8-bit operations use 16-bit registers
+    typedef int16_t  int8_t;
+#endif
+
 #ifdef WIN32
+#ifndef WIN32_LEAN_AND_MEAN
+#define WIN32_LEAN_AND_MEAN
+#endif
 #include <WTypes.h>
 #else
 typedef unsigned long BOOL;
@@ -23,10 +33,11 @@ typedef unsigned long BOOL;
 # define NULL        0
 #endif // NULL
 
-#ifndef UINT8_MAX
+// Fallback for platforms that don't define uint8_t (but not C28x - handled above)
+#if !defined(UINT8_MAX) && !defined(__TMS320C28XX__) && !defined(__TMS320C28XX_CLA__)
 typedef   signed char  int8_t;
 typedef unsigned char uint8_t;
-#endif // !UINT8_MAX
+#endif
 
 #ifndef xdc_std__include
 

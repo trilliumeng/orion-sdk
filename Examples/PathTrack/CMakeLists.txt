@@ -35,3 +35,10 @@ install(TARGETS PathTrack
     BUNDLE DESTINATION .
     RUNTIME DESTINATION ${CMAKE_INSTALL_BINDIR}
 )
+
+## Add a rule to copy the path.csv to build directory
+add_custom_command(TARGET PathTrack POST_BUILD
+    COMMAND ${CMAKE_COMMAND} -E copy_if_different
+    "${CMAKE_CURRENT_SOURCE_DIR}/path.csv"
+    "$<TARGET_FILE_DIR:PathTrack>/path.csv"
+)

@@ -1,6 +1,6 @@
-#include "OrionPublicPacket.h"
-#include "earthposition.h"
 #include "OrionComm.h"
+#include "earthposition.h"
+#include "OrionPublicPacket.h"
 
 #include <stdio.h>
 #include <stdlib.h>

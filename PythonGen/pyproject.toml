@@ -1,0 +1,57 @@
+[build-system]
+requires = ["setuptools>=61.0", "wheel"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "orion-sdk"
+version = "1.0.0"
+description = "Python SDK for Trillium Orion gimbal communication protocol"
+readme = "README.md"
+license = {text = "Proprietary"}
+requires-python = ">=3.8"
+authors = [
+    {name = "Trillium Engineering"}
+]
+classifiers = [
+    "Development Status :: 4 - Beta",
+    "Intended Audience :: Developers",
+    "Programming Language :: Python :: 3",
+    "Programming Language :: Python :: 3.8",
+    "Programming Language :: Python :: 3.9",
+    "Programming Language :: Python :: 3.10",
+    "Programming Language :: Python :: 3.11",
+    "Programming Language :: Python :: 3.12",
+    "Operating System :: OS Independent",
+    "Topic :: Software Development :: Code Generators",
+    "Topic :: Communications",
+]
+keywords = ["gimbal", "orion", "protocol", "sdk", "trillium"]
+
+dependencies = [
+    "jinja2>=3.0",
+    "pyserial>=3.5",
+]
+
+[project.optional-dependencies]
+dev = [
+    "pytest>=7.0",
+    "pytest-cov>=4.0",
+]
+
+[project.scripts]
+orion-protogen = "orion_sdk.cli:main"
+
+[project.urls]
+"Homepage" = "https://trilliumeng.com"
+
+[tool.setuptools]
+packages = ["orion_sdk"]
+
+[tool.setuptools.package-data]
+"orion_sdk" = ["templates/*.j2"]
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+python_files = ["test_*.py"]
+python_functions = ["test_*"]
+addopts = "-v"

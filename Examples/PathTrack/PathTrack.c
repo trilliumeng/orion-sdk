@@ -4,10 +4,10 @@
 #include <stdlib.h>
 #include <string.h>
 
-#include "OrionPublicPacket.h"
+#include "OrionComm.h"
 #include "linearalgebra.h"
 #include "earthposition.h"
-#include "OrionComm.h"
+#include "OrionPublicPacket.h"
 
 static int GetPathData(OrionPath_t *pPath);
 static void KillProcess(const char *pMessage, int Value);
