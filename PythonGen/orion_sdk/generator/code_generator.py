@@ -187,6 +187,7 @@ class CodeGenerator:
             is_float64_in_memory=is_float64_in_memory,
             is_struct=field.struct_ref is not None,
             is_enum=field.enum_ref is not None,
+            has_default=field.default_value is not None,
             struct_ref=field.struct_ref,
             enum_ref=field.enum_ref,
             has_scaling=has_scaling,

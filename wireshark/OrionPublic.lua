@@ -16,6 +16,8 @@ function get_OrionPktType_t_string(OrionPktType_t)
     elseif OrionPktType_t == 8 then return "ORION_PKT_PRIVATE_08" -- Reserved packet identifier
     elseif OrionPktType_t == 9 then return "ORION_PKT_PRIVATE_09" -- Reserved packet identifier
     elseif OrionPktType_t == 10 then return "ORION_PKT_POSITIONS" -- Stored gimbal positions
+    elseif OrionPktType_t == 11 then return "ORION_PKT_SET_LASER_OCCLUSION_MASK" -- A packet to transfer occlusion data to the gimbal.
+    elseif OrionPktType_t == 12 then return "ORION_PKT_LASER_OCCLUSION_MASK_STATE" -- A packet to report occlusion mask status.
     elseif OrionPktType_t == 31 then return "ORION_PKT_PRIVATE_1F" -- Reserved packet identifier
     elseif OrionPktType_t == 32 then return "ORION_PKT_PRIVATE_20" -- Reserved packet identifier
     elseif OrionPktType_t == 33 then return "ORION_PKT_PRIVATE_21" -- Reserved packet identifier
@@ -35,6 +37,7 @@ function get_OrionPktType_t_string(OrionPktType_t)
     elseif OrionPktType_t == 47 then return "ORION_PKT_PRIVATE_2F" -- Reserved packet identifier
     elseif OrionPktType_t == 48 then return "ORION_PKT_PRIVATE_30" -- Reserved packet identifier
     elseif OrionPktType_t == 49 then return "ORION_PKT_PRIVATE_31" -- Reserved packet identifier
+    elseif OrionPktType_t == 63 then return "ORION_PKT_PRIVATE_3F" -- Reserved packet identifier
     elseif OrionPktType_t == 64 then return "ORION_PKT_PRIVATE_40" -- Reserved packet identifier
     elseif OrionPktType_t == 65 then return "ORION_PKT_DIAGNOSTICS" -- Electrical diagnostic data
     elseif OrionPktType_t == 66 then return "ORION_PKT_FAULTS"
@@ -75,6 +78,9 @@ function get_OrionPktType_t_string(OrionPktType_t)
     elseif OrionPktType_t == 121 then return "ORION_PKT_SIERRA_SETTINGS" -- Sierra-Olympia specific camera settings
     elseif OrionPktType_t == 122 then return "ORION_PKT_SIONYX_SETTINGS" -- Sionyx specific camera settings
     elseif OrionPktType_t == 123 then return "ORION_PKT_LYNRED_SETTINGS" -- Lynred specific camera settings
+    elseif OrionPktType_t == 124 then return "ORION_PKT_EXPOSURE_METERING" -- Set exposure metering mode
+    elseif OrionPktType_t == 127 then return "ORION_PKT_SPARROW_SETTINGS"
+    elseif OrionPktType_t == 125 then return "ORION_PKT_SPARROW_STATUS"
     elseif OrionPktType_t == 128 then return "ORION_PKT_AUTOPILOT_DATA" -- Autopilot state data, if available
     elseif OrionPktType_t == 144 then return "ORION_PKT_PRIVATE_90" -- Reserved packet identifier
     elseif OrionPktType_t == 145 then return "ORION_PKT_PRIVATE_91" -- Reserved packet identifier
@@ -141,6 +147,7 @@ function get_OrionPktType_t_string(OrionPktType_t)
     elseif OrionPktType_t == 251 then return "ORION_PKT_PRF_DETECT" -- Control and telemtry from Mira PRF detect enabled systems
     elseif OrionPktType_t == 252 then return "ORION_PKT_SCAN_PLAN" -- Control For Orion Scan Plan
     elseif OrionPktType_t == 253 then return "ORION_PKT_UNIFIED_CAM_ERR_SETTINGS" -- A packet to indicate the total angular error between two cameras.
+    elseif OrionPktType_t == 254 then return "ORION_PKT_SEE_SPOT_SETTINGS" -- Defines configuration settings for detection and display of the see-spot / laser energy detection feature.
     end
     return "Unknown Value ( " .. OrionPktType_t .. " )"
 end
@@ -258,6 +265,7 @@ function get_OrionLaserType_t_string(OrionLaserType_t)
     elseif OrionLaserType_t == 9 then return "LASER_TYPE_DESIGNATOR_DUMMY" -- Laser Designator Dummy
     elseif OrionLaserType_t == 10 then return "LASER_TYPE_ARETE_LD" -- Arete Laser Designator
     elseif OrionLaserType_t == 11 then return "LASER_TYPE_VECTRONIX_3013" -- Vectronix 3013 LRF
+    elseif OrionLaserType_t == 12 then return "LASER_TYPE_AKTYVUS_LD" -- Aktyvus Laser Designator
     end
     return "Unknown Value ( " .. OrionLaserType_t .. " )"
 end
@@ -409,6 +417,25 @@ function get_UserDataPort_t_string(UserDataPort_t)
     elseif UserDataPort_t == 255 then return "USER_DATA_PORT_CURRENT" -- The port referenced is whatever port delivered this packet
     end
     return "Unknown Value ( " .. UserDataPort_t .. " )"
+end
+
+--------------maxOcclusionPoints Lookup table -------------------------
+-- Maximum number of occlusion points in a path.
+function get_maxOcclusionPoints_string(maxOcclusionPoints)
+    if maxOcclusionPoints == 40 then return "MAX_TOTAL_POINTS" -- Maximum number total upper and lower occlusion points
+    end
+    return "Unknown Value ( " .. maxOcclusionPoints .. " )"
+end
+
+--------------MaskOperationType Lookup table -------------------------
+-- Indicates the occlusion mask operation to perform (set or clear).
+function get_MaskOperationType_string(MaskOperationType)
+    if MaskOperationType == 0 then return "MASK_UNKNOWN" -- Unknown, undefined, or invalid operation.
+    elseif MaskOperationType == 1 then return "MASK_SET_LOWER" -- Set the zone representing occlusions at lower tilt angles.
+    elseif MaskOperationType == 2 then return "MASK_SET_UPPER" -- Set the zone representing occlusions at upper tilt angles.
+    elseif MaskOperationType == 3 then return "MASK_CLEAR" -- Clear any stored mask data.
+    end
+    return "Unknown Value ( " .. MaskOperationType .. " )"
 end
 
 --------------ScanPlanState_t Lookup table -------------------------
@@ -634,6 +661,30 @@ function get_FlirAgcType_t_string(FlirAgcType_t)
     return "Unknown Value ( " .. FlirAgcType_t .. " )"
 end
 
+--------------DrawSpotShape_t Lookup table -------------------------
+-- Draw Spot Reticle Shape
+function get_DrawSpotShape_t_string(DrawSpotShape_t)
+    if DrawSpotShape_t == 0 then return "DRAW_FULL_SPOT" -- Default shape, draw the full spot (opaque) size of radius
+    elseif DrawSpotShape_t == 1 then return "DRAW_OPEN_SPOT" -- Default shape, draw the open spot (empty circle) size of radius
+    elseif DrawSpotShape_t == 2 then return "DRAW_SPOT_RETICLES" -- Count of reticles supported
+    end
+    return "Unknown Value ( " .. DrawSpotShape_t .. " )"
+end
+
+--------------DrawSpotColor_t Lookup table -------------------------
+-- Draw Spot Reticle Color
+function get_DrawSpotColor_t_string(DrawSpotColor_t)
+    if DrawSpotColor_t == 0 then return "DRAW_SPOT_RED" -- Default color, draw the spot with red
+    elseif DrawSpotColor_t == 1 then return "DRAW_SPOT_YELLOW" -- Default color, draw the spot with yellow
+    elseif DrawSpotColor_t == 2 then return "DRAW_SPOT_BLUE" -- Default color, draw the spot with blue
+    elseif DrawSpotColor_t == 3 then return "DRAW_SPOT_GREEN" -- Default color, draw the spot with green
+    elseif DrawSpotColor_t == 4 then return "DRAW_SPOT_ORANGE" -- Default color, draw the spot with orange
+    elseif DrawSpotColor_t == 5 then return "DRAW_SPOT_PURPLE" -- Default color, draw the spot with purple
+    elseif DrawSpotColor_t == 6 then return "DRAW_SPOT_COLORS" -- Count of reticle supported colors
+    end
+    return "Unknown Value ( " .. DrawSpotColor_t .. " )"
+end
+
 --------------SierraPolarity_t Lookup table -------------------------
 -- Enumerated values representing the image polarity setting for SierraOlympia cameras
 function get_SierraPolarity_t_string(SierraPolarity_t)
@@ -704,6 +755,110 @@ function get_SionyxExposureMode_t_string(SionyxExposureMode_t)
     elseif SionyxExposureMode_t == 2 then return "SIONYX_EXPOSURE_AUTO" -- Auto exposure mode, closed loop of AEC/AGC
     end
     return "Unknown Value ( " .. SionyxExposureMode_t .. " )"
+end
+
+--------------LynredContrastMode_t Lookup table -------------------------
+-- Contrast mode enumeration for lynred.
+function get_LynredContrastMode_t_string(LynredContrastMode_t)
+    if LynredContrastMode_t == 0 then return "LYNRED_CONTRAST_AUTO_ICE" -- Automatic image contrast enhancement. Histogram min/max determined by moving average and the ICE threshold settings.
+    elseif LynredContrastMode_t == 1 then return "LYNRED_CONTRAST_MANUAL" -- Manual contrast enhancement. Histogram min/max provided by user.
+    end
+    return "Unknown Value ( " .. LynredContrastMode_t .. " )"
+end
+
+--------------LynredPolarity_t Lookup table -------------------------
+-- Enumerated values representing the image polarity setting for Lynred sensors.
+function get_LynredPolarity_t_string(LynredPolarity_t)
+    if LynredPolarity_t == 0 then return "LYNRED_POLARITY_WHITE_HOT" -- White-hot polarity
+    elseif LynredPolarity_t == 1 then return "LYNRED_POLARITY_BLACK_HOT" -- Black-hot polarity
+    end
+    return "Unknown Value ( " .. LynredPolarity_t .. " )"
+end
+
+--------------LynredCommand_t Lookup table -------------------------
+-- Command enumeration for lynred calibration.
+function get_LynredCommand_t_string(LynredCommand_t)
+    if LynredCommand_t == 0 then return "LYNRED_CMD_NONE" -- Default indication that no command is being sent.
+    elseif LynredCommand_t == 1 then return "LYNRED_CMD_1PT_NUC" -- Complete a 1 point NUC.
+    elseif LynredCommand_t == 2 then return "LYNRED_CMD_2PT_NUC_FIRST" -- Complete the low-temperature reference capture of the 2 point NUC.
+    elseif LynredCommand_t == 3 then return "LYNRED_CMD_2PT_NUC_SECOND" -- Complete the high-temperature reference capture of the 2 point NUC.
+    elseif LynredCommand_t == 4 then return "LYNRED_CMD_2PT_NUC_CALC_TABLE" -- Finalize the 2 point NUC, compute the associated table and store into volatile memory.
+    elseif LynredCommand_t == 5 then return "LYNRED_CMD_2PT_NUC_STORE_TABLE" -- Store the active NUC table into on-board non-volatile flash memory.
+    elseif LynredCommand_t == 6 then return "LYNRED_CMD_2PT_NUC_SECOND_FINAL" -- Convenience command to complete the high-temp reference, compute the NUC table, and write it to flash in a single operation.
+    end
+    return "Unknown Value ( " .. LynredCommand_t .. " )"
+end
+
+--------------SparrowPolarity_t Lookup table -------------------------
+function get_SparrowPolarity_t_string(SparrowPolarity_t)
+    if SparrowPolarity_t == 0 then return "SPARROW_POLARITY_WHITE_HOT"
+    elseif SparrowPolarity_t == 1 then return "SPARROW_POLARITY_BLACK_HOT"
+    end
+    return "Unknown Value ( " .. SparrowPolarity_t .. " )"
+end
+
+--------------SparrowExposureMode_t Lookup table -------------------------
+function get_SparrowExposureMode_t_string(SparrowExposureMode_t)
+    if SparrowExposureMode_t == 0 then return "SPARROW_EXPOSURE_AUTOMATIC"
+    elseif SparrowExposureMode_t == 1 then return "SPARROW_EXPOSURE_MANUAL"
+    end
+    return "Unknown Value ( " .. SparrowExposureMode_t .. " )"
+end
+
+--------------SparrowContrastMode_t Lookup table -------------------------
+function get_SparrowContrastMode_t_string(SparrowContrastMode_t)
+    if SparrowContrastMode_t == 0 then return "SPARROW_CONTRAST_AUTOMATIC"
+    elseif SparrowContrastMode_t == 1 then return "SPARROW_CONTRAST_MANUAL"
+    end
+    return "Unknown Value ( " .. SparrowContrastMode_t .. " )"
+end
+
+--------------SparrowNoiseReductionMode_t Lookup table -------------------------
+function get_SparrowNoiseReductionMode_t_string(SparrowNoiseReductionMode_t)
+    if SparrowNoiseReductionMode_t == 0 then return "SPARROW_NOISE_REDUCTION_DISABLED"
+    elseif SparrowNoiseReductionMode_t == 1 then return "SPARROW_NOISE_REDUCTION_TEMPORAL"
+    elseif SparrowNoiseReductionMode_t == 2 then return "SPARROW_NOISE_REDUCTION_SPATIAL"
+    elseif SparrowNoiseReductionMode_t == 3 then return "SPARROW_NOISE_REDUCTION_TEMPORAL_SPATIAL"
+    end
+    return "Unknown Value ( " .. SparrowNoiseReductionMode_t .. " )"
+end
+
+--------------SparrowCommand_t Lookup table -------------------------
+function get_SparrowCommand_t_string(SparrowCommand_t)
+    if SparrowCommand_t == 0 then return "SPARROW_COMMAND_NONE"
+    elseif SparrowCommand_t == 1 then return "SPARROW_COMMAND_RESTORE_BASELINE"
+    end
+    return "Unknown Value ( " .. SparrowCommand_t .. " )"
+end
+
+--------------SparrowFfcState_t Lookup table -------------------------
+function get_SparrowFfcState_t_string(SparrowFfcState_t)
+    if SparrowFfcState_t == 0 then return "SPARROW_FFC_IDLE"
+    elseif SparrowFfcState_t == 1 then return "SPARROW_FFC_RUNNING"
+    elseif SparrowFfcState_t == 2 then return "SPARROW_FFC_COMPLETE"
+    elseif SparrowFfcState_t == 3 then return "SPARROW_FFC_FAILED"
+    end
+    return "Unknown Value ( " .. SparrowFfcState_t .. " )"
+end
+
+--------------SparrowCommunicationState_t Lookup table -------------------------
+function get_SparrowCommunicationState_t_string(SparrowCommunicationState_t)
+    if SparrowCommunicationState_t == 0 then return "SPARROW_COMMUNICATION_DISCONNECTED"
+    elseif SparrowCommunicationState_t == 1 then return "SPARROW_COMMUNICATION_INITIALIZING"
+    elseif SparrowCommunicationState_t == 2 then return "SPARROW_COMMUNICATION_READY"
+    elseif SparrowCommunicationState_t == 3 then return "SPARROW_COMMUNICATION_FAULT"
+    end
+    return "Unknown Value ( " .. SparrowCommunicationState_t .. " )"
+end
+
+--------------SparrowRequestState_t Lookup table -------------------------
+function get_SparrowRequestState_t_string(SparrowRequestState_t)
+    if SparrowRequestState_t == 0 then return "SPARROW_REQUEST_IDLE"
+    elseif SparrowRequestState_t == 1 then return "SPARROW_REQUEST_PENDING"
+    elseif SparrowRequestState_t == 2 then return "SPARROW_REQUEST_CONFIRMED"
+    elseif SparrowRequestState_t == 3 then return "SPARROW_REQUEST_FAILED"
+    end
+    return "Unknown Value ( " .. SparrowRequestState_t .. " )"
 end
 
 --------------CoordFormat_t Lookup table -------------------------
@@ -863,7 +1018,8 @@ function get_OrionCameraProtocol_t_string(OrionCameraProtocol_t)
     elseif OrionCameraProtocol_t == 12 then return "CAMERA_PROTO_SIERRA" -- SierraOlympia camera
     elseif OrionCameraProtocol_t == 13 then return "CAMERA_PROTO_SIONYX" -- Sionyx camera
     elseif OrionCameraProtocol_t == 14 then return "CAMERA_PROTO_LYNRED" -- Lynred camera
-    elseif OrionCameraProtocol_t == 15 then return "NUM_CAMERA_PROTOS" -- Number of available camera protocols
+    elseif OrionCameraProtocol_t == 15 then return "CAMERA_PROTO_SPARROW"
+    elseif OrionCameraProtocol_t == 16 then return "NUM_CAMERA_PROTOS" -- Number of available camera protocols
     end
     return "Unknown Value ( " .. OrionCameraProtocol_t .. " )"
 end
@@ -1178,9 +1334,9 @@ function print_OrionLaserState_t(subtree, memberName, buffer, id, size, index, s
         end
         local OrionLaserState_tree = makeStructureSubtreeOrionPublic(subtree, buffer(indexOffset, structSize), name, structSize)
         local Type, Enabled, Armed, Active, GroundSpeedLock, AltitudeLock, PasswordLock, ApCommLock, 
-                ApFlyingLock, BypassEnabled, PitchAngleLock, WatchdogLock, AuxOutputStatus, AuxOperatingMode, VccUndervoltage, Reserved, LaserTemp, 
-                WaitTimer
-    --  18 Data Elements found:
+                ApFlyingLock, BypassEnabled, PitchAngleLock, WatchdogLock, AuxOutputStatus, AuxOperatingMode, VccUndervoltage, OccludedLock, Reserved, 
+                LaserTemp, WaitTimer
+    --  19 Data Elements found:
         if size >= indexOffset + 1 then
             Type = buffer(indexOffset, 1):uint()  --  Enumeration  Type  Type: [OrionLaserType_t] size in bits: 8
             OrionLaserState_tree:add(buffer(indexOffset, 1), "Type: " .. get_OrionLaserType_t_string(buffer(indexOffset, 1):uint() )  .. " [" .. buffer(indexOffset, 1):uint() .. "]")
@@ -1218,8 +1374,10 @@ function print_OrionLaserState_t(subtree, memberName, buffer, id, size, index, s
             OrionLaserState_tree:add(buffer(indexOffset, 1), "AuxOperatingMode: " .. buffer(indexOffset, 1):bitfield(4, 1))
             VccUndervoltage = buffer(indexOffset, 1):bitfield(5, 1)  --  Primitive  VccUndervoltage  Type: [unsigned] size in bits:1
             OrionLaserState_tree:add(buffer(indexOffset, 1), "VccUndervoltage: " .. buffer(indexOffset, 1):bitfield(5, 1))
-            Reserved = buffer(indexOffset, 1):bitfield(6, 2)  --  Primitive  Reserved  Type: [unsigned] size in bits:2
-            OrionLaserState_tree:add(buffer(indexOffset, 1), "Reserved: " .. buffer(indexOffset, 1):bitfield(6, 2))
+            OccludedLock = buffer(indexOffset, 1):bitfield(6, 1)  --  Primitive  OccludedLock  Type: [unsigned] size in bits:1
+            OrionLaserState_tree:add(buffer(indexOffset, 1), "OccludedLock: " .. buffer(indexOffset, 1):bitfield(6, 1))
+            Reserved = buffer(indexOffset, 1):bitfield(7, 1)  --  Primitive  Reserved  Type: [unsigned] size in bits:1
+            OrionLaserState_tree:add(buffer(indexOffset, 1), "Reserved: " .. buffer(indexOffset, 1):bitfield(7, 1))
                 indexOffset = indexOffset + 1
         end
         if size >= indexOffset + 1 then
@@ -1313,8 +1471,10 @@ function print_CoreLoading_t(subtree, memberName, buffer, id, size, index, struc
             CoreLoading_tree:add(buffer(indexOffset, 1), "numThreads: " .. buffer(indexOffset, 1):uint() .. " threads")
                 indexOffset = indexOffset + 1
         end
+        if size >= (indexOffset + 1) then
             --  Embedded Struct: ThreadLoading  Type: [ThreadLoading_t] size in bits reported:48
             indexOffset = print_ThreadLoading_t(CoreLoading_tree, "ThreadLoading", buffer, id, size, indexOffset, 6, numThreads )
+        end
     end
 
     return indexOffset
@@ -1526,12 +1686,15 @@ function print_TelemetryOptions_t(subtree, memberName, buffer, id, size, index, 
             -- Not in Memory, but encoded Value [Reserved] size in bits:20
                 indexOffset = indexOffset + 4
         end
+        if size >= (indexOffset + 1) then
             local strSize = 40
             if strSize > (size - indexOffset) then
                 strSize = (size - indexOffset)
             end
             UserString = buffer(indexOffset, strSize):string(ENC_UTF_8)  --  Primitive  UserString  Type: [char] size in bits:320
             TelemetryOptions_tree:add(buffer(indexOffset, strSize), "UserString: " .. buffer(indexOffset, strSize):string(ENC_UTF_8))
+                indexOffset = indexOffset + string.len(UserString) + 1 
+        end
     end
 
     return indexOffset
@@ -1616,6 +1779,40 @@ function print_Error_t(subtree, memberName, buffer, id, size, index, structSize,
             Error_tree:add(buffer(indexOffset, 1), "BadStatistics: " .. buffer(indexOffset, 1):bitfield(2, 1))
             Reserved = buffer(indexOffset, 1):bitfield(3, 5)  --  Primitive  Reserved  Type: [unsigned] size in bits:5
             Error_tree:add(buffer(indexOffset, 1), "Reserved: " .. buffer(indexOffset, 1):bitfield(3, 5))
+                indexOffset = indexOffset + 1
+        end
+    end
+
+    return indexOffset
+end
+
+-- Data points describing the mask where points are considered to be connected by straight lines.
+function print_MaskPoints_t(subtree, memberName, buffer, id, size, index, structSize, arraySize)
+    if size == 0 then
+        return index
+    end
+    local indexOffset = index
+    for i=0, arraySize-1 do
+        local name
+        if arraySize > 1 then
+            name = memberName .. "[" .. i + 1 .. "]"
+        else
+            name = memberName
+        end
+        if(structSize > size - indexOffset) then
+            structSize = size - indexOffset
+        end
+        local MaskPoints_tree = makeStructureSubtreeOrionPublic(subtree, buffer(indexOffset, structSize), name, structSize)
+        local pan, tilt
+    --  2 Data Elements found:
+        if size >= indexOffset + 2 then
+            pan = buffer(indexOffset, 2):int() / (180/math.pi)  --  Primitive  pan  Type: [float] size in bits:16
+            MaskPoints_tree:add(buffer(indexOffset, 2), "pan: " .. buffer(indexOffset, 2):int() / (180/math.pi))
+                indexOffset = indexOffset + 2
+        end
+        if size >= indexOffset + 1 then
+            tilt = buffer(indexOffset, 1):int() / (180/math.pi)  --  Primitive  tilt  Type: [float] size in bits:8
+            MaskPoints_tree:add(buffer(indexOffset, 1), "tilt: " .. buffer(indexOffset, 1):int() / (180/math.pi))
                 indexOffset = indexOffset + 1
         end
     end
@@ -2212,8 +2409,10 @@ function print_OrionSoftwareDiagnostics(subtree, buffer, id, size, index)
         -- Not in Memory, but encoded Value [reserved] size in bits:16
         indexOffset = indexOffset + 2
     end
+    if size >= (indexOffset + 1) then
         --  Embedded Struct: CoreLoading  Type: [CoreLoading_t] size in bits reported:88
         indexOffset = print_CoreLoading_t(OrionSoftwareDiagnostics_tree, "CoreLoading", buffer, id, size, indexOffset, 11, numCores )
+    end
     return name
 end
 
@@ -2270,8 +2469,10 @@ function print_OrionVibration(subtree, buffer, id, size, index)
         MaxGyro = buffer(indexOffset, 6)  --  Primitive  MaxGyro  Type: [float] size in bits:48
         indexOffset = signed16x3To16QUAT(OrionVibration_tree, "MaxGyro", buffer, indexOffset, 6, 1)
     end
+    if size >= (indexOffset + 1) then
         --  Embedded Struct: FftData  Type: [FftData_t] size in bits reported:64
         indexOffset = print_FftData_t(OrionVibration_tree, "FftData", buffer, id, size, indexOffset, 8, 16 )
+    end
     return name
 end
 
@@ -2473,8 +2674,10 @@ function print_TleStatus(subtree, buffer, id, size, index)
         TleStatus_tree:add(buffer(indexOffset, 1), "Source: " .. get_TleSource_t_string(buffer(indexOffset, 1):uint() )  .. " [" .. buffer(indexOffset, 1):uint() .. "]")
         indexOffset = indexOffset + 1
     end
+    if size >= (indexOffset + 1) then
         --  Embedded Struct: TleDetects  Type: [TleDetects_t] size in bits reported:104
         indexOffset = print_TleDetects_t(TleStatus_tree, "TleDetects", buffer, id, size, indexOffset, 13, 1 )
+    end
     return name
 end
 
@@ -2716,12 +2919,15 @@ function print_DebugString(subtree, buffer, id, size, index)
         DebugString_tree:add(buffer(indexOffset, 1), "reserved2: " .. buffer(indexOffset, 1):uint())
         indexOffset = indexOffset + 1
     end
+    if size >= (indexOffset + 1) then
         local strSize = 128
         if strSize > (size - indexOffset) then
             strSize = (size - indexOffset)
         end
         description = buffer(indexOffset, strSize):string(ENC_UTF_8)  --  Primitive  description  Type: [char] size in bits:1024
         DebugString_tree:add(buffer(indexOffset, strSize), "description: " .. buffer(indexOffset, strSize):string(ENC_UTF_8))
+        indexOffset = indexOffset + string.len(description) + 1 
+    end
     return name
 end
 
@@ -3172,8 +3378,10 @@ function print_OrionCmd(subtree, buffer, id, size, index)
         return isInvalid
     end
     --  1 Data Elements found:
+    if size >= (indexOffset + 1) then
         --  Struct  Cmd  Type: [OrionCmd_t] size in bits reported:56
         indexOffset = print_OrionCmd_t(OrionCmd_tree, "Cmd", buffer, id, size, indexOffset, 7, 1 )
+    end
     return name
 end
 
@@ -3187,8 +3395,10 @@ function print_OrionCmdExtended(subtree, buffer, id, size, index)
         return isInvalid
     end
     --  1 Data Elements found:
+    if size >= (indexOffset + 1) then
         --  Struct  Cmd  Type: [OrionCmdExtended_t] size in bits reported:80
         indexOffset = print_OrionCmdExtended_t(OrionCmdExtended_tree, "Cmd", buffer, id, size, indexOffset, 10, 1 )
+    end
     return name
 end
 
@@ -3202,8 +3412,10 @@ function print_OrionCmdExtendedResponse(subtree, buffer, id, size, index)
         return isInvalid
     end
     --  1 Data Elements found:
+    if size >= (indexOffset + 1) then
         --  Struct  Cmd  Type: [OrionCmdExtendedResponse_t] size in bits reported:224
         indexOffset = print_OrionCmdExtendedResponse_t(OrionCmdExtendedResponse_tree, "Cmd", buffer, id, size, indexOffset, 28, 1 )
+    end
     return name
 end
 
@@ -3217,8 +3429,10 @@ function print_OrionStartupCmd(subtree, buffer, id, size, index)
         return isInvalid
     end
     --  1 Data Elements found:
+    if size >= (indexOffset + 1) then
         --  Struct  Cmd  Type: [OrionCmd_t] size in bits reported:56
         indexOffset = print_OrionCmd_t(OrionStartupCmd_tree, "Cmd", buffer, id, size, indexOffset, 7, 1 )
+    end
     return name
 end
 
@@ -3238,8 +3452,10 @@ function print_OrionPositions(subtree, buffer, id, size, index)
         OrionPositions_tree:add(buffer(indexOffset, 1), "NumPositions: " .. buffer(indexOffset, 1):uint())
         indexOffset = indexOffset + 1
     end
+    if size >= (indexOffset + 1) then
         --  Embedded Struct: PosPreset  Type: [PosPreset_t] size in bits reported:64
         indexOffset = print_PosPreset_t(OrionPositions_tree, "PosPreset", buffer, id, size, indexOffset, 8, NumPositions )
+    end
     return name
 end
 
@@ -3308,8 +3524,10 @@ function print_OrionPath(subtree, buffer, id, size, index)
         OrionPath_tree:add(buffer(indexOffset, 1), "numCrossTrackSteps: " .. buffer(indexOffset, 1):bitfield(4, 4) .. " steps")
         indexOffset = indexOffset + 1
     end
+    if size >= (indexOffset + 1) then
         --  Embedded Struct: Point  Type: [Point_t] size in bits reported:72
         indexOffset = print_Point_t(OrionPath_tree, "Point", buffer, id, size, indexOffset, 9, numPoints )
+    end
     if size >= (indexOffset + 2)  + ((numPoints-1) * 9) then
         alongTrackStepAngle = buffer(indexOffset, 2):uint()  --  Primitive  alongTrackStepAngle  Type: [float] size in bits:16
         indexOffset = unsigned16ToTrackStepAngle(OrionPath_tree, "alongTrackStepAngle", buffer, indexOffset, 2, 1)
@@ -3973,8 +4191,66 @@ function print_OrionUnifiedCamErrorSettings(subtree, buffer, id, size, index)
         OrionUnifiedCamErrorSettings_tree:add(buffer(indexOffset, 1), "NumCameras: " .. buffer(indexOffset, 1):uint())
         indexOffset = indexOffset + 1
     end
+    if size >= (indexOffset + 1) then
         --  Struct  UnifiedCamAngularOffsets  Type: [CameraAngularOffsets_t] size in bits reported:32
         indexOffset = print_CameraAngularOffsets_t(OrionUnifiedCamErrorSettings_tree, "UnifiedCamAngularOffsets", buffer, id, size, indexOffset, 4, NumCameras )
+    end
+    return name
+end
+
+-- Packet ID: ORION_PKT_SEE_SPOT_SETTINGS
+function print_OrionSeeSpotSettings(subtree, buffer, id, size, index)
+    local name = "OrionSeeSpotSettings"
+    local indexOffset = 0
+    local OrionSeeSpotSettings_tree = makeSubtreeOrionPublic(subtree, buffer, name, id, size)
+    local isInvalid = checkOrionPublicPacketIsValid(OrionSeeSpotSettings_tree, buffer, id, name, size, index)
+    if string.len(isInvalid) > 0 then
+        return isInvalid
+    end
+    local Disabled, DebugOutput, SupportsDiagnosticOverlay, ShowDiagnosticsOverlay, ShowLaserHistogram, ShowLaserFrames, ShowROIFrame, Roi, 
+            Threshold, DrawSpotReticle, PredictedReticleColor, DetectedReticleColor
+    --  13 Data Elements found:
+    if size >= (indexOffset + 1)  then
+        Disabled = buffer(indexOffset, 1):bitfield(0, 1)  --  Primitive  Disabled  Type: [unsigned] size in bits:1
+        OrionSeeSpotSettings_tree:add(buffer(indexOffset, 1), "Disabled: " .. buffer(indexOffset, 1):bitfield(0, 1))
+        DebugOutput = buffer(indexOffset, 1):bitfield(1, 1)  --  Primitive  DebugOutput  Type: [unsigned] size in bits:1
+        OrionSeeSpotSettings_tree:add(buffer(indexOffset, 1), "DebugOutput: " .. buffer(indexOffset, 1):bitfield(1, 1))
+        SupportsDiagnosticOverlay = buffer(indexOffset, 1):bitfield(2, 1)  --  Primitive  SupportsDiagnosticOverlay  Type: [unsigned] size in bits:1
+        OrionSeeSpotSettings_tree:add(buffer(indexOffset, 1), "SupportsDiagnosticOverlay: " .. buffer(indexOffset, 1):bitfield(2, 1))
+        ShowDiagnosticsOverlay = buffer(indexOffset, 1):bitfield(3, 1)  --  Primitive  ShowDiagnosticsOverlay  Type: [unsigned] size in bits:1
+        OrionSeeSpotSettings_tree:add(buffer(indexOffset, 1), "ShowDiagnosticsOverlay: " .. buffer(indexOffset, 1):bitfield(3, 1))
+        ShowLaserHistogram = buffer(indexOffset, 1):bitfield(4, 1)  --  Primitive  ShowLaserHistogram  Type: [unsigned] size in bits:1
+        OrionSeeSpotSettings_tree:add(buffer(indexOffset, 1), "ShowLaserHistogram: " .. buffer(indexOffset, 1):bitfield(4, 1))
+        ShowLaserFrames = buffer(indexOffset, 1):bitfield(5, 1)  --  Primitive  ShowLaserFrames  Type: [unsigned] size in bits:1
+        OrionSeeSpotSettings_tree:add(buffer(indexOffset, 1), "ShowLaserFrames: " .. buffer(indexOffset, 1):bitfield(5, 1))
+        ShowROIFrame = buffer(indexOffset, 1):bitfield(6, 1)  --  Primitive  ShowROIFrame  Type: [unsigned] size in bits:1
+        OrionSeeSpotSettings_tree:add(buffer(indexOffset, 1), "ShowROIFrame: " .. buffer(indexOffset, 1):bitfield(6, 1))
+        -- Not in Memory, but encoded Value [reserved] size in bits:1
+        indexOffset = indexOffset + 1
+    end
+    if size >= (indexOffset + 1)  then
+        Roi = buffer(indexOffset, 1):uint()  --  Primitive  Roi  Type: [float] size in bits:8
+        indexOffset = unsigned8ToFloat32(OrionSeeSpotSettings_tree, "Roi", buffer, indexOffset, 1, 1)
+    end
+    if size >= (indexOffset + 1)  then
+        Threshold = buffer(indexOffset, 1):uint()  --  Primitive  Threshold  Type: [float] size in bits:8
+        indexOffset = unsigned8ToFloat32(OrionSeeSpotSettings_tree, "Threshold", buffer, indexOffset, 1, 1)
+    end
+    if size >= (indexOffset + 1)  then
+        DrawSpotReticle = buffer(indexOffset, 1):uint()  --  Enumeration  DrawSpotReticle  Type: [DrawSpotShape_t] size in bits: 8
+        OrionSeeSpotSettings_tree:add(buffer(indexOffset, 1), "DrawSpotReticle: " .. get_DrawSpotShape_t_string(buffer(indexOffset, 1):uint() )  .. " [" .. buffer(indexOffset, 1):uint() .. "]")
+        indexOffset = indexOffset + 1
+    end
+    if size >= (indexOffset + 1)  then
+        PredictedReticleColor = buffer(indexOffset, 1):uint()  --  Enumeration  PredictedReticleColor  Type: [DrawSpotColor_t] size in bits: 8
+        OrionSeeSpotSettings_tree:add(buffer(indexOffset, 1), "PredictedReticleColor: " .. get_DrawSpotColor_t_string(buffer(indexOffset, 1):uint() )  .. " [" .. buffer(indexOffset, 1):uint() .. "]")
+        indexOffset = indexOffset + 1
+    end
+    if size >= (indexOffset + 1)  then
+        DetectedReticleColor = buffer(indexOffset, 1):uint()  --  Enumeration  DetectedReticleColor  Type: [DrawSpotColor_t] size in bits: 8
+        OrionSeeSpotSettings_tree:add(buffer(indexOffset, 1), "DetectedReticleColor: " .. get_DrawSpotColor_t_string(buffer(indexOffset, 1):uint() )  .. " [" .. buffer(indexOffset, 1):uint() .. "]")
+        indexOffset = indexOffset + 1
+    end
     return name
 end
 
@@ -3988,8 +4264,8 @@ function print_OrionOmniVisSettings(subtree, buffer, id, size, index)
         return isInvalid
     end
     local Index, ExpMode, IsoMode, WbMode, ManExpTime, Brightness, Saturation, Contrast, 
-            Sharpness, NoiseReduce, Scene, ControlMode, Rsc
-    --  13 Data Elements found:
+            Sharpness, NoiseReduce, Scene, ControlMode, Rsc, MaxExpTime, MaxGainIso
+    --  15 Data Elements found:
     if size >= (indexOffset + 1)  then
         Index = buffer(indexOffset, 1):uint()  --  Primitive  Index  Type: [uint8_t] size in bits:8
         OrionOmniVisSettings_tree:add(buffer(indexOffset, 1), "Index: " .. buffer(indexOffset, 1):uint())
@@ -4049,6 +4325,18 @@ function print_OrionOmniVisSettings(subtree, buffer, id, size, index)
         ControlMode = buffer(indexOffset, 1):uint()  --  Primitive  ControlMode  Type: [uint8_t] size in bits:8
         OrionOmniVisSettings_tree:add(buffer(indexOffset, 1), "ControlMode: " .. buffer(indexOffset, 1):uint())
         indexOffset = indexOffset + 1
+    end
+    if size >= (indexOffset + 8)  then
+        Rsc = buffer(indexOffset, 1):bitfield(0, 1)  --  Primitive  Rsc  Type: [unsigned] size in bits:1
+        OrionOmniVisSettings_tree:add(buffer(indexOffset, 1), "Rsc: " .. buffer(indexOffset, 1):bitfield(0, 1))
+        MaxExpTime = buffer(indexOffset, 8):uint64()  --  Primitive  MaxExpTime  Type: [uint64_t] size in bits:64
+        OrionOmniVisSettings_tree:add(buffer(indexOffset, 8), "MaxExpTime: " .. buffer(indexOffset, 8):uint64())
+        indexOffset = indexOffset + 8
+    end
+    if size >= (indexOffset + 2)  then
+        MaxGainIso = buffer(indexOffset, 2):uint()  --  Primitive  MaxGainIso  Type: [uint16_t] size in bits:16
+        OrionOmniVisSettings_tree:add(buffer(indexOffset, 2), "MaxGainIso: " .. buffer(indexOffset, 2):uint())
+        indexOffset = indexOffset + 2
     end
     return name
 end
@@ -4162,19 +4450,26 @@ function print_OrionLynredSettings(subtree, buffer, id, size, index)
     if string.len(isInvalid) > 0 then
         return isInvalid
     end
-    local Index, ContrastMode, ICEMovingAverage, ICEMinThreshold, ICEMaxThreshold
-    --  6 Data Elements found:
+    local Index, Command, ContrastMode, ICEMovingAverage, Polarity, DebugEnable, ICEMinThreshold, ICEMaxThreshold, 
+            ManualHistogramMin, ManualHistogramMax, UniversalBrightness, UniversalContrast, TceEnable, TceGamma, TceClipLimit, TceAlpha
+    --  17 Data Elements found:
     if size >= (indexOffset + 1)  then
         Index = buffer(indexOffset, 1):uint()  --  Primitive  Index  Type: [uint8_t] size in bits:8
         OrionLynredSettings_tree:add(buffer(indexOffset, 1), "Index: " .. buffer(indexOffset, 1):uint())
         indexOffset = indexOffset + 1
     end
     if size >= (indexOffset + 2)  then
-        ContrastMode = buffer(indexOffset, 1):bitfield(0, 1)  --  Primitive  ContrastMode  Type: [uint8_t] size in bits:1
-        OrionLynredSettings_tree:add(buffer(indexOffset, 1), "ContrastMode: " .. buffer(indexOffset, 1):bitfield(0, 1))
-        ICEMovingAverage = buffer(indexOffset, 2):bitfield(1, 9)  --  Primitive  ICEMovingAverage  Type: [uint16_t] size in bits:9
-        OrionLynredSettings_tree:add(buffer(indexOffset, 2), "ICEMovingAverage: " .. buffer(indexOffset, 2):bitfield(1, 9))
-        -- Not in Memory, but encoded Value [Reserved] size in bits:6
+        Command = buffer(indexOffset, 1):bitfield(0, 3)  --  Enumeration  Command  Type: [LynredCommand_t] size in bits: 3
+        OrionLynredSettings_tree:add(buffer(indexOffset, 1), "Command: " .. get_LynredCommand_t_string(buffer(indexOffset, 1):bitfield(0, 3) )  .. " [" .. buffer(indexOffset, 1):bitfield(0, 3) .. "]")
+        ContrastMode = buffer(indexOffset, 1):bitfield(3, 1)  --  Enumeration  ContrastMode  Type: [uint8_t] size in bits: 1
+        OrionLynredSettings_tree:add(buffer(indexOffset, 1), "ContrastMode: " .. get_LynredContrastMode_t_string(buffer(indexOffset, 1):bitfield(3, 1) )  .. " [" .. buffer(indexOffset, 1):bitfield(3, 1) .. "]")
+        ICEMovingAverage = buffer(indexOffset, 2):bitfield(4, 9)  --  Primitive  ICEMovingAverage  Type: [uint16_t] size in bits:9
+        OrionLynredSettings_tree:add(buffer(indexOffset, 2), "ICEMovingAverage: " .. buffer(indexOffset, 2):bitfield(4, 9))
+        Polarity = buffer(indexOffset, 2):bitfield(13, 1)  --  Primitive  Polarity  Type: [unsigned] size in bits:1
+        OrionLynredSettings_tree:add(buffer(indexOffset, 2), "Polarity: " .. buffer(indexOffset, 2):bitfield(13, 1))
+        DebugEnable = buffer(indexOffset, 2):bitfield(14, 1)  --  Primitive  DebugEnable  Type: [unsigned] size in bits:1
+        OrionLynredSettings_tree:add(buffer(indexOffset, 2), "DebugEnable: " .. buffer(indexOffset, 2):bitfield(14, 1))
+        -- Not in Memory, but encoded Value [Reserved] size in bits:1
         indexOffset = indexOffset + 2
     end
     if size >= (indexOffset + 1)  then
@@ -4185,6 +4480,173 @@ function print_OrionLynredSettings(subtree, buffer, id, size, index)
     if size >= (indexOffset + 1)  then
         ICEMaxThreshold = buffer(indexOffset, 1):uint()  --  Primitive  ICEMaxThreshold  Type: [uint8_t] size in bits:8
         OrionLynredSettings_tree:add(buffer(indexOffset, 1), "ICEMaxThreshold: " .. buffer(indexOffset, 1):uint())
+        indexOffset = indexOffset + 1
+    end
+    if size >= (indexOffset + 2)  then
+        ManualHistogramMin = buffer(indexOffset, 2):uint()  --  Primitive  ManualHistogramMin  Type: [uint16_t] size in bits:16
+        OrionLynredSettings_tree:add(buffer(indexOffset, 2), "ManualHistogramMin: " .. buffer(indexOffset, 2):uint())
+        indexOffset = indexOffset + 2
+    end
+    if size >= (indexOffset + 2)  then
+        ManualHistogramMax = buffer(indexOffset, 2):uint()  --  Primitive  ManualHistogramMax  Type: [uint16_t] size in bits:16
+        OrionLynredSettings_tree:add(buffer(indexOffset, 2), "ManualHistogramMax: " .. buffer(indexOffset, 2):uint())
+        indexOffset = indexOffset + 2
+    end
+    if size >= (indexOffset + 2)  then
+        UniversalBrightness = buffer(indexOffset, 2):int()  --  Primitive  UniversalBrightness  Type: [float] size in bits:16
+        OrionLynredSettings_tree:add(buffer(indexOffset, 2), "UniversalBrightness: " .. buffer(indexOffset, 2):int())
+        indexOffset = indexOffset + 2
+    end
+    if size >= (indexOffset + 2)  then
+        UniversalContrast = buffer(indexOffset, 2):int()  --  Primitive  UniversalContrast  Type: [float] size in bits:16
+        OrionLynredSettings_tree:add(buffer(indexOffset, 2), "UniversalContrast: " .. buffer(indexOffset, 2):int())
+        indexOffset = indexOffset + 2
+    end
+    if size >= (indexOffset + 1)  then
+        TceEnable = buffer(indexOffset, 1):bitfield(0, 1)  --  Primitive  TceEnable  Type: [unsigned] size in bits:1
+        OrionLynredSettings_tree:add(buffer(indexOffset, 1), "TceEnable: " .. buffer(indexOffset, 1):bitfield(0, 1))
+        TceGamma = buffer(indexOffset, 1):uint()  --  Primitive  TceGamma  Type: [uint8_t] size in bits:8
+        OrionLynredSettings_tree:add(buffer(indexOffset, 1), "TceGamma: " .. buffer(indexOffset, 1):uint())
+        indexOffset = indexOffset + 1
+    end
+    if size >= (indexOffset + 1)  then
+        TceClipLimit = buffer(indexOffset, 1):uint()  --  Primitive  TceClipLimit  Type: [uint8_t] size in bits:8
+        OrionLynredSettings_tree:add(buffer(indexOffset, 1), "TceClipLimit: " .. buffer(indexOffset, 1):uint())
+        indexOffset = indexOffset + 1
+    end
+    if size >= (indexOffset + 1)  then
+        TceAlpha = buffer(indexOffset, 1):uint()  --  Primitive  TceAlpha  Type: [uint8_t] size in bits:8
+        OrionLynredSettings_tree:add(buffer(indexOffset, 1), "TceAlpha: " .. buffer(indexOffset, 1):uint())
+        indexOffset = indexOffset + 1
+    end
+    return name
+end
+
+-- Packet ID: ORION_PKT_EXPOSURE_METERING
+function print_OrionExposureMetering(subtree, buffer, id, size, index)
+    local name = "OrionExposureMetering"
+    local indexOffset = 0
+    local OrionExposureMetering_tree = makeSubtreeOrionPublic(subtree, buffer, name, id, size)
+    local isInvalid = checkOrionPublicPacketIsValid(OrionExposureMetering_tree, buffer, id, name, size, index)
+    if string.len(isInvalid) > 0 then
+        return isInvalid
+    end
+    local Mode
+    --  1 Data Elements found:
+    if size >= (indexOffset + 1)  then
+        Mode = buffer(indexOffset, 1):uint()  --  Primitive  Mode  Type: [uint8_t] size in bits:8
+        OrionExposureMetering_tree:add(buffer(indexOffset, 1), "Mode: " .. buffer(indexOffset, 1):uint())
+        indexOffset = indexOffset + 1
+    end
+    return name
+end
+
+-- Packet ID: ORION_PKT_SPARROW_SETTINGS
+function print_OrionSparrowSettings(subtree, buffer, id, size, index)
+    local name = "OrionSparrowSettings"
+    local indexOffset = 0
+    local OrionSparrowSettings_tree = makeSubtreeOrionPublic(subtree, buffer, name, id, size)
+    local isInvalid = checkOrionPublicPacketIsValid(OrionSparrowSettings_tree, buffer, id, name, size, index)
+    if string.len(isInvalid) > 0 then
+        return isInvalid
+    end
+    local Index, Polarity, ExposureMode, ContrastMode, NoiseReductionMode, Command, ManualIntegrationTime, Brightness, 
+            Contrast, Sharpness
+    --  11 Data Elements found:
+    if size >= (indexOffset + 1)  then
+        Index = buffer(indexOffset, 1):uint()  --  Primitive  Index  Type: [uint8_t] size in bits:8
+        OrionSparrowSettings_tree:add(buffer(indexOffset, 1), "Index: " .. buffer(indexOffset, 1):uint())
+        indexOffset = indexOffset + 1
+    end
+    if size >= (indexOffset + 1)  then
+        Polarity = buffer(indexOffset, 1):bitfield(0, 1)  --  Enumeration  Polarity  Type: [SparrowPolarity_t] size in bits: 1
+        OrionSparrowSettings_tree:add(buffer(indexOffset, 1), "Polarity: " .. get_SparrowPolarity_t_string(buffer(indexOffset, 1):bitfield(0, 1) )  .. " [" .. buffer(indexOffset, 1):bitfield(0, 1) .. "]")
+        ExposureMode = buffer(indexOffset, 1):bitfield(1, 1)  --  Enumeration  ExposureMode  Type: [SparrowExposureMode_t] size in bits: 1
+        OrionSparrowSettings_tree:add(buffer(indexOffset, 1), "ExposureMode: " .. get_SparrowExposureMode_t_string(buffer(indexOffset, 1):bitfield(1, 1) )  .. " [" .. buffer(indexOffset, 1):bitfield(1, 1) .. "]")
+        ContrastMode = buffer(indexOffset, 1):bitfield(2, 1)  --  Enumeration  ContrastMode  Type: [SparrowContrastMode_t] size in bits: 1
+        OrionSparrowSettings_tree:add(buffer(indexOffset, 1), "ContrastMode: " .. get_SparrowContrastMode_t_string(buffer(indexOffset, 1):bitfield(2, 1) )  .. " [" .. buffer(indexOffset, 1):bitfield(2, 1) .. "]")
+        NoiseReductionMode = buffer(indexOffset, 1):bitfield(3, 2)  --  Enumeration  NoiseReductionMode  Type: [SparrowNoiseReductionMode_t] size in bits: 2
+        OrionSparrowSettings_tree:add(buffer(indexOffset, 1), "NoiseReductionMode: " .. get_SparrowNoiseReductionMode_t_string(buffer(indexOffset, 1):bitfield(3, 2) )  .. " [" .. buffer(indexOffset, 1):bitfield(3, 2) .. "]")
+        Command = buffer(indexOffset, 1):bitfield(5, 2)  --  Enumeration  Command  Type: [SparrowCommand_t] size in bits: 2
+        OrionSparrowSettings_tree:add(buffer(indexOffset, 1), "Command: " .. get_SparrowCommand_t_string(buffer(indexOffset, 1):bitfield(5, 2) )  .. " [" .. buffer(indexOffset, 1):bitfield(5, 2) .. "]")
+        -- Not in Memory, but encoded Value [Reserved] size in bits:1
+        indexOffset = indexOffset + 1
+    end
+    if size >= (indexOffset + 4)  then
+        ManualIntegrationTime = buffer(indexOffset, 4):uint()  --  Primitive  ManualIntegrationTime  Type: [uint32_t] size in bits:32
+        OrionSparrowSettings_tree:add(buffer(indexOffset, 4), "ManualIntegrationTime: " .. buffer(indexOffset, 4):uint())
+        indexOffset = indexOffset + 4
+    end
+    if size >= (indexOffset + 2)  then
+        Brightness = buffer(indexOffset, 2):uint()  --  Primitive  Brightness  Type: [uint16_t] size in bits:16
+        OrionSparrowSettings_tree:add(buffer(indexOffset, 2), "Brightness: " .. buffer(indexOffset, 2):uint())
+        indexOffset = indexOffset + 2
+    end
+    if size >= (indexOffset + 2)  then
+        Contrast = buffer(indexOffset, 2):uint()  --  Primitive  Contrast  Type: [uint16_t] size in bits:16
+        OrionSparrowSettings_tree:add(buffer(indexOffset, 2), "Contrast: " .. buffer(indexOffset, 2):uint())
+        indexOffset = indexOffset + 2
+    end
+    if size >= (indexOffset + 2)  then
+        Sharpness = buffer(indexOffset, 2):uint()  --  Primitive  Sharpness  Type: [uint16_t] size in bits:16
+        OrionSparrowSettings_tree:add(buffer(indexOffset, 2), "Sharpness: " .. buffer(indexOffset, 2):uint())
+        indexOffset = indexOffset + 2
+    end
+    return name
+end
+
+-- Packet ID: ORION_PKT_SPARROW_STATUS
+function print_OrionSparrowStatus(subtree, buffer, id, size, index)
+    local name = "OrionSparrowStatus"
+    local indexOffset = 0
+    local OrionSparrowStatus_tree = makeSubtreeOrionPublic(subtree, buffer, name, id, size)
+    local isInvalid = checkOrionPublicPacketIsValid(OrionSparrowStatus_tree, buffer, id, name, size, index)
+    if string.len(isInvalid) > 0 then
+        return isInvalid
+    end
+    local Index, CurrentIntegrationTime, MaximumIntegrationTime, AgcEnabled, FfcState, CommunicationState, RequestState, FaultFlags, 
+            RequestSerial, TransportFaultFlags
+    --  11 Data Elements found:
+    if size >= (indexOffset + 1)  then
+        Index = buffer(indexOffset, 1):uint()  --  Primitive  Index  Type: [uint8_t] size in bits:8
+        OrionSparrowStatus_tree:add(buffer(indexOffset, 1), "Index: " .. buffer(indexOffset, 1):uint())
+        indexOffset = indexOffset + 1
+    end
+    if size >= (indexOffset + 4)  then
+        CurrentIntegrationTime = buffer(indexOffset, 4):uint()  --  Primitive  CurrentIntegrationTime  Type: [uint32_t] size in bits:32
+        OrionSparrowStatus_tree:add(buffer(indexOffset, 4), "CurrentIntegrationTime: " .. buffer(indexOffset, 4):uint())
+        indexOffset = indexOffset + 4
+    end
+    if size >= (indexOffset + 4)  then
+        MaximumIntegrationTime = buffer(indexOffset, 4):uint()  --  Primitive  MaximumIntegrationTime  Type: [uint32_t] size in bits:32
+        OrionSparrowStatus_tree:add(buffer(indexOffset, 4), "MaximumIntegrationTime: " .. buffer(indexOffset, 4):uint())
+        indexOffset = indexOffset + 4
+    end
+    if size >= (indexOffset + 1)  then
+        AgcEnabled = buffer(indexOffset, 1):bitfield(0, 1)  --  Primitive  AgcEnabled  Type: [uint8_t] size in bits:1
+        OrionSparrowStatus_tree:add(buffer(indexOffset, 1), "AgcEnabled: " .. buffer(indexOffset, 1):bitfield(0, 1))
+        FfcState = buffer(indexOffset, 1):bitfield(1, 2)  --  Enumeration  FfcState  Type: [SparrowFfcState_t] size in bits: 2
+        OrionSparrowStatus_tree:add(buffer(indexOffset, 1), "FfcState: " .. get_SparrowFfcState_t_string(buffer(indexOffset, 1):bitfield(1, 2) )  .. " [" .. buffer(indexOffset, 1):bitfield(1, 2) .. "]")
+        CommunicationState = buffer(indexOffset, 1):bitfield(3, 2)  --  Enumeration  CommunicationState  Type: [SparrowCommunicationState_t] size in bits: 2
+        OrionSparrowStatus_tree:add(buffer(indexOffset, 1), "CommunicationState: " .. get_SparrowCommunicationState_t_string(buffer(indexOffset, 1):bitfield(3, 2) )  .. " [" .. buffer(indexOffset, 1):bitfield(3, 2) .. "]")
+        RequestState = buffer(indexOffset, 1):bitfield(5, 2)  --  Enumeration  RequestState  Type: [SparrowRequestState_t] size in bits: 2
+        OrionSparrowStatus_tree:add(buffer(indexOffset, 1), "RequestState: " .. get_SparrowRequestState_t_string(buffer(indexOffset, 1):bitfield(5, 2) )  .. " [" .. buffer(indexOffset, 1):bitfield(5, 2) .. "]")
+        -- Not in Memory, but encoded Value [Reserved] size in bits:1
+        indexOffset = indexOffset + 1
+    end
+    if size >= (indexOffset + 4)  then
+        FaultFlags = buffer(indexOffset, 4):uint()  --  Primitive  FaultFlags  Type: [uint32_t] size in bits:32
+        OrionSparrowStatus_tree:add(buffer(indexOffset, 4), "FaultFlags: " .. buffer(indexOffset, 4):uint())
+        indexOffset = indexOffset + 4
+    end
+    if size >= (indexOffset + 4)  then
+        RequestSerial = buffer(indexOffset, 4):uint()  --  Primitive  RequestSerial  Type: [uint32_t] size in bits:32
+        OrionSparrowStatus_tree:add(buffer(indexOffset, 4), "RequestSerial: " .. buffer(indexOffset, 4):uint())
+        indexOffset = indexOffset + 4
+    end
+    if size >= (indexOffset + 1)  then
+        TransportFaultFlags = buffer(indexOffset, 1):uint()  --  Primitive  TransportFaultFlags  Type: [uint8_t] size in bits:8
+        OrionSparrowStatus_tree:add(buffer(indexOffset, 1), "TransportFaultFlags: " .. buffer(indexOffset, 1):uint())
         indexOffset = indexOffset + 1
     end
     return name
@@ -4200,8 +4662,8 @@ function print_VideoOptions(subtree, buffer, id, size, index)
         return isInvalid
     end
     local Stabilized, ShowTrackBox, ShowReticle, RotateVideo, DisableFovMatch, ShowTelemetry, HasTelemetryOptions, ShowDetections, 
-            DisableNtsc, EnablePip, ZoomTrackBox, ShowTrackId, MaxShift
-    --  15 Data Elements found:
+            DisableNtsc, EnablePip, ZoomTrackBox, ShowTrackId, EnablePixelProbe, MaxShift
+    --  16 Data Elements found:
     if size >= (indexOffset + 1)  then
         Stabilized = buffer(indexOffset, 1):bitfield(0, 1)  --  Primitive  Stabilized  Type: [uint32_t] size in bits:1
         VideoOptions_tree:add(buffer(indexOffset, 1), "Stabilized: " .. buffer(indexOffset, 1):bitfield(0, 1))
@@ -4230,7 +4692,9 @@ function print_VideoOptions(subtree, buffer, id, size, index)
         VideoOptions_tree:add(buffer(indexOffset, 1), "ZoomTrackBox: " .. buffer(indexOffset, 1):bitfield(2, 1))
         ShowTrackId = buffer(indexOffset, 1):bitfield(3, 1)  --  Primitive  ShowTrackId  Type: [uint32_t] size in bits:1
         VideoOptions_tree:add(buffer(indexOffset, 1), "ShowTrackId: " .. buffer(indexOffset, 1):bitfield(3, 1))
-        -- Not in Memory, but encoded Value [Reserved] size in bits:20
+        EnablePixelProbe = buffer(indexOffset, 1):bitfield(4, 1)  --  Primitive  EnablePixelProbe  Type: [uint32_t] size in bits:1
+        VideoOptions_tree:add(buffer(indexOffset, 1), "EnablePixelProbe: " .. buffer(indexOffset, 1):bitfield(4, 1))
+        -- Not in Memory, but encoded Value [Reserved] size in bits:19
         indexOffset = indexOffset + 3
     end
     if size >= (indexOffset + 1)  then
@@ -4495,14 +4959,19 @@ function print_VideoRecordStatus(subtree, buffer, id, size, index)
     local Version, UdpEnabled, RecordingEnabled, EnableKlvData, EnableOrionData, OBREnabled, Reserved1, UdpDestIp, 
             UdpPort, UdpBitrate, KlvMode, State, DiskConsumption, Reserved2
     --  17 Data Elements found:
+    if size >= (indexOffset + 1) then
         local strSize = 16
         if strSize > (size - indexOffset) then
             strSize = (size - indexOffset)
         end
         Version = buffer(indexOffset, strSize):string(ENC_UTF_8)  --  Primitive  Version  Type: [char] size in bits:128
         VideoRecordStatus_tree:add(buffer(indexOffset, strSize), "Version: " .. buffer(indexOffset, strSize):string(ENC_UTF_8))
+        indexOffset = indexOffset + string.len(Version) + 1 
+    end
+    if size >= (indexOffset + 1) then
         --  Embedded Struct: CameraInformation  Type: [CameraInformation_t] size in bits reported:113
         indexOffset = print_CameraInformation_t(VideoRecordStatus_tree, "CameraInformation", buffer, id, size, indexOffset, 15, 3 )
+    end
     if size >= (indexOffset + 1)  then
         UdpEnabled = buffer(indexOffset, 1):bitfield(0, 1)  --  Primitive  UdpEnabled  Type: [unsigned] size in bits:1
         VideoRecordStatus_tree:add(buffer(indexOffset, 1), "UdpEnabled: " .. buffer(indexOffset, 1):bitfield(0, 1))
@@ -4547,15 +5016,19 @@ function print_VideoRecordStatus(subtree, buffer, id, size, index)
         VideoRecordStatus_tree:add(buffer(indexOffset, 2), "DiskConsumption: " .. buffer(indexOffset, 2):int() / 10000)
         indexOffset = indexOffset + 2
     end
+    if size >= (indexOffset + 1) then
         --  Embedded Struct: Error  Type: [Error_t] size in bits reported:8
         indexOffset = print_Error_t(VideoRecordStatus_tree, "Error", buffer, id, size, indexOffset, 1, 1 )
+    end
     if size >= (indexOffset + 1)  then
         Reserved2 = buffer(indexOffset, 1):uint()  --  Primitive  Reserved2  Type: [uint8_t] size in bits:8
         VideoRecordStatus_tree:add(buffer(indexOffset, 1), "Reserved2: " .. buffer(indexOffset, 1):uint())
         indexOffset = indexOffset + 1
     end
+    if size >= (indexOffset + 1) then
         --  Struct  CameraInformation3  Type: [CameraInformation_t] size in bits reported:113
         indexOffset = print_CameraInformation_t(VideoRecordStatus_tree, "CameraInformation3", buffer, id, size, indexOffset, 15, 1 )
+    end
     return name
 end
 
@@ -4777,12 +5250,15 @@ function print_OrionLaserCommand(subtree, buffer, id, size, index)
         OrionLaserCommand_tree:add(buffer(indexOffset, 1), "Index: " .. buffer(indexOffset, 1):uint())
         indexOffset = indexOffset + 1
     end
+    if size >= (indexOffset + 1) then
         local strSize = 16
         if strSize > (size - indexOffset) then
             strSize = (size - indexOffset)
         end
         Password = buffer(indexOffset, strSize):string(ENC_UTF_8)  --  Primitive  Password  Type: [char] size in bits:128
         OrionLaserCommand_tree:add(buffer(indexOffset, strSize), "Password: " .. buffer(indexOffset, strSize):string(ENC_UTF_8))
+        indexOffset = indexOffset + string.len(Password) + 1 
+    end
     if size >= (indexOffset + 1)  then
         Enable = buffer(indexOffset, 1):uint()  --  Primitive  Enable  Type: [uint8_t] size in bits:8
         OrionLaserCommand_tree:add(buffer(indexOffset, 1), "Enable: " .. buffer(indexOffset, 1):uint())
@@ -4837,8 +5313,80 @@ function print_OrionLaserStates(subtree, buffer, id, size, index)
         OrionLaserStates_tree:add(buffer(indexOffset, 1), "NumLasers: " .. buffer(indexOffset, 1):uint())
         indexOffset = indexOffset + 1
     end
+    if size >= (indexOffset + 1) then
         --  Struct  State  Type: [OrionLaserState_t] size in bits reported:48
         indexOffset = print_OrionLaserState_t(OrionLaserStates_tree, "State", buffer, id, size, indexOffset, 6, NumLasers )
+    end
+    return name
+end
+
+-- Packet ID: ORION_PKT_SET_LASER_OCCLUSION_MASK
+function print_OrionOcclusion(subtree, buffer, id, size, index)
+    local name = "OrionOcclusion"
+    local indexOffset = 0
+    local OrionOcclusion_tree = makeSubtreeOrionPublic(subtree, buffer, name, id, size)
+    local isInvalid = checkOrionPublicPacketIsValid(OrionOcclusion_tree, buffer, id, name, size, index)
+    if string.len(isInvalid) > 0 then
+        return isInvalid
+    end
+    local PacketNumber, TotalNumberOfPackets, Description, MaskOperation, NumberOfMaskPoints
+    --  6 Data Elements found:
+    if size >= (indexOffset + 1)  then
+        PacketNumber = buffer(indexOffset, 1):uint()  --  Primitive  PacketNumber  Type: [uint8_t] size in bits:8
+        OrionOcclusion_tree:add(buffer(indexOffset, 1), "PacketNumber: " .. buffer(indexOffset, 1):uint())
+        indexOffset = indexOffset + 1
+    end
+    if size >= (indexOffset + 1)  then
+        TotalNumberOfPackets = buffer(indexOffset, 1):uint()  --  Primitive  TotalNumberOfPackets  Type: [uint8_t] size in bits:8
+        OrionOcclusion_tree:add(buffer(indexOffset, 1), "TotalNumberOfPackets: " .. buffer(indexOffset, 1):uint())
+        indexOffset = indexOffset + 1
+    end
+    if size >= (indexOffset + 1) then
+        local strSize = 16
+        if strSize > (size - indexOffset) then
+            strSize = (size - indexOffset)
+        end
+        Description = buffer(indexOffset, strSize):string(ENC_UTF_8)  --  Primitive  Description  Type: [char] size in bits:128
+        OrionOcclusion_tree:add(buffer(indexOffset, strSize), "Description: " .. buffer(indexOffset, strSize):string(ENC_UTF_8))
+        indexOffset = indexOffset + string.len(Description) + 1 
+    end
+    if size >= (indexOffset + 1)  then
+        MaskOperation = buffer(indexOffset, 1):uint()  --  Enumeration  MaskOperation  Type: [MaskOperationType] size in bits: 8
+        OrionOcclusion_tree:add(buffer(indexOffset, 1), "MaskOperation: " .. get_MaskOperationType_string(buffer(indexOffset, 1):uint() )  .. " [" .. buffer(indexOffset, 1):uint() .. "]")
+        indexOffset = indexOffset + string.len(MaskOperation) + 1 
+    end
+    if size >= (indexOffset + 1)  then
+        NumberOfMaskPoints = buffer(indexOffset, 1):uint()  --  Primitive  NumberOfMaskPoints  Type: [uint8_t] size in bits:8
+        OrionOcclusion_tree:add(buffer(indexOffset, 1), "NumberOfMaskPoints: " .. buffer(indexOffset, 1):uint())
+        indexOffset = indexOffset + 1
+    end
+    if size >= (indexOffset + 1) then
+        --  Embedded Struct: MaskPoints  Type: [MaskPoints_t] size in bits reported:24
+        indexOffset = print_MaskPoints_t(OrionOcclusion_tree, "MaskPoints", buffer, id, size, indexOffset, 3, NumberOfMaskPoints )
+    end
+    return name
+end
+
+-- Packet ID: ORION_PKT_LASER_OCCLUSION_MASK_STATE
+function print_OrionOcclusionState(subtree, buffer, id, size, index)
+    local name = "OrionOcclusionState"
+    local indexOffset = 0
+    local OrionOcclusionState_tree = makeSubtreeOrionPublic(subtree, buffer, name, id, size)
+    local isInvalid = checkOrionPublicPacketIsValid(OrionOcclusionState_tree, buffer, id, name, size, index)
+    if string.len(isInvalid) > 0 then
+        return isInvalid
+    end
+    local Description, IsHealthy
+    --  2 Data Elements found:
+    if size >= (indexOffset + 1) then
+        local strSize = 16
+        if strSize > (size - indexOffset) then
+            strSize = (size - indexOffset)
+        end
+        Description = buffer(indexOffset, strSize):string(ENC_UTF_8)  --  Primitive  Description  Type: [char] size in bits:128
+        OrionOcclusionState_tree:add(buffer(indexOffset, strSize), "Description: " .. buffer(indexOffset, strSize):string(ENC_UTF_8))
+        indexOffset = indexOffset + string.len(Description) + 1 
+    end
     return name
 end
 
@@ -5136,8 +5684,10 @@ function print_OrionAdvancedEncodingSettings(subtree, buffer, id, size, index)
         return isInvalid
     end
     --  1 Data Elements found:
+    if size >= (indexOffset + 1) then
         --  Embedded Struct: VideoEncodingSettings  Type: [VideoEncodingSettings_t] size in bits reported:200
         indexOffset = print_VideoEncodingSettings_t(OrionAdvancedEncodingSettings_tree, "VideoEncodingSettings", buffer, id, size, indexOffset, 25, ENCODE_IDX_BITRATE_COUNT )
+    end
     return name
 end
 
@@ -5266,19 +5816,26 @@ function print_OrionCameras(subtree, buffer, id, size, index)
     if string.len(isInvalid) > 0 then
         return isInvalid
     end
-    local NumCameras
-    --  3 Data Elements found:
+    local NumCameras, FfcInPlaceMask
+    --  4 Data Elements found:
     if size >= (indexOffset + 1)  then
         NumCameras = buffer(indexOffset, 1):uint()  --  Primitive  NumCameras  Type: [uint8_t] size in bits:8
         OrionCameras_tree:add(buffer(indexOffset, 1), "NumCameras: " .. buffer(indexOffset, 1):uint())
         indexOffset = indexOffset + 1
     end
-    if size >= (indexOffset + 3)  then
-        -- Not in Memory, but encoded Value [reserved] size in bits:24
-        indexOffset = indexOffset + 3
+    if size >= (indexOffset + 1)  then
+        FfcInPlaceMask = buffer(indexOffset, 1):uint()  --  Primitive  FfcInPlaceMask  Type: [uint8_t] size in bits:8
+        OrionCameras_tree:add(buffer(indexOffset, 1), "FfcInPlaceMask: " .. buffer(indexOffset, 1):uint())
+        indexOffset = indexOffset + 1
     end
+    if size >= (indexOffset + 2)  then
+        -- Not in Memory, but encoded Value [reserved] size in bits:16
+        indexOffset = indexOffset + 2
+    end
+    if size >= (indexOffset + 1) then
         --  Embedded Struct: OrionCamSettings  Type: [OrionCamSettings_t] size in bits reported:192
         indexOffset = print_OrionCamSettings_t(OrionCameras_tree, "OrionCamSettings", buffer, id, size, indexOffset, 24, NumCameras )
+    end
     return name
 end
 
@@ -5293,18 +5850,24 @@ function print_OrionClevisVersion(subtree, buffer, id, size, index)
     end
     local Version, PartNumber, OnTime
     --  3 Data Elements found:
+    if size >= (indexOffset + 1) then
         local strSize = 16
         if strSize > (size - indexOffset) then
             strSize = (size - indexOffset)
         end
         Version = buffer(indexOffset, strSize):string(ENC_UTF_8)  --  Primitive  Version  Type: [char] size in bits:128
         OrionClevisVersion_tree:add(buffer(indexOffset, strSize), "Version: " .. buffer(indexOffset, strSize):string(ENC_UTF_8))
+        indexOffset = indexOffset + string.len(Version) + 1 
+    end
+    if size >= (indexOffset + 1) then
         local strSize = 16
         if strSize > (size - indexOffset) then
             strSize = (size - indexOffset)
         end
         PartNumber = buffer(indexOffset, strSize):string(ENC_UTF_8)  --  Primitive  PartNumber  Type: [char] size in bits:128
         OrionClevisVersion_tree:add(buffer(indexOffset, strSize), "PartNumber: " .. buffer(indexOffset, strSize):string(ENC_UTF_8))
+        indexOffset = indexOffset + string.len(PartNumber) + 1 
+    end
     if size >= (indexOffset + 4)  then
         OnTime = buffer(indexOffset, 4):uint()  --  Primitive  OnTime  Type: [uint32_t] size in bits:32
         OrionClevisVersion_tree:add(buffer(indexOffset, 4), "OnTime: " .. buffer(indexOffset, 4):uint() .. " minutes")
@@ -5324,18 +5887,24 @@ function print_OrionCrownVersion(subtree, buffer, id, size, index)
     end
     local Version, PartNumber, OnTime
     --  3 Data Elements found:
+    if size >= (indexOffset + 1) then
         local strSize = 16
         if strSize > (size - indexOffset) then
             strSize = (size - indexOffset)
         end
         Version = buffer(indexOffset, strSize):string(ENC_UTF_8)  --  Primitive  Version  Type: [char] size in bits:128
         OrionCrownVersion_tree:add(buffer(indexOffset, strSize), "Version: " .. buffer(indexOffset, strSize):string(ENC_UTF_8))
+        indexOffset = indexOffset + string.len(Version) + 1 
+    end
+    if size >= (indexOffset + 1) then
         local strSize = 16
         if strSize > (size - indexOffset) then
             strSize = (size - indexOffset)
         end
         PartNumber = buffer(indexOffset, strSize):string(ENC_UTF_8)  --  Primitive  PartNumber  Type: [char] size in bits:128
         OrionCrownVersion_tree:add(buffer(indexOffset, strSize), "PartNumber: " .. buffer(indexOffset, strSize):string(ENC_UTF_8))
+        indexOffset = indexOffset + string.len(PartNumber) + 1 
+    end
     if size >= (indexOffset + 4)  then
         OnTime = buffer(indexOffset, 4):uint()  --  Primitive  OnTime  Type: [uint32_t] size in bits:32
         OrionCrownVersion_tree:add(buffer(indexOffset, 4), "OnTime: " .. buffer(indexOffset, 4):uint() .. " minutes")
@@ -5355,18 +5924,24 @@ function print_OrionPayloadVersion(subtree, buffer, id, size, index)
     end
     local Version, PartNumber, OnTime, HwType, HwRevision
     --  5 Data Elements found:
+    if size >= (indexOffset + 1) then
         local strSize = 24
         if strSize > (size - indexOffset) then
             strSize = (size - indexOffset)
         end
         Version = buffer(indexOffset, strSize):string(ENC_UTF_8)  --  Primitive  Version  Type: [char] size in bits:192
         OrionPayloadVersion_tree:add(buffer(indexOffset, strSize), "Version: " .. buffer(indexOffset, strSize):string(ENC_UTF_8))
+        indexOffset = indexOffset + string.len(Version) + 1 
+    end
+    if size >= (indexOffset + 1) then
         local strSize = 16
         if strSize > (size - indexOffset) then
             strSize = (size - indexOffset)
         end
         PartNumber = buffer(indexOffset, strSize):string(ENC_UTF_8)  --  Primitive  PartNumber  Type: [char] size in bits:128
         OrionPayloadVersion_tree:add(buffer(indexOffset, strSize), "PartNumber: " .. buffer(indexOffset, strSize):string(ENC_UTF_8))
+        indexOffset = indexOffset + string.len(PartNumber) + 1 
+    end
     if size >= (indexOffset + 4)  then
         OnTime = buffer(indexOffset, 4):uint()  --  Primitive  OnTime  Type: [uint32_t] size in bits:32
         OrionPayloadVersion_tree:add(buffer(indexOffset, 4), "OnTime: " .. buffer(indexOffset, 4):uint())
@@ -5396,18 +5971,24 @@ function print_OrionTrackerVersion(subtree, buffer, id, size, index)
     end
     local Version, PartNumber, AppBits
     --  3 Data Elements found:
+    if size >= (indexOffset + 1) then
         local strSize = 16
         if strSize > (size - indexOffset) then
             strSize = (size - indexOffset)
         end
         Version = buffer(indexOffset, strSize):string(ENC_UTF_8)  --  Primitive  Version  Type: [char] size in bits:128
         OrionTrackerVersion_tree:add(buffer(indexOffset, strSize), "Version: " .. buffer(indexOffset, strSize):string(ENC_UTF_8))
+        indexOffset = indexOffset + string.len(Version) + 1 
+    end
+    if size >= (indexOffset + 1) then
         local strSize = 16
         if strSize > (size - indexOffset) then
             strSize = (size - indexOffset)
         end
         PartNumber = buffer(indexOffset, strSize):string(ENC_UTF_8)  --  Primitive  PartNumber  Type: [char] size in bits:128
         OrionTrackerVersion_tree:add(buffer(indexOffset, strSize), "PartNumber: " .. buffer(indexOffset, strSize):string(ENC_UTF_8))
+        indexOffset = indexOffset + string.len(PartNumber) + 1 
+    end
     if size >= (indexOffset + 4)  then
         AppBits = buffer(indexOffset, 4):uint()  --  Primitive  AppBits  Type: [uint32_t] size in bits:32
         OrionTrackerVersion_tree:add(buffer(indexOffset, 4), "AppBits: " .. buffer(indexOffset, 4):uint())
@@ -5427,12 +6008,15 @@ function print_OrionRetractVersion(subtree, buffer, id, size, index)
     end
     local Version
     --  1 Data Elements found:
+    if size >= (indexOffset + 1) then
         local strSize = 16
         if strSize > (size - indexOffset) then
             strSize = (size - indexOffset)
         end
         Version = buffer(indexOffset, strSize):string(ENC_UTF_8)  --  Primitive  Version  Type: [char] size in bits:128
         OrionRetractVersion_tree:add(buffer(indexOffset, strSize), "Version: " .. buffer(indexOffset, strSize):string(ENC_UTF_8))
+        indexOffset = indexOffset + string.len(Version) + 1 
+    end
     return name
 end
 
@@ -5447,12 +6031,15 @@ function print_OrionLensCtlVersion(subtree, buffer, id, size, index)
     end
     local Version
     --  1 Data Elements found:
+    if size >= (indexOffset + 1) then
         local strSize = 16
         if strSize > (size - indexOffset) then
             strSize = (size - indexOffset)
         end
         Version = buffer(indexOffset, strSize):string(ENC_UTF_8)  --  Primitive  Version  Type: [char] size in bits:128
         OrionLensCtlVersion_tree:add(buffer(indexOffset, strSize), "Version: " .. buffer(indexOffset, strSize):string(ENC_UTF_8))
+        indexOffset = indexOffset + string.len(Version) + 1 
+    end
     return name
 end
 
@@ -5491,10 +6078,14 @@ function print_OrionBoard(subtree, buffer, id, size, index)
         OrionBoard_tree:add(buffer(indexOffset, 1), "boardEnum: " .. get_OrionBoardEnumeration_t_string(buffer(indexOffset, 1):uint() )  .. " [" .. buffer(indexOffset, 1):uint() .. "]")
         indexOffset = indexOffset + 1
     end
+    if size >= (indexOffset + 1) then
         --  Struct  manufactureDate  Type: [Date_t] size in bits reported:16
         indexOffset = print_Date_t(OrionBoard_tree, "manufactureDate", buffer, id, size, indexOffset, 2, 1 )
+    end
+    if size >= (indexOffset + 1) then
         --  Struct  calibrationDate  Type: [Date_t] size in bits reported:16
         indexOffset = print_Date_t(OrionBoard_tree, "calibrationDate", buffer, id, size, indexOffset, 2, 1 )
+    end
     return name
 end
 
@@ -5509,23 +6100,29 @@ function print_Product(subtree, buffer, id, size, index)
     end
     local partNumber, serialNumber, productName
     --  3 Data Elements found:
+    if size >= (indexOffset + 1) then
         local strSize = 16
         if strSize > (size - indexOffset) then
             strSize = (size - indexOffset)
         end
         partNumber = buffer(indexOffset, strSize):string(ENC_UTF_8)  --  Primitive  partNumber  Type: [char] size in bits:128
         Product_tree:add(buffer(indexOffset, strSize), "partNumber: " .. buffer(indexOffset, strSize):string(ENC_UTF_8))
+        indexOffset = indexOffset + string.len(partNumber) + 1 
+    end
     if size >= (indexOffset + 4)  then
         serialNumber = buffer(indexOffset, 4):uint()  --  Primitive  serialNumber  Type: [uint32_t] size in bits:32
         Product_tree:add(buffer(indexOffset, 4), "serialNumber: " .. buffer(indexOffset, 4):uint())
         indexOffset = indexOffset + 4
     end
+    if size >= (indexOffset + 1) then
         local strSize = 64
         if strSize > (size - indexOffset) then
             strSize = (size - indexOffset)
         end
         productName = buffer(indexOffset, strSize):string(ENC_UTF_8)  --  Primitive  productName  Type: [char] size in bits:512
         Product_tree:add(buffer(indexOffset, strSize), "productName: " .. buffer(indexOffset, strSize):string(ENC_UTF_8))
+        indexOffset = indexOffset + string.len(productName) + 1 
+    end
     return name
 end
 
@@ -5667,8 +6264,10 @@ function print_OrionPRFDetects(subtree, buffer, id, size, index)
         -- Not in Memory, but encoded Value [reserved] size in bits:64
         indexOffset = indexOffset + 8
     end
+    if size >= (indexOffset + 1) then
         --  Struct  detects  Type: [PRFDetect_t] size in bits reported:80
         indexOffset = print_PRFDetect_t(OrionPRFDetects_tree, "detects", buffer, id, size, indexOffset, 10, 5 )
+    end
     return name
 end
 
@@ -5758,7 +6357,7 @@ function print_OrionScanPlan(subtree, buffer, id, size, index)
 end
 
 ---------------------- Print Packet Section ----------------------
--- Print Packet section will have 77 packets 
+-- Print Packet section will have 83 packets 
 function print_OrionPublicpacket(pinfo, subtree, buffer, index)
     local id, size, data = getOrionPublicPacketIdentifier(buffer)
     local info = ""
@@ -5801,10 +6400,14 @@ function print_OrionPublicpacket(pinfo, subtree, buffer, index)
     elseif id == 110 then info = print_OrionAttolloSettings(subtree, data, id, size, index)
     elseif id == 111 then info = print_OrionAlviumSettings(subtree, data, id, size, index)
     elseif id == 253 then info = print_OrionUnifiedCamErrorSettings(subtree, data, id, size, index)
+    elseif id == 254 then info = print_OrionSeeSpotSettings(subtree, data, id, size, index)
     elseif id == 120 then info = print_OrionOmniVisSettings(subtree, data, id, size, index)
     elseif id == 121 then info = print_OrionSierraSettings(subtree, data, id, size, index)
     elseif id == 122 then info = print_OrionSionyxSettings(subtree, data, id, size, index)
     elseif id == 123 then info = print_OrionLynredSettings(subtree, data, id, size, index)
+    elseif id == 124 then info = print_OrionExposureMetering(subtree, data, id, size, index)
+    elseif id == 127 then info = print_OrionSparrowSettings(subtree, data, id, size, index)
+    elseif id == 125 then info = print_OrionSparrowStatus(subtree, data, id, size, index)
     elseif id == 112 then info = print_VideoOptions(subtree, data, id, size, index)
     elseif id == 113 then info = print_TrackOptions(subtree, data, id, size, index)
     elseif id == 114 then info = print_GeoTrackStatus(subtree, data, id, size, index)
@@ -5817,6 +6420,8 @@ function print_OrionPublicpacket(pinfo, subtree, buffer, index)
     elseif id == 178 then info = print_OrionUserData(subtree, data, id, size, index)
     elseif id == 3 then info = print_OrionLaserCommand(subtree, data, id, size, index)
     elseif id == 6 then info = print_OrionLaserStates(subtree, data, id, size, index)
+    elseif id == 11 then info = print_OrionOcclusion(subtree, data, id, size, index)
+    elseif id == 12 then info = print_OrionOcclusionState(subtree, data, id, size, index)
     elseif id == 2 then info = print_OrionUartConfig(subtree, data, id, size, index)
     elseif id == 34 then info = print_OrionLimitsData(subtree, data, id, size, index)
     elseif id == 216 then info = print_InsOptions(subtree, data, id, size, index)

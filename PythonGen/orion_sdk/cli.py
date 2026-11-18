@@ -141,6 +141,12 @@ def main():
         print(f"Error: Input file not found: {args.input_xml}", file=sys.stderr)
         return 1
 
+    if args.c_header_path and not args.c_header_path.exists():
+        # A missing header would silently produce an empty test harness
+        print(f"Error: C header not found: {args.c_header_path} "
+              "(run ProtoGen first, or omit --c-header-path)", file=sys.stderr)
+        return 1
+
     # Import here to allow --help without full load
     from .parser.xml_parser import parse_protocol
     from .generator.code_generator import CodeGenerator
@@ -165,6 +171,7 @@ def main():
         ('runtime/bitfields.py', 'bitfields.py'),
         ('parser/type_mapping.py', 'type_mapping.py'),
         ('runtime/scaling_runtime.py', 'scaling_runtime.py'),
+        ('runtime/post_decode.py', 'post_decode.py'),
     ]
     for src_path, dst_name in support_files:
         src = pkg_dir / src_path

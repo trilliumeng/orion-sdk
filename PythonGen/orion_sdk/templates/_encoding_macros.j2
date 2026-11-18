@@ -32,7 +32,9 @@
         acc = BitfieldAccumulator()
 {% for f in group %}
 {% set info = generator.get_field_info(f) %}
-{% if info.get('scaling') %}
+{% if info.is_null_in_memory %}
+        acc.add_bits(0, {{ info.bitfield_bits }})  # {{ f.name }}: not stored
+{% elif info.get('scaling') %}
 {% if info.scaling.is_signed %}
         acc.add_signed_bits(_c_round_signed(self.{{ f.name }}, {{ info.scaling.scaler }}), {{ info.bitfield_bits }})
 {% else %}
@@ -204,20 +206,40 @@
 {% set info = generator.get_field_info(f) %}
 {{ decode_single_field(f, info, generator, struct_prefix) }}
 {% endif %}
+{% for f in group %}
+{% for hook in f.post_decode_hooks %}
+        run_post_decode('{{ hook }}', obj)
+{% endfor %}
+{% endfor %}
 {% endfor %}
 {%- endmacro %}
 
 {%- macro decode_bitfield_group(group, generator) %}
         # Bitfield group
 {% set total_bits = namespace(value=0) %}
+{% set all_default = namespace(value=true) %}
+{% set has_real = namespace(value=false) %}
 {% for f in group %}
-{% set total_bits.value = total_bits.value + generator.get_field_info(f).bitfield_bits %}
+{% set info = generator.get_field_info(f) %}
+{% set total_bits.value = total_bits.value + info.bitfield_bits %}
+{% if not info.is_null_in_memory %}
+{% set has_real.value = true %}
+{% if not info.has_default %}
+{% set all_default.value = false %}
+{% endif %}
+{% endif %}
 {% endfor %}
 {% set total_bytes = (total_bits.value + 7) // 8 %}
+{% if all_default.value and has_real.value %}
+        if offset + {{ total_bytes }} > len(data):  # optional fields absent
+            return (obj, offset - start_offset)
+{% endif %}
         reader = BitfieldReader(data[offset:offset+{{ total_bytes }}])
 {% for f in group %}
 {% set info = generator.get_field_info(f) %}
-{% if info.get('scaling') %}
+{% if info.is_null_in_memory %}
+        reader.read_bits({{ info.bitfield_bits }})  # {{ f.name }}: not stored
+{% elif info.get('scaling') %}
 {% if info.scaling.is_signed %}
         raw_{{ f.name }} = reader.read_signed_bits({{ info.bitfield_bits }})
         obj.{{ f.name }} = raw_{{ f.name }} / {{ info.scaling.scaler }}
@@ -240,6 +262,18 @@
 {{ ind }}if obj.{{ info.depends_on }}:
 {% set ind = indent + '    ' %}
 {% set ind2 = indent + '        ' %}
+{% endif %}
+{% if info.has_default and not info.is_null_encoded %}
+{# Fields with an XML default are optional; like the C decoder, stop
+   decoding (keeping defaults) when the packet ends before them. #}
+{% if info.is_struct or info.variable_array or info.is_string %}
+{{ ind }}if offset >= len(data):  # optional fields absent
+{% elif info.is_array %}
+{{ ind }}if offset + {{ info.array_length * info.type_size }} > len(data):  # optional fields absent
+{% else %}
+{{ ind }}if offset + {{ info.type_size }} > len(data):  # optional fields absent
+{% endif %}
+{{ ind }}    return (obj, offset - start_offset)
 {% endif %}
 {% if info.is_null_encoded %}
 {{ ind }}{% if info.depends_on %}pass  {% endif %}# {{ f.name }} is null-encoded (not on wire)

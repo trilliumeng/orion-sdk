@@ -942,6 +942,10 @@ class TestGenerator:
                     pkt_info['needs_wrapper'] = True
                     pkt_info['packet_fn_signature'] = sig_info['raw']
                     pkt_info['is_simple_packet'] = False
+                    # Packet functions that take the struct pointer directly
+                    # need a pass-through wrapper, not per-field arguments
+                    pkt_info['passthrough_wrapper'] = bool(re.search(
+                        rf'const\s+{re.escape(p.name)}_t\s*\*', sig_info['raw']))
                 else:
                     # Has Packet function but NO _t struct - simple packet
                     pkt_info['needs_wrapper'] = False

@@ -289,8 +289,9 @@ class CrossLanguageValidator:
             if meta is None and '.' in field_name:
                 meta = meta_by_name.get(field_name.split('.')[0], None)
             if meta is None:
-                # Default metadata for unknown fields (assume float with 16-bit quantization)
-                meta = FieldMeta(name=field_name, is_float=True, tolerance=MIN_TOLERANCE)
+                # No metadata means null-encoded/null-in-memory/constant:
+                # these don't ride the wire, so skip them
+                continue
 
             # Array comparison (must check BEFORE float, since List[float] has is_float=True)
             if isinstance(orig_val, (list, tuple)):

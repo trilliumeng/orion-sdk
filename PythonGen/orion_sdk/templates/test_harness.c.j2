@@ -50,6 +50,17 @@ static int parse_hex(const char *hex, uint8_t *out, int max_len) {
 {% for pkt_info in packets_info %}
 {% if pkt_info.has_c_impl and pkt_info.needs_wrapper %}
 {% set packet = pkt_info.packet %}
+{% if pkt_info.passthrough_wrapper %}
+/* Wrapper for {{ packet.name }} - the Packet function already takes the struct pointer */
+static void encode{{ packet.name }}PacketStructure(void* pkt, const {{ packet.name }}_t* user) {
+    encode{{ packet.name }}Packet(pkt, user);
+}
+
+static int decode{{ packet.name }}PacketStructure(const void* pkt, {{ packet.name }}_t* user) {
+    return decode{{ packet.name }}Packet(pkt, user);
+}
+
+{% else %}
 /* Wrapper for {{ packet.name }} - calls encode{{ packet.name }}Packet with struct fields */
 static void encode{{ packet.name }}PacketStructure(void* pkt, const {{ packet.name }}_t* user) {
     encode{{ packet.name }}Packet(pkt
@@ -99,6 +110,7 @@ static int decode{{ packet.name }}PacketStructure(const void* pkt, {{ packet.nam
     return result;
 }
 
+{% endif %}
 {% endif %}
 {% endfor %}
 

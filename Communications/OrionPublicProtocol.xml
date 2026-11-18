@@ -1,6 +1,6 @@
 <?xml version="1.0"?>
 
-<Protocol name="OrionPublic" version="1.4.0" endian="big" supportInt64="true" file="OrionPublicPacket" comment=
+<Protocol name="OrionPublic" version="1.4.1" endian="big" supportInt64="true" file="OrionPublicPacket" comment=
 "The *OrionPublic* protocol is the packet description for the public interface of the Orion gimbal from [Trillium Engineering](http://w3.trilliumeng.com/).
 The Orion gimbal communicates to users with packets of data transported over asyncrhonous serial, or transported by TCP/IP over ethernet.">
 
@@ -58,16 +58,18 @@ See TrilliumPacket.c (in the Orion SDK) for details.
     <Documentation name="Enumerations" paragraph="1" comment="Packets in the protocol refer to these global enumerations."/>
     <!--Unused Values to date:
         0x0B to 0x1E,
-        0x32 to 0x3F,
-        0x4B to 0x5F,
-        0x75 to 0x7F,
+        0x32 to 0x3E,
+        0x4B to 0x5E,
+        0x7E,
         0x81 to 0x8F,
         0x95 to 0x9F,
-        0xA2 to 0xA7,
-        0xAE,
+        0xA2 to 0xA6,
+        0xAE to 0xAF,
         0xB5 to 0xBF,
         0xC4 to 0xCD,
-        0xFB to 0xFF,
+        0xDD,
+        0xEB to 0xEF,
+        0xFF,
     -->
     <Enum name="OrionPktType_t" comment="Identifiers of Orion public packets. The purpose of an Orion packet is determined by its ID field to this list.">
         <Value name="ORION_PKT_INITIALIZE" value="0x00"/>
@@ -81,6 +83,8 @@ See TrilliumPacket.c (in the Orion SDK) for details.
         <Value name="ORION_PKT_PRIVATE_08" value="0x08" comment="Reserved packet identifier" hidden="true" />
         <Value name="ORION_PKT_PRIVATE_09" value="0x09" comment="Reserved packet identifier" hidden="true" />
         <Value name="ORION_PKT_POSITIONS" value="0x0A" comment="Stored gimbal positions"/>
+        <Value name="ORION_PKT_SET_LASER_OCCLUSION_MASK" value="0x0B" comment="A packet to transfer occlusion data to the gimbal."/>
+        <Value name="ORION_PKT_LASER_OCCLUSION_MASK_STATE" value="0x0C" comment="A packet to report occlusion mask status."/>
         <Value name="ORION_PKT_PRIVATE_1F" value="0x1F" comment="Reserved packet identifier" hidden="true"/>
         <Value name="ORION_PKT_PRIVATE_20" value="0x20" comment="Reserved packet identifier" hidden="true"/>
         <Value name="ORION_PKT_PRIVATE_21" value="0x21" comment="Reserved packet identifier" hidden="true"/>
@@ -100,6 +104,7 @@ See TrilliumPacket.c (in the Orion SDK) for details.
         <Value name="ORION_PKT_PRIVATE_2F" value="0x2F" comment="Reserved packet identifier" hidden="true"/>
         <Value name="ORION_PKT_PRIVATE_30" value="0x30" comment="Reserved packet identifier" hidden="true"/>
         <Value name="ORION_PKT_PRIVATE_31" value="0x31" comment="Reserved packet identifier" hidden="true"/>  
+        <Value name="ORION_PKT_PRIVATE_3F" value="0x3F" comment="Reserved packet identifier" hidden="true"/>
         <Value name="ORION_PKT_PRIVATE_40" value="0x40" comment="Reserved packet identifier" hidden="true"/>
         <Value name="ORION_PKT_DIAGNOSTICS" value="0x41" comment="Electrical diagnostic data"/>
         <Value name="ORION_PKT_FAULTS" value="0x42"/>
@@ -140,6 +145,9 @@ See TrilliumPacket.c (in the Orion SDK) for details.
         <Value name="ORION_PKT_SIERRA_SETTINGS" value="0x79" comment="Sierra-Olympia specific camera settings"/>
         <Value name="ORION_PKT_SIONYX_SETTINGS" value="0x7A" comment="Sionyx specific camera settings"/>
         <Value name="ORION_PKT_LYNRED_SETTINGS" value="0x7B" comment="Lynred specific camera settings"/>
+        <Value name="ORION_PKT_EXPOSURE_METERING" value="0x7C" comment="Set exposure metering mode"/>
+        <Value name="ORION_PKT_SPARROW_SETTINGS" value="0x7F"/>
+        <Value name="ORION_PKT_SPARROW_STATUS" value="0x7D"/>
         <Value name="ORION_PKT_AUTOPILOT_DATA" value="0x80" comment="Autopilot state data, if available"/>
         <Value name="ORION_PKT_PRIVATE_90" value="0x90" comment="Reserved packet identifier" hidden="true"/>
         <Value name="ORION_PKT_PRIVATE_91" value="0x91" comment="Reserved packet identifier" hidden="true"/>
@@ -206,6 +214,7 @@ See TrilliumPacket.c (in the Orion SDK) for details.
         <Value name="ORION_PKT_PRF_DETECT" value="0xFB" comment="Control and telemtry from Mira PRF detect enabled systems"/>
         <Value name="ORION_PKT_SCAN_PLAN" value="0xFC" comment="Control For Orion Scan Plan"/>
         <Value name="ORION_PKT_UNIFIED_CAM_ERR_SETTINGS" value="0xFD" comment="A packet to indicate the total angular error between two cameras."/>
+        <Value name="ORION_PKT_SEE_SPOT_SETTINGS" value="0xFE" comment="Defines configuration settings for detection and display of the see-spot / laser energy detection feature."/>
     </Enum>
 
     <Enum name="OrionNumberOfCameras_t" comment="The maximum number of cameras in an Orion Gimbal">
@@ -287,6 +296,7 @@ See TrilliumPacket.c (in the Orion SDK) for details.
         <Value name="LASER_TYPE_DESIGNATOR_DUMMY" comment="Laser Designator Dummy" />
         <Value name="LASER_TYPE_ARETE_LD" comment="Arete Laser Designator" />
         <Value name="LASER_TYPE_VECTRONIX_3013" comment="Vectronix 3013 LRF" />
+        <Value name="LASER_TYPE_AKTYVUS_LD" comment="Aktyvus Laser Designator" />
     </Enum>
 
     <Structure name="Date" comparefile="compare/compareOrionPublic" printfile="compare/printOrionPublic"  comment="Compresssed date format.">
@@ -331,8 +341,8 @@ See TrilliumPacket.c (in the Orion SDK) for details.
         <Data name="posAlt" inMemoryType="float64" encodedType="signed32" scaler="10000" documentUnit=" m" comment="Altitude of the gimbal in meters above the WGS-84 ellipsoid"/>
         <Data name="velNED" inMemoryType="float32" array="3" encodedType="signed16" scaler="100" documentToMethod="16NED" comment="Velocity of the gimbal in North, East, Down meters per second"/>
         <Data name="gimbalQuat" inMemoryType="float32" array="4" encodedType="signed16" max="1" documentFunction="displayQuat" comment="Gimbal quaternion describing the rotation from the gimbal mount frame to the North, East, Down navigation frame"/>
-        <Data name="pan" inMemoryType="float32" encodedType="signed16" max="pi" documentToMethod="PanTilt" comment="Gimbal pan angle in radians from -pi to pi. This includes the camera alignment offsets."/>
-        <Data name="tilt" inMemoryType="float32" encodedType="signed16" max="pi" documentToMethod="PanTilt" comment="Gimbal tilt angle in radians from -pi to pi This includes the camera alignment offsets."/>
+        <Data name="pan" inMemoryType="float32" encodedType="signed16" max="pi" documentToMethod="PanTilt" comment="Gimbal pan angle in radians from -pi to pi."/>
+        <Data name="tilt" inMemoryType="float32" encodedType="signed16" max="pi" documentToMethod="PanTilt" comment="Gimbal tilt angle in radians from -pi to pi."/>
         <Data name="hfov" inMemoryType="float32" encodedType="unsigned16" max="2*pi" documentToMethod="FOV" comment="Horizontal field of view of the camera in radians from 0 to 2pi"/>
         <Data name="vfov" inMemoryType="float32" encodedType="unsigned16" max="2*pi" documentToMethod="FOV" comment="Vertical field of view of the camera in radians from 0 to 2pi"/>
         <Data name="losECEF" inMemoryType="float32" encodedType="signed16" scaler="1" array="3" documentFunction="displayLosECEF(posLat, posLon, posAlt, " default="0" comment="Vector from the gimbal to the image location in ECEF meters. The image location is only computed if ranging data are provided to the gimbal. Otherwise the image location data are 0,0,0"/>
@@ -984,16 +994,16 @@ See TrilliumPacket.c (in the Orion SDK) for details.
 
     <Packet name="OrionAptinaSettings" ID="ORION_PKT_APTINA_SETTINGS" comparefile="compare/compareOrionPublic" printfile="compare/printOrionPublic" comment="Aptina-specific camera settings.">
         <Data name="Index" inMemoryType="unsigned8" comment="Index of the camera that these settings should apply to. Use 0xFF to apply to any connected Aptina camera."/>
-        <Data name="MinExposure" inMemoryType="float32" encodedType="unsigned16" documentFunction="exposureToMilliseconds" comment="Minimum exposure time in milliseconds, (default=0.1, effective min=0.05, effective max=33.0)" min="0.05" max="33"/>
-        <Data name="MaxExposure" inMemoryType="float32" encodedType="unsigned16" documentFunction="exposureToMilliseconds" comment="Maximum exposure time in milliseconds, (default=8.0, effective min=0.05, effective max=33.0)" min="0.05" max="33"/>
-        <Data name="MinGain" inMemoryType="float32" encodedType="unsigned16" documentToMethod="MinMaxGain" comment="Minimum sensor luminance gain, (default=1, effective min=1, effective max=32)" min="1" max="32"/>
-        <Data name="MaxGain" inMemoryType="float32" encodedType="unsigned16" documentToMethod="MinMaxGain" comment="Maximum sensor luminance gain, (default=32, effective min=1, effective max=32)" min="1" max="32"/>
-        <Data name="Brightness" inMemoryType="signed8" comment="Brightness adjustment, (default=-8, effective min=-100, effective max=110)"/>
-        <Data name="Contrast" inMemoryType="float32" encodedType="signed8" max="1" documentFunction="cameraContrast" comment="Contrast adjustment, (default=-0.4, effective min=-1.0, effective max=1.0)"/>
-        <Data name="Saturation" inMemoryType="float32" encodedType="signed8" max="1" documentFunction="cameraContrast" comment="Saturation adjustment, (default=0.3, effective min=-1.0, effective max=1.0)"/>
-        <Data name="Sharpness" inMemoryType="float32" encodedType="unsigned8" max="5" documentFunction="cameraSharpness" comment="Sharpening filter strength, (default=2.0, effective min=0.0, effective max=5.0)" />
-        <Data name="DebugEnable" inMemoryType="bitfield1" default="0" comment="Set to 1 to enable AGC debugging information, (default=0, effective min=0, effective max=1)" />
-        <Data name="Hue" inMemoryType="signed8" default="0" comment="Hue adjustment, (default=0, effective min=-10, effective max=10)" />
+        <Data name="MinExposure" inMemoryType="float32" encodedType="unsigned16" initialValue="0.1"  documentFunction="exposureToMilliseconds" comment="Minimum exposure time in milliseconds, (default=0.1, effective min=0.05, effective max=33.0)" min="0.05" max="33"/>
+        <Data name="MaxExposure" inMemoryType="float32" encodedType="unsigned16" initialValue="8.0" documentFunction="exposureToMilliseconds" comment="Maximum exposure time in milliseconds, (default=8.0, effective min=0.05, effective max=33.0)" min="0.05" max="33"/>
+        <Data name="MinGain" inMemoryType="float32" encodedType="unsigned16" initialValue="1.0" documentToMethod="MinMaxGain" comment="Minimum sensor luminance gain, (default=1, effective min=1, effective max=32)" min="1" max="32"/>
+        <Data name="MaxGain" inMemoryType="float32" encodedType="unsigned16" initialValue="16.0" documentToMethod="MinMaxGain" comment="Maximum sensor luminance gain, (default=32, effective min=1, effective max=32)" min="1" max="32"/>
+        <Data name="Brightness" inMemoryType="signed8" initialValue="-8" comment="Brightness adjustment, (default=-8, effective min=-100, effective max=110)"/>
+        <Data name="Contrast" inMemoryType="float32" encodedType="signed8" initialValue="-0.4" max="1" documentFunction="cameraContrast" comment="Contrast adjustment, (default=-0.4, effective min=-1.0, effective max=1.0)"/>
+        <Data name="Saturation" inMemoryType="float32" encodedType="signed8" initialValue="0.3" max="1" documentFunction="cameraContrast" comment="Saturation adjustment, (default=0.3, effective min=-1.0, effective max=1.0)"/>
+        <Data name="Sharpness" inMemoryType="float32" encodedType="unsigned8" initialValue="2.0" max="5" documentFunction="cameraSharpness" comment="Sharpening filter strength, (default=2.0, effective min=0.0, effective max=5.0)" />
+        <Data name="DebugEnable" inMemoryType="bitfield1" default="0" initialValue="0" comment="Set to 1 to enable AGC debugging information, (default=0, effective min=0, effective max=1)" />
+        <Data name="Hue" inMemoryType="signed8" default="0" initialValue="0" comment="Hue adjustment, (default=0, effective min=-10, effective max=10)" />
         <Data name="Aperture" inMemoryType="float32" encodedType="unsigned8" max="32" default="0" documentFunction="cameraAperature" comment="Aperture command, set to 0 for auto" />
         <Data name="MinAperture" inMemoryType="float32" encodedType="unsigned8" max="32" default="0" documentFunction="cameraAperature" comment="Minimum aperture setting, or 0 for not supported" />
         <Data name="MaxAperture" inMemoryType="float32" encodedType="unsigned8" max="32" default="0" documentFunction="cameraAperature" comment="Maximum aperture setting, or 0 for not supported" />
@@ -1059,8 +1069,8 @@ See TrilliumPacket.c (in the Orion SDK) for details.
         <Data name="Sharpness" inMemoryType="float32" encodedType="unsigned8" max="5" default="0" comment="Sharpening filter strength" />
         <Data name="MeanTargetRange" inMemoryType="unsigned8" encodedType="unsigned8" default="4" comment="valid(0-5) corisponding to 0-2000, ... , 10000-12000" />
         <Data name="BlackPoint" inMemoryType="unsigned8" encodedType="unsigned8" default="0" comment="Sets Minimum Offset Range(x1000)" />
-        <Data name="DisableSeeSpot" inMemoryType="bitfield1" default="0" comment="If set to 1, disable see spot process" />
-        <Data name="SeeSpotDebugOutput" inMemoryType="bitfield1" default="0" comment="If set to 1, enable more logging on the see spot process" />
+        <Data name="DisableSeeSpot" inMemoryType="bitfield1" default="0" comment="Deprecated. Use OrionSeeSpotSettings." />
+        <Data name="SeeSpotDebugOutput" inMemoryType="bitfield1" default="0" comment="Deprecated. Use OrionSeeSpotSettings." />
         <Data name="RawRecord" inMemoryType="bitfield1" default="0" comment="If set to 1, enable raw record of the phoenix pipeline" />
         <Data name="AutoGainMode" inMemoryType="bitfield1" default="1" comment="If set to 1, enable autogain mode on the griffin" />
 		<Data name="Reserved0" inMemoryType="bitfield4" default="0" comment="Reserved bits, set to zero" />
@@ -1068,7 +1078,7 @@ See TrilliumPacket.c (in the Orion SDK) for details.
         <Data name="LaserIntegrationTime" inMemoryType="float" encodedType="float" default="0.003" comment="Sets the integration time for laser frames" />
         <Data name="Brightness" inMemoryType="float" encodedType="float" default="0.0" comment="Sets image brightness" />
         <Data name="Contrast" inMemoryType="float" encodedType="float" default="1.0" comment="Sets image contrast" />
-        <Data name="SeeSpotMode" inMemoryType="unsigned8" default="0" comment="Mode for see spot algorithm" />
+        <Data name="SeeSpotMode" inMemoryType="unsigned8" default="0" comment="Deprecated. Use OrionSeeSpotSettings." />
         <Data name="LaserGain" inMemoryType="float" encodedType="float" default="4.0" comment="Gain on laser frame" />
         <Data name="LaserOffset" inMemoryType="unsigned32" encodedType="unsigned32" default="0" comment="Offset on laser frame" />
     </Packet>
@@ -1091,10 +1101,40 @@ See TrilliumPacket.c (in the Orion SDK) for details.
         <Data name="NumCameras" inMemoryType="unsigned8" comment="The number of cameras installed"/>
         <Data name="UnifiedCamAngularOffsets" struct="CameraAngularOffsets" array="NUM_CAMERAS" variableArray="NumCameras" />
     </Packet>
+
+    <Packet name="OrionSeeSpotSettings" ID="ORION_PKT_SEE_SPOT_SETTINGS" comparefile="compare/compareOrionPublic" printfile="compare/printOrionPublic" comment="See-spot / Laser energy detection settings.">
+        <Enum name="DrawSpotShape_t" comment="Draw Spot Reticle Shape">
+            <Value name="DRAW_FULL_SPOT" value="0x00" comment="Default shape, draw the full spot (opaque) size of radius" />
+            <Value name="DRAW_OPEN_SPOT" value="0x01" comment="Default shape, draw the open spot (empty circle) size of radius" />
+            <Value name="DRAW_SPOT_RETICLES" comment="Count of reticles supported" />
+        </Enum>
+        <Enum name="DrawSpotColor_t" comment="Draw Spot Reticle Color">
+            <Value name="DRAW_SPOT_RED" value="0x00" comment="Default color, draw the spot with red" />
+            <Value name="DRAW_SPOT_YELLOW" value="0x01" comment="Default color, draw the spot with yellow" />
+            <Value name="DRAW_SPOT_BLUE" value="0x02" comment="Default color, draw the spot with blue" />
+            <Value name="DRAW_SPOT_GREEN" value="0x03" comment="Default color, draw the spot with green" />
+            <Value name="DRAW_SPOT_ORANGE" value="0x04" comment="Default color, draw the spot with orange" />
+            <Value name="DRAW_SPOT_PURPLE" value="0x05" comment="Default color, draw the spot with purple" />
+            <Value name="DRAW_SPOT_COLORS" comment="Count of reticle supported colors" />
+        </Enum>
+        <Data name="Disabled" inMemoryType="bitfield1" bitfieldGroup="true"  comment="Set to disable see-spot detection for a laser-energy detecting sensor in the system."/>
+        <Data name="DebugOutput" inMemoryType="bitfield1" comment="If set to 1, enable more log output on the see-spot process" />
+        <Data name="SupportsDiagnosticOverlay" inMemoryType="bitfield1" comment="This flag indicates if the payload supports the SeeSpot Diagnostics Overlay (developer build)" />
+        <Data name="ShowDiagnosticsOverlay" inMemoryType="bitfield1" comment="If set to 1, enable video overlay showing See Spot Diagnostics. IGNORED if SupportsDiagnosticsOverlay==0" />
+        <Data name="ShowLaserHistogram" inMemoryType="bitfield1" comment="If set to 1, shows the histogram for laser frame (top left) or 0 will show the histogram of the DrawSpot buffer. IGNORED if SupportsDiagnosticsOverlay==0" />
+        <Data name="ShowLaserFrames" inMemoryType="bitfield1" comment="If set to 1, the laser frame will be interleaved, 0 the laser frame will not be visible in the stream. IGNORED if SupportsDiagnosticsOverlay==0" />
+        <Data name="ShowROIFrame" inMemoryType="bitfield1" comment="If set to 1, a visible frame will render representing the cropped section. IGNORED if SupportsDiagnosticsOverlay==0" />
+        <Data name="reserved" inMemoryType="null" encodedType="bitfield1" comment="Reserved space for future expansion"/>
+        <Data name="Roi" inMemoryType="float32" encodedType="unsigned8" max="1" default="1" documentToMethod="Float32" comment="Set the ROI for see-spot detection. Use 1 to consider the full frame, .5 to consider the center 50% of frame, etc." />
+        <Data name="Threshold" inMemoryType="float32" encodedType="unsigned8" max="1" default="1" documentToMethod="Float32" comment="Set the threshold percentage of brightest value in ROI.  Use 1 to set the threshold as the brightest value in ROI, .75 as 75% of the brightest value encountered." />
+        <Data name="DrawSpotReticle"  enum="DrawSpotShape_t"  encodedType="unsigned8" default="DRAW_FULL_SPOT" comment="The reticle shape drawn for the see spot laser detection mode. default: 0x00"/>
+        <Data name="PredictedReticleColor" enum="DrawSpotColor_t"  encodedType="unsigned8" default="DRAW_SPOT_RED" comment="The reticle color drawn for the see spot laser detection mode when the predicted laser energy is rendered. default: 0x00"/>
+        <Data name="DetectedReticleColor" enum="DrawSpotColor_t"  encodedType="unsigned8" default="DRAW_SPOT_RED" comment="The reticle color drawn for the see spot laser detection mode when the detected laser energy is rendered. default: 0x00"/>
+    </Packet>
     
     <Packet name="OrionOmniVisSettings" ID="ORION_PKT_OMNIVIS_SETTINGS" comparefile="compare/compareOrionPublic" printfile="compare/printOrionPublic" comment="OmniVision-specific camera settings.">
         <Data name="Index" inMemoryType="unsigned8" comment="Index of the camera that these settings should apply to. Use 0xFF to apply to any connected OmniVis camera."/>
-        <Data name="ExpMode" inMemoryType="unsigned8" encodedType="unsigned8" comment="Sets exposure mode; 0:off, 1:auto" />
+        <Data name="ExpMode" inMemoryType="unsigned8" encodedType="unsigned8" comment="Sets exposure mode; 0:off, 1:Trilliumauto 2:auto(legacy)" />
         <Data name="IsoMode" inMemoryType="unsigned8" encodedType="unsigned8" comment="Sets ISO exposure mode; 0:auto, 1:deblur, 8:manual, 2-7:100 to 3200 doubles each step." />
         <Data name="WbMode" inMemoryType="unsigned8" encodedType="unsigned8" comment="Sets white balance mode; 0:off, 3:auto, ..." />
         <Data name="ManExpTime" inMemoryType="unsigned64" encodedType="unsigned64" comment="Sets manual exposure mode time" />
@@ -1106,6 +1146,8 @@ See TrilliumPacket.c (in the Orion SDK) for details.
         <Data name="Scene" inMemoryType="unsigned8" encodedType="unsigned8" comment="Sets camera optimizations that are scene dependent" />
         <Data name="ControlMode" inMemoryType="unsigned8" encodedType="unsigned8" comment="Overall mode of auto control routines, i.e. exposure, wbalance, focus" />
         <Data name="Rsc" inMemoryType="bitfield1" default="1" comment="turns rsc on or off" />
+        <Data name="MaxExpTime" inMemoryType="unsigned64" encodedType="unsigned64" comment="Sets maximum auto exposure mode time" />
+        <Data name="MaxGainIso" inMemoryType="unsigned16" encodedType="unsigned16" comment="Sets maximum auto gain iso" />
     </Packet>
 
     <Packet name="OrionSierraSettings" ID="ORION_PKT_SIERRA_SETTINGS" comparefile="compare/compareOrionPublic" printfile="compare/printOrionPublic" comment="SierraOlympia-specific camera settings.">
@@ -1181,12 +1223,112 @@ See TrilliumPacket.c (in the Orion SDK) for details.
     </Packet>
 
     <Packet name="OrionLynredSettings" ID="ORION_PKT_LYNRED_SETTINGS" comparefile="compare/compareOrionPublic" printfile="compare/printOrionPublic" comment="Lynred specific camera settings.">
-        <Data name="Index" inMemoryType="unsigned8" comment="Index of the camera that these settings should apply to. Use 0xFF to apply to any connected Lynred camera."/>
-        <Data name="ContrastMode" inMemoryType="unsigned8" bitfieldGroup="true" encodedType="bitfield1" comment="Sets the contrast mode. 0=Auto, 1=Manual"/>     
-        <Data name="ICEMovingAverage" inMemoryType="unsigned16" encodedType="bitfield9" comment="Sets the ICE moving average frames (n+1) in Auto contrast mode. Value: between 0 and 511, 0 = 1 frame. Default=50" />
-        <Data name="Reserved" inMemoryType="null" encodedType="bitfield6" comment="Remaining Portion of bitfield"/>
-        <Data name="ICEMinThreshold" inMemoryType="unsigned8" encodedType="unsigned8" comment="Sets the manual low ICE clip threshold as a percentage of frame: 0-100%, default is 0%" />
-        <Data name="ICEMaxThreshold" inMemoryType="unsigned8" encodedType="unsigned8" comment="Sets the manual high ICE clip threshold as a percentage of frame: 1-100%, default is 100%"/>
+	    <Enum name="LynredContrastMode_t" comment="Contrast mode enumeration for lynred.">
+		    <Value name="LYNRED_CONTRAST_AUTO_ICE" comment="Automatic image contrast enhancement. Histogram min/max determined by moving average and the ICE threshold settings." />
+			<Value name="LYNRED_CONTRAST_MANUAL" comment="Manual contrast enhancement. Histogram min/max provided by user." />
+        </Enum>
+        <Enum name="LynredPolarity_t" comment="Enumerated values representing the image polarity setting for Lynred sensors.">
+            <Value name="LYNRED_POLARITY_WHITE_HOT" value="0" comment="White-hot polarity" />
+            <Value name="LYNRED_POLARITY_BLACK_HOT" value="1" comment="Black-hot polarity" />
+        </Enum>
+        <Enum name="LynredCommand_t" comment="Command enumeration for lynred calibration.">
+		    <Value name="LYNRED_CMD_NONE" comment="Default indication that no command is being sent." />
+			<Value name="LYNRED_CMD_1PT_NUC" comment="Complete a 1 point NUC." />
+            <Value name="LYNRED_CMD_2PT_NUC_FIRST" comment="Complete the low-temperature reference capture of the 2 point NUC." />
+            <Value name="LYNRED_CMD_2PT_NUC_SECOND" comment="Complete the high-temperature reference capture of the 2 point NUC." />
+			<Value name="LYNRED_CMD_2PT_NUC_CALC_TABLE" comment="Finalize the 2 point NUC, compute the associated table and store into volatile memory." />
+			<Value name="LYNRED_CMD_2PT_NUC_STORE_TABLE" comment="Store the active NUC table into on-board non-volatile flash memory." />
+			<Value name="LYNRED_CMD_2PT_NUC_SECOND_FINAL" comment="Convenience command to complete the high-temp reference, compute the NUC table, and write it to flash in a single operation." />
+        </Enum>
+		<Data name="Index" inMemoryType="unsigned8" comment="Index of the camera that these settings should apply to. Use 0xFF to apply to any connected Lynred camera."/>
+		<Data name="Command" enum="LynredCommand_t" bitfieldGroup="true" encodedType="bitfield3"  comment="Issue a command to the Lynred sensor.  Note that the remainder of settings are ignored when a command is active."/>
+		<Data name="ContrastMode" enum="LynredContrastMode_t" inMemoryType="unsigned8" encodedType="bitfield1" comment="Sets the contrast mode."/>
+        <Data name="ICEMovingAverage" inMemoryType="unsigned16" encodedType="bitfield9" comment="Sets the ICE moving average frames (n+1) in Auto contrast mode. Value: between 0 and 511, 0 = 1 frame. Default=49" />
+        <Data name="Polarity" inMemoryType="bitfield1" default="LYNRED_POLARITY_BLACK_HOT" encodedType="bitfield1" comment="Sets the white-hot/black-hot polarity."/>
+        <Data name="DebugEnable" inMemoryType="bitfield1" encodedType="bitfield1" default="0" comment="Enable FPGA Register dumps"/>
+        <Data name="Reserved" inMemoryType="null" encodedType="bitfield1" comment="Remaining Portion of bitfield"/>
+        <Data name="ICEMinThreshold" inMemoryType="unsigned8" comment="Sets the auto ICE underexposed threshold as 1/32 percentage of frame pixels: 0-255 or 0% to ~7.97%, default is 0%" />
+        <Data name="ICEMaxThreshold" inMemoryType="unsigned8" comment="Sets the auto ICE overexposed threshold as 1/32 percentage of frame pixels: 0-255 or 0% to ~7.97%, default is 0%" />
+        <Data name="ManualHistogramMin" inMemoryType="unsigned16" comment="Sets the lower historgram clip point when in manual contrast mode." />
+        <Data name="ManualHistogramMax" inMemoryType="unsigned16" comment="Sets the upper historgram clip point when in manual contrast mode." />
+        <Data name="UniversalBrightness" inMemoryType="float32" encodedType="signed16" min="-1" max="1"  comment="Universal brightness adjustment over range -1 to 1 where 0 is no adjustment, -1 is the darkest adjustment, and 1 is the brightest adjustment." />
+        <Data name="UniversalContrast" inMemoryType="float32" encodedType="signed16" min="-1" max="1" comment="Universal contrast adjustment over range -1 to 1 where 0 is no adjustment, -1 is max reduced contrast adjustment, and 1 is max increased contrast adjustment." />        
+        <Data name="TceEnable" inMemoryType="bitfield1" default="0" />
+        <Data name="TceGamma" inMemoryType="unsigned8" default="90" />
+        <Data name="TceClipLimit" inMemoryType="unsigned8" default="15" />
+        <Data name="TceAlpha" inMemoryType="unsigned8" default="248" />
+    </Packet>
+
+    <Packet name="OrionExposureMetering" ID="ORION_PKT_EXPOSURE_METERING" comparefile="compare/compareOrionPublic" printfile="compare/printOrionPublic" comment="Set the exposure metering mode. Send this packet with zero length to request the current state.">
+        <Data name="Mode" inMemoryType="unsigned8" comment="Exposure metering mode, toggle between 1 and 0, 0 being deactivated, 1 being activated."/>
+    </Packet>
+
+    <Packet name="OrionSparrowSettings" ID="ORION_PKT_SPARROW_SETTINGS" comparefile="compare/compareOrionPublic" printfile="compare/printOrionPublic">
+        <Enum name="SparrowPolarity_t">
+            <Value name="SPARROW_POLARITY_WHITE_HOT"/>
+            <Value name="SPARROW_POLARITY_BLACK_HOT"/>
+        </Enum>
+        <Enum name="SparrowExposureMode_t">
+            <Value name="SPARROW_EXPOSURE_AUTOMATIC"/>
+            <Value name="SPARROW_EXPOSURE_MANUAL"/>
+        </Enum>
+        <Enum name="SparrowContrastMode_t">
+            <Value name="SPARROW_CONTRAST_AUTOMATIC"/>
+            <Value name="SPARROW_CONTRAST_MANUAL"/>
+        </Enum>
+        <Enum name="SparrowNoiseReductionMode_t">
+            <Value name="SPARROW_NOISE_REDUCTION_DISABLED"/>
+            <Value name="SPARROW_NOISE_REDUCTION_TEMPORAL"/>
+            <Value name="SPARROW_NOISE_REDUCTION_SPATIAL"/>
+            <Value name="SPARROW_NOISE_REDUCTION_TEMPORAL_SPATIAL"/>
+        </Enum>
+        <Enum name="SparrowCommand_t">
+            <Value name="SPARROW_COMMAND_NONE"/>
+            <Value name="SPARROW_COMMAND_RESTORE_BASELINE"/>
+        </Enum>
+        <Data name="Index" inMemoryType="unsigned8"/>
+        <Data name="Polarity" enum="SparrowPolarity_t" encodedType="bitfield1" bitfieldGroup="true"/>
+        <Data name="ExposureMode" enum="SparrowExposureMode_t" encodedType="bitfield1"/>
+        <Data name="ContrastMode" enum="SparrowContrastMode_t" encodedType="bitfield1"/>
+        <Data name="NoiseReductionMode" enum="SparrowNoiseReductionMode_t" encodedType="bitfield2"/>
+        <Data name="Command" enum="SparrowCommand_t" encodedType="bitfield2" comment="One-shot command. When nonzero, ignore the other writable fields. Readback and saved settings always report NONE."/>
+        <Data name="Reserved" inMemoryType="null" encodedType="bitfield1"/>
+        <Data name="ManualIntegrationTime" inMemoryType="unsigned32" encodedType="unsigned32" comment="Manual integration in microseconds, limited by MaximumIntegrationTime."/>
+        <Data name="Brightness" inMemoryType="unsigned16" encodedType="unsigned16" comment="Manual brightness, 0..511."/>
+        <Data name="Contrast" inMemoryType="unsigned16" encodedType="unsigned16" comment="Manual contrast, 0..4095."/>
+        <Data name="Sharpness" inMemoryType="unsigned16" encodedType="unsigned16" comment="Local Detail, 0..1024."/>
+    </Packet>
+
+    <Packet name="OrionSparrowStatus" ID="ORION_PKT_SPARROW_STATUS" comparefile="compare/compareOrionPublic" printfile="compare/printOrionPublic">
+        <Enum name="SparrowFfcState_t">
+            <Value name="SPARROW_FFC_IDLE"/>
+            <Value name="SPARROW_FFC_RUNNING"/>
+            <Value name="SPARROW_FFC_COMPLETE"/>
+            <Value name="SPARROW_FFC_FAILED"/>
+        </Enum>
+        <Enum name="SparrowCommunicationState_t">
+            <Value name="SPARROW_COMMUNICATION_DISCONNECTED"/>
+            <Value name="SPARROW_COMMUNICATION_INITIALIZING"/>
+            <Value name="SPARROW_COMMUNICATION_READY"/>
+            <Value name="SPARROW_COMMUNICATION_FAULT"/>
+        </Enum>
+        <Enum name="SparrowRequestState_t">
+            <Value name="SPARROW_REQUEST_IDLE"/>
+            <Value name="SPARROW_REQUEST_PENDING"/>
+            <Value name="SPARROW_REQUEST_CONFIRMED"/>
+            <Value name="SPARROW_REQUEST_FAILED"/>
+        </Enum>
+        <Data name="Index" inMemoryType="unsigned8"/>
+        <Data name="CurrentIntegrationTime" inMemoryType="unsigned32" encodedType="unsigned32"/>
+        <Data name="MaximumIntegrationTime" inMemoryType="unsigned32" encodedType="unsigned32"/>
+        <Data name="AgcEnabled" inMemoryType="unsigned8" encodedType="bitfield1" bitfieldGroup="true"/>
+        <Data name="FfcState" enum="SparrowFfcState_t" encodedType="bitfield2"/>
+        <Data name="CommunicationState" enum="SparrowCommunicationState_t" encodedType="bitfield2" comment="READY only after complete camera readback; controls are unavailable in all other states."/>
+        <Data name="RequestState" enum="SparrowRequestState_t" encodedType="bitfield2" comment="Result of RequestSerial. CONFIRMED requires camera readback of that request."/>
+        <Data name="Reserved" inMemoryType="null" encodedType="bitfield1"/>
+        <Data name="FaultFlags" inMemoryType="unsigned32" encodedType="unsigned32"/>
+        <Data name="RequestSerial" inMemoryType="unsigned32" comment="Camera-local request counter, reset on restart. Prevents stale status from confirming a newer edit."/>
+        <Data name="TransportFaultFlags" inMemoryType="unsigned8" comment="Local faults, separate from vendor FaultFlags: 1 UART, 2 protocol, 4 timeout, 8 mismatch, 16 invalid request, 32 shutter unavailable."/>
     </Packet>
 
     <Packet name="VideoOptions" ID="ORION_PKT_VIDEO_OPTIONS" comparefile="compare/compareOrionPublic" printfile="compare/printOrionPublic" comment="Video output options">
@@ -1202,10 +1344,11 @@ See TrilliumPacket.c (in the Orion SDK) for details.
         <Data name="EnablePip" inMemoryType="unsigned32" encodedType="bitfield1" comment="Set to 1 to enable picture-in-picture overlays, or 0 to disable" />
         <Data name="ZoomTrackBox" inMemoryType="unsigned32" encodedType="bitfield1" comment="Set to 1 to enable 1.5x trackbox zooming, or 0 to disable" />
         <Data name="ShowTrackId" inMemoryType="unsigned32" encodedType="bitfield1" comment="Set to 1 to render TrackBox and Detection Ids, or 0 to disable" />
+        <Data name="EnablePixelProbe" inMemoryType="unsigned32" encodedType="bitfield1" comment="Set to 1 to render PixelProbe video data, or 0 to disable" />        
         <!-- !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!! -->
         <!-- DON'T FORGET TO UPDATE THE RESERVED BITFIELD WIDTH IF YOU ADD NEW FIELDS -->
         <!-- !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!! -->
-        <Data name="Reserved" inMemoryType="null" encodedType="bitfield20" constant="0" comment="Reserved, set to zero" />
+        <Data name="Reserved" inMemoryType="null" encodedType="bitfield19" constant="0" comment="Reserved, set to zero" />
         <Data name="MaxShift" inMemoryType="float32" encodedType="unsigned8" max="1" default="0.1" documentFunction="displayMaxShift" comment="Maximum stabilization shift as a percentage of frame size, or 0 for no change" />
         <Structure name="TelemetryOptions" dependsOn="HasTelemetryOptions">
             <Data name="CameraPos" inMemoryType="unsigned32" encodedType="bitfield1" />
@@ -1507,7 +1650,8 @@ See TrilliumPacket.c (in the Orion SDK) for details.
         <Data name="AuxOutputStatus" inMemoryType="bitfield1" comment="Power provided to Laser = 1, Power off = 0, for this given laser IF it is connected to aux power switch, defaults to 0" />
         <Data name="AuxOperatingMode" inMemoryType="bitfield1" comment="Two possible modes here, FailSafe=0, and Normal Mode=1, defaults to failSafe in cases where this laser is not connected to aux power" />
         <Data name="VccUndervoltage"  inMemoryType="bitfield1" comment="Flag to indicate whenever Vcc(aux supply voltage) drops bellow V_usd(undervoltage shutdown, typ = 2V Max = 2.7V), defaults to 0" />
-        <Data name="Reserved" inMemoryType="bitfield2" constant="0" comment="Reserved for future use" />
+        <Data name="OccludedLock" inMemoryType="bitfield1" comment="Set to 1 if the laser is occluded via an occlusion mask, otherwise 0" />
+        <Data name="Reserved" inMemoryType="bitfield1" constant="0" comment="Reserved for future use" />
         <Data name="LaserTemp" inMemoryType="float32" encodedType="unsigned8" scaler="1.0" documentToMethod="Temperature" comment="LaserTemp" />
         <Data name="WaitTimer" inMemoryType="unsigned16" documentUnit=" ms" comment="Time remaining, in milliseconds, before the laser will accept another command" />
     </Structure>
@@ -1530,6 +1674,34 @@ See TrilliumPacket.c (in the Orion SDK) for details.
         <Value name="USER_DATA_PORT_FP4" comment="Front panel FP4 TTL serial port" />
         <Value name="USER_DATA_PORT_CURRENT" value="255" comment="The port referenced is whatever port delivered this packet"/>
     </Enum>
+
+    <Enum name="maxOcclusionPoints" comment="Maximum number of occlusion points in a path.">
+        <Value name="MAX_TOTAL_POINTS" value="40" comment="Maximum number total upper and lower occlusion points"/>
+    </Enum>
+
+    <Enum name="MaskOperationType" comment="Indicates the occlusion mask operation to perform (set or clear).">
+        <Value name="MASK_UNKNOWN" value="0" comment="Unknown, undefined, or invalid operation."/>
+        <Value name="MASK_SET_LOWER" value="1" comment="Set the zone representing occlusions at lower tilt angles."/>
+        <Value name="MASK_SET_UPPER" value="2" comment="Set the zone representing occlusions at upper tilt angles."/>
+        <Value name="MASK_CLEAR" value="3" comment="Clear any stored mask data."/>
+    </Enum>
+
+    <Packet name="OrionOcclusion" ID="ORION_PKT_SET_LASER_OCCLUSION_MASK" comment="Command packet for sending occlusion mask points">
+        <Data name="PacketNumber" inMemoryType="unsigned8" verifyMinValue="1" verifyMaxValue="auto" comment="Sequence number of this packet relative to the total number of packets." />
+        <Data name="TotalNumberOfPackets" inMemoryType="unsigned8" verifyMinValue="1" verifyMaxValue="auto" comment="Total number of packets to expect." />
+        <Data name="Description" inMemoryType="fixedstring" array="16" comment="Short user friendly description of the mask set for easy identification of the inuse mask (e.g. AV model, mounting location, etc.)"/>
+        <Data name="MaskOperation" enum="MaskOperationType" encodedType="unsigned8" comment="Specifies which operation to perform on the mask and if setting a mask, which region the points in MaskPoints pertain to." />
+        <Data name="NumberOfMaskPoints" inMemoryType="unsigned8" verifyMinValue="1" verifyMaxValue="MAX_TOTAL_POINTS" comment="Number of points MaskPoints contains"/>
+        <Structure name="MaskPoints" array="MAX_TOTAL_POINTS" variableArray="NumberOfMaskPoints" comment="Data points describing the mask where points are considered to be connected by straight lines." >
+            <Data name="pan" inMemoryType="float32" encodedType="signed16" scaler="180/pi" verifyMinValue="-pi" verifyMaxValue="pi" range="-pi to pi" units="radians" comment="Gimbal pan angle in radians from -pi to pi"/>
+            <Data name="tilt" inMemoryType="float32" encodedType="signed8" scaler="180/pi" verifyMinValue="-pi/2" verifyMaxValue="pi/2" range="-pi/2 to pi/2" units="radians" comment="Gimbal tilt angle in radians from -pi/2 to pi/2."/>
+        </Structure>
+    </Packet>
+
+    <Packet name="OrionOcclusionState" ID="ORION_PKT_LASER_OCCLUSION_MASK_STATE" comment="Status packet for information regarding the occlusion mask">
+        <Data name="Description" inMemoryType="fixedstring" array="16" comment="Short text describing the mask for easy identification of the inuse mask"/>
+        <Data name="IsHealthy" inMemoryType="bitfield1" comment="Set to 1 if a persisted mask, or a default empty mask, was loaded successfully, otherwise 0" />
+    </Packet>
 
     <Packet name="OrionUartConfig" ID="ORION_PKT_UART_CONFIG" comparefile="compare/compareOrionPublic" printfile="compare/printOrionPublic" 
         comment="This packet is used to change or request the baud rate and protocol of a UART on the crown board. Send this packet with zero bytes to request the configuration of the port that receives the request, or with 1 byte to request the configuration of a specific port. Not all port configuration options are available, the ethernet port must run the PROTOCOL_ORION protocol at either 115200 or 230400 bits per second. In general users should not change the ethernet port setup. In addition the PROTOCOL_UBLOX_GPS is not supported on any user configurable port, it is included in the protocol list only for completeness.">
@@ -1779,11 +1951,13 @@ See TrilliumPacket.c (in the Orion SDK) for details.
             <Value name="CAMERA_PROTO_SIERRA" comment="SierraOlympia camera"/>
             <Value name="CAMERA_PROTO_SIONYX" comment="Sionyx camera"/>
             <Value name="CAMERA_PROTO_LYNRED" comment="Lynred camera"/>
+            <Value name="CAMERA_PROTO_SPARROW"/>
             <Value name="NUM_CAMERA_PROTOS" comment="Number of available camera protocols"/>
         </Enum>
 
         <Data name="NumCameras" inMemoryType="unsigned8" comment="The number of cameras installed"/>
-        <Data name="reserved" inMemoryType="null" array="3" encodedType="unsigned8" comment="Reserved space for future expansion"/>
+        <Data name="FfcInPlaceMask" inMemoryType="unsigned8" comment="Read only capability reported by the payload: bit N means camera N supports camera specific FFC without gimbal positioning (That the sensor has a shutter). Zero retains legacy global FFC behavior. User supplied values are ignored."/>
+        <Data name="reserved" inMemoryType="null" array="2" encodedType="unsigned8" comment="Reserved space for future expansion"/>
         <Structure name="OrionCamSettings" array="NUM_CAMERAS" variableArray="NumCameras" comment="Camera settings information">
             <Data name="Gpio" inMemoryType="unsigned8" encodedType="null" comment="IO line to activate the camera"/>
             <Data name="GpioActiveState" inMemoryType="unsigned8" encodedType="null" comment="Polarity of Gpio"/>

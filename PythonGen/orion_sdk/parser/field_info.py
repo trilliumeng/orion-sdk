@@ -44,6 +44,7 @@ class FieldInfo:
     is_struct: bool = False
     is_enum: bool = False
     has_scaling: bool = False
+    has_default: bool = False  # XML default= attribute: field is optional on decode
 
     # References
     struct_ref: Optional[str] = None
@@ -99,6 +100,7 @@ class FieldInfo:
             'is_struct': self.is_struct,
             'is_enum': self.is_enum,
             'has_scaling': self.has_scaling,
+            'has_default': self.has_default,
             'struct_ref': self.struct_ref,
             'enum_ref': self.enum_ref,
             'depends_on': self.depends_on,
