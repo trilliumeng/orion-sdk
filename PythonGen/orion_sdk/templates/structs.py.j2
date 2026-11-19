@@ -28,7 +28,7 @@ from .enums import *
 
 @dataclass
 class {{ struct.name }}:
-    """{{ struct.comment }}"""
+    """{{ struct.comment | replace('\\', '') }}"""
 {% for f, info in zip(struct.fields, fields_info) %}
 {{ enc.declare_field(f, info) }}
 {% endfor %}

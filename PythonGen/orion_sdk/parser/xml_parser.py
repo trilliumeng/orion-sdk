@@ -75,6 +75,9 @@ class FieldDef:
     default_value: Optional[str] = None
     constant_value: Optional[str] = None
 
+    # C function names from <Code decode="..."> elements following this field
+    post_decode_hooks: List[str] = field(default_factory=list)
+
     # Conditional
     depends_on: Optional[str] = None
     depends_on_value: Optional[str] = None
@@ -314,6 +317,14 @@ def parse_packet(elem: ET.Element) -> PacketDef:
             packet.fields.append(struct_field)
         elif child.tag == 'Enum':
             packet.enums.append(parse_enum(child, is_global=False))
+        elif child.tag == 'Code':
+            # Attach post-decode hooks to the preceding field so generated
+            # decoders run them at the same position as the C decoder
+            decode_snippet = child.get('decode')
+            if decode_snippet and packet.fields:
+                match = re.match(r'\s*(\w+)\s*\(', decode_snippet)
+                if match:
+                    packet.fields[-1].post_decode_hooks.append(match.group(1))
 
     return packet
 

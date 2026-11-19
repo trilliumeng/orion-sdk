@@ -18,6 +18,7 @@ from .scaling_runtime import (
     _to_f32, _c_round_unsigned, _c_round_signed,
     _c_round_unsigned_f64, _c_round_signed_f64
 )
+from .post_decode import run_post_decode
 from . import structs as _structs
 from .enums import *
 
@@ -30,7 +31,7 @@ from .enums import *
 
 @dataclass
 class {{ packet.name }}:
-    """{{ packet.comment }}
+    """{{ packet.comment | replace('\\', '') }}
 
     Packet ID: {{ packet.packet_id }} ({{ packet_id }})
     """

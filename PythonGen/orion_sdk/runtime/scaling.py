@@ -36,9 +36,9 @@ def to_c_double_precision(value: float) -> float:
 
     This is critical for exact encode/decode matching between C and Python.
     """
-    # Format with enough precision to distinguish different doubles,
-    # but match what C compilers typically use for double literals
-    formatted = f"{value:.13g}"
+    # ProtoGen emits double literals with 16 significant digits (e.g.
+    # 572957795.1308233 for 180*10000000/pi), so format the same way.
+    formatted = f"{value:.16g}"
     return float(formatted)
 
 

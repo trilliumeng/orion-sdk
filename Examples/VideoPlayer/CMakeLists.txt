@@ -1,3 +1,29 @@
+# Guard the Video Player from being built if the required dependencies are not found
+find_package(PkgConfig REQUIRED)
+if(NOT PkgConfig_FOUND)
+    message(STATUS "ATTENTION: Video Player example not configured, PkgConfig not found")
+    return()
+endif()
+
+find_package(JPEG)
+
+if(NOT JPEG_FOUND)
+    message(STATUS "ATTENTION: Video Player example not configured, libjpeg development libraries not found")
+    return()
+endif()
+
+pkg_check_modules(LIBAV QUIET IMPORTED_TARGET
+    libavcodec
+    libavformat
+    libavutil
+    libswscale
+)
+
+if(NOT LIBAV_FOUND)
+    message(STATUS "ATTENTION: Video Player example not configured, libav development libraries not found")
+    return()
+endif()
+
 add_executable(VideoPlayer
     FFmpeg.c
     KlvParser.c
@@ -9,14 +35,8 @@ target_include_directories(VideoPlayer PRIVATE
     ../../Communications
     ../../Utils
 )
-find_package(PkgConfig REQUIRED)
-find_package(JPEG)
-pkg_check_modules(LIBAV REQUIRED IMPORTED_TARGET
-    libavcodec
-    libavformat
-    libavutil
-    libswscale
-)
+
+
 target_link_libraries(VideoPlayer PRIVATE
     JPEG::JPEG
     OrionComm
