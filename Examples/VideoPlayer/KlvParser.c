@@ -126,7 +126,7 @@ KlvTagInfo_t TagInfo[KLV_UAS_NUM_ELEMENTS] = {
     { "KLV_UAS_PLATFORM_PITCH", /* = 90 */        KLV_TYPE_DOUBLE, CONVERT_ANGLE(-90), CONVERT_ANGLE(90) },
     { "KLV_UAS_PLATFORM_ROLL", /* = 91 */         KLV_TYPE_DOUBLE, CONVERT_ANGLE(-90), CONVERT_ANGLE(90) },
     { "KLV_UAS_ANGLE_OF_ATTACK", /* = 92 */       KLV_TYPE_DOUBLE, CONVERT_ANGLE(-90), CONVERT_ANGLE(90) },
-    { "KLV_UAS_SIDESLIP", /* = 93 */              KLV_TYPE_DOUBLE, CONVERT_ANGLE(-90), CONVERT_ANGLE(90) },
+    { "KLV_UAS_SIDESLIP", /* = 93 */              KLV_TYPE_DOUBLE, CONVERT_ANGLE(-180), CONVERT_ANGLE(180) },
     { "KLV_UAS_CORE_ID", /* = 94 */               KLV_TYPE_OTHER },
 };
 
@@ -158,12 +158,23 @@ KlvTagInfo_t SecurityTagInfo[KLV_SECURITY_NUM_ELEMENTS] = {
     { "KLV_SECURITY_OBJECT_COUNTRY_CODING_VERSION", /* = 24 */  KLV_TYPE_STRING },
 };
 
-static uint64_t KlvGetLength(const uint8_t *pData, uint64_t *pIndex)
+// Read a BER length at *pIndex, never past End. Returns 0 and sets *pIndex to End on bad input.
+static uint64_t KlvGetLength(const uint8_t *pData, uint64_t *pIndex, uint64_t End)
 {
+    if (*pIndex >= End)
+        return 0;
+
     if (pData[*pIndex] & 0x80)
     {
         int Bytes = pData[(*pIndex)++] & 0x7F;
         uint64_t Length = 0;
+
+        // Lengths over 8 bytes or past the end of the buffer are invalid
+        if ((Bytes > 8) || (*pIndex + Bytes > End))
+        {
+            *pIndex = End;
+            return 0;
+        }
 
         while (Bytes--)
             Length |= (uint64_t)pData[(*pIndex)++] << (Bytes * 8);
@@ -174,23 +185,50 @@ static uint64_t KlvGetLength(const uint8_t *pData, uint64_t *pIndex)
         return pData[(*pIndex)++];
 }
 
+// Read a BER-OID tag at *pIndex: ST 0601 tags 128 and up take two bytes (tag 128 is 0x81 0x00)
+static uint64_t KlvGetTag(const uint8_t *pData, uint64_t *pIndex, uint64_t End)
+{
+    uint64_t Tag = 0;
+    int Bytes = 0;
+
+    while ((*pIndex < End) && (Bytes++ < 4))
+    {
+        uint8_t Byte = pData[(*pIndex)++];
+
+        Tag = (Tag << 7) | (Byte & 0x7F);
+
+        if ((Byte & 0x80) == 0)
+            return Tag;
+    }
+
+    // Truncated or longer than 4 bytes
+    *pIndex = End;
+    return 0;
+}
+
 void KlvNewData(const uint8_t *pData, int Length)
 {
-    // Get the length of the whole shebang
-    uint64_t i = 16, DataLength = KlvGetLength(pData, &i) + i;
+    // The 16-byte key and at least one length byte must be there
+    if ((pData == NULL) || (Length <= 16))
+        return;
+
+    // Get the length of the whole shebang, clipped to the bytes we actually have
+    uint64_t i = 16, DataLength = KlvGetLength(pData, &i, (uint64_t)Length);
+    DataLength = MIN(DataLength + i, (uint64_t)Length);
 
     // As long as there's more data to read out
     while (i < DataLength)
     {
         // Grab the key and the length of the tag's data
-        uint8_t Key = pData[i++];
-        uint64_t KeyLength = KlvGetLength(pData, &i);
+        uint64_t Key = KlvGetTag(pData, &i, DataLength);
+        uint64_t KeyLength = KlvGetLength(pData, &i, DataLength);
 
         // Clip the length to the number of bytes remaining
         KeyLength = MIN(KeyLength, DataLength - i);
 
-        // Pass the data to the KLV tree
-        KlvTreeSetValue(Key, KeyLength, &pData[i]);
+        // Pass the data to the KLV tree (ST 0601 tags stop at 143, so they fit its 8-bit keys)
+        if ((Key != 0) && (Key <= 0xFF))
+            KlvTreeSetValue((uint8_t)Key, (uint32_t)KeyLength, &pData[i]);
 
         // Now increment the array index by the data size
         i += KeyLength;
@@ -429,7 +467,7 @@ void KlvPrintSecurityData(const uint8_t *pData, int passedLength)
     {
         // Grab the key and the length of the tag's data
         uint8_t Key = pData[k++] + KLV_UAS_NUM_ELEMENTS; //Offset the key by the KLV_UAS count. as duplicate key entries exist
-        uint64_t KeyLength = KlvGetLength(pData, &k);
+        uint64_t KeyLength = KlvGetLength(pData, &k, DataLength);
 
         // Clip the length to the number of bytes remaining
         KeyLength = MIN(KeyLength, DataLength - k);
